@@ -1,0 +1,80 @@
+import React from 'react';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import Splash from '../screens/Splash/Splash';
+import Signup from '../screens/SignupScreen/Signup';
+import ForgetPassword from '../screens/ForgetPassword/ForgetPassword';
+import BottomNavigator from './TabNavigator/BottomNavigator';
+import ConfirmSignup from '../screens/SignupScreen/ConfirmSignup';
+import LandingPage from '../screens/Landing/LandingPage';
+import ForgetOTP from '../screens/ForgetPassword/ForgetOTP';
+import SetPassword from '../screens/ForgetPassword/setPassword';
+import Discover from './TabNavigator/Discover/Discover';
+import LoginScreen from '../screens/Login/LoginScreen';
+import OnboardingScreen from '../screens/Onboarding/OnboardingScreen';
+import AboutMobiTrade from './TabNavigator/Account/About/AboutMobiTrade';
+import Addresses from './TabNavigator/Account/Addresses/Addresses';
+import AddNewAddress from './TabNavigator/Account/Addresses/AddNewAddress';
+import Settings from './TabNavigator/Account/Settings/Setting';
+import Signup_Address from '../screens/SignupScreen/Signup_Address';
+import SignUpTab from '../screens/SignupScreen/SignUpTab';
+import PushNotification from './TabNavigator/Account/Settings/PuchNotification/PushNotification';
+import Language from './TabNavigator/Account/Settings/Languages/Language';
+import ChangePassword from './TabNavigator/Account/Settings/ChangePassword/ChangePassword';
+import LogoutDevices from './TabNavigator/Account/Settings/LogoutFromAllDevices/LogoutDevices';
+import Privacy from './TabNavigator/Account/Settings/Privacy/Privacy';
+import DeleteAccount from './TabNavigator/Account/Settings/DeleteMyAccount/DeleteAccount';
+import ChatSupport from './TabNavigator/Account/ChatSupport/ChatSupport';
+import Warranty from './TabNavigator/Account/WarrantyTracking/Warranty';
+import HelpSupport from './TabNavigator/Account/HelpSupport/HelpSupport';
+import WatchList from './TabNavigator/Account/Watchlist/WatchList';
+import SubWatchList from './TabNavigator/Account/Watchlist/SubWatchList';
+import Myorder from './TabNavigator/Account/MyOrder/Myorder';
+import Details from './TabNavigator/Account/MyOrder/YourOrderIsOnTheWay';
+import YourOrderIsOnTheWay from './TabNavigator/Account/MyOrder/YourOrderIsOnTheWay';
+import YourOrderIsDelever from './TabNavigator/Account/MyOrder/YourOrderIsDelever';
+import YourOrderIsCancle from './TabNavigator/Account/MyOrder/YourOrderIsCancle';
+import TrackOrder from './TabNavigator/Account/MyOrder/TrackOrder';
+import ReturnRequest from './TabNavigator/Account/MyOrder/ReturnRequest';
+
+const Stack = createNativeStackNavigator();
+
+const StackNavigator = () => (
+  <Stack.Navigator initialRouteName="Splash" screenOptions={{headerShown: false}}>
+    <Stack.Screen name="Splash" component={Splash} />
+    <Stack.Screen name="OnboardingScreen" component={OnboardingScreen} />
+    <Stack.Screen name="LoginScreen" component={LoginScreen} />
+    <Stack.Screen name="Signup" component={Signup} />
+    <Stack.Screen name="ForgetPassword" component={ForgetPassword} />
+    <Stack.Screen name="BottomNavigator" component={BottomNavigator} />
+    <Stack.Screen name="ConfirmSignup" component={ConfirmSignup} />
+    <Stack.Screen name="LandingPage" component={LandingPage} />
+    <Stack.Screen name="ForgetOTP" component={ForgetOTP} />
+    <Stack.Screen name="setPassword" component={SetPassword} />
+    <Stack.Screen name="Discover" component={Discover} />
+    <Stack.Screen name="AboutMobiTrade" component={AboutMobiTrade} />
+    <Stack.Screen name="Addresses" component={Addresses} />
+    <Stack.Screen name="AddNewAddress" component={AddNewAddress} />
+    <Stack.Screen name="Settings" component={Settings} />
+    <Stack.Screen name="Signup_Address" component={Signup_Address} />
+    <Stack.Screen name="SignUpTab" component={SignUpTab} />
+    <Stack.Screen name="PushNotification" component={PushNotification} />
+    <Stack.Screen name="Language" component={Language} />
+    <Stack.Screen name="ChangePassword" component={ChangePassword} />
+    <Stack.Screen name="LogoutDevices" component={LogoutDevices} />
+    <Stack.Screen name="Privacy" component={Privacy} />
+    <Stack.Screen name="DeleteAccount" component={DeleteAccount} />
+    <Stack.Screen name="ChatSupport" component={ChatSupport} />
+    <Stack.Screen name="Warranty" component={Warranty} />
+    <Stack.Screen name="HelpSupport" component={HelpSupport} />
+    <Stack.Screen name="WatchList" component={WatchList} />
+    <Stack.Screen name="SubWatchList" component={SubWatchList} />
+    <Stack.Screen name="Myorder" component={Myorder} />
+    <Stack.Screen name="YourOrderIsOnTheWay" component={YourOrderIsOnTheWay} />
+    <Stack.Screen name="YourOrderIsDelever" component={YourOrderIsDelever} />
+    <Stack.Screen name="YourOrderIsCancle" component={YourOrderIsCancle} />
+    <Stack.Screen name="TrackOrder" component={TrackOrder} />
+    <Stack.Screen name="ReturnRequest" component={ReturnRequest} />
+  </Stack.Navigator>
+);
+
+export default StackNavigator;
