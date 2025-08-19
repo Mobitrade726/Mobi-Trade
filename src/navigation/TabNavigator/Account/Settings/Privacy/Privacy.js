@@ -18,14 +18,18 @@ const Privacy = ({navigation}) => {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}>
           <Ionicons name="chevron-back" size={22} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Privacy Settings</Text>
+        <View>
+          <Text style={styles.headerTitle}>Privacy Settings</Text>
+        </View>
+        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+          <Ionicons name="search" size={24} color="#333" />
+        </TouchableOpacity>
       </View>
 
       <View style={{marginHorizontal: 15, flex: 1}}>
@@ -86,27 +90,19 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     paddingVertical: 10,
-    borderColor: '#ccc',
-    position: 'relative',
-    height: 50, // optional, to help with alignment
+    justifyContent: 'space-between',
+    marginHorizontal: 10,
   },
   backButton: {
-    position: 'absolute', // ADD THIS
-    left: 15,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
     borderRadius: 20,
     padding: 6,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: {width: 0, height: 2},
-    shadowRadius: 2,
+    left: 0,
   },
   headerTitle: {
     fontSize: 16,
-    fontWeight: 'medium', // change 'medium' to a valid value
+    fontWeight: '500',
     color: '#000',
     textAlign: 'center',
   },
@@ -136,14 +132,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
-    
   },
   privacyButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'medium',
     fontFamily: 'Source Serif 4',
-    marginHorizontal:10
+    marginHorizontal: 10,
   },
   saveButton: {
     flexDirection: 'row',
@@ -158,7 +153,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'medium',
     fontFamily: 'Source Serif 4',
-    marginHorizontal:10
+    marginHorizontal: 10,
   },
 });
 

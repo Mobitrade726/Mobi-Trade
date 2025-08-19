@@ -74,10 +74,17 @@ const ChatSupportScreen = ({navigation}) => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color="#000" />
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}>
+          <Ionicons name="chevron-back" size={22} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Chat Support</Text>
+        <View>
+          <Text style={styles.headerTitle}>Chat Support</Text>
+        </View>
+        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+          <Ionicons name="search" size={24} color="#333" />
+        </TouchableOpacity>
       </View>
 
       {/* Chat messages */}
@@ -122,15 +129,21 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    paddingVertical: 10,
+    justifyContent: 'space-between',
+    marginHorizontal: 10,
+  },
+  backButton: {
+    backgroundColor: '#f5f5f5',
+    borderRadius: 20,
+    padding: 6,
+    left: 0,
   },
   headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '500',
     color: '#000',
-    marginRight: 24,
+    textAlign: 'center',
   },
   chatBox: {
     flex: 1,

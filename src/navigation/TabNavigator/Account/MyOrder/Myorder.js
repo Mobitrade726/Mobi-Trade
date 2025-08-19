@@ -73,53 +73,91 @@ const Myorder = ({navigation}) => {
       ? orders
       : orders.filter(order => order.status === activeTab);
 
- const renderOrder = ({item}) => (
-  <View style={styles.card}>
-    <View style={styles.cardTopRow}>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.orderTitle}>Order {item.orderNo}</Text>
-      </View>
-      <View style={styles.statusContainer}>
-        <Image
-          source={statusImages[item.status]}
-          style={styles.statusIcon}
-        />
-        <Text style={[styles.statusText, {color: statusColors[item.status]}]}>
-          {item.status}
-        </Text>
-      </View>
-    </View>
-
-    <View style={styles.cardContent}>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.subText}>{item.date} {item.time}</Text>
-        <Text style={styles.subText}>Quantity: {item.quantity}</Text>
-        <Text style={styles.subText}>
-          Subtotal: <Text style={styles.boldText}>{item.subtotal}</Text>
-        </Text>
-
-        <View style={styles.actions}>
-          {item.status === 'Pending' && (
-            <TouchableOpacity onPress={()=> navigation.navigate('YourOrderIsCancle')} style={styles.button}>
-              <Text style={styles.buttonText}>Cancel</Text>
-            </TouchableOpacity>
-          )}
-          {item.status === 'Delivered' && (
-            <TouchableOpacity onPress={()=> navigation.navigate('YourOrderIsDelever')} style={styles.button}>
-              <Text style={styles.buttonText}>Return</Text>
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity onPress={()=> navigation.navigate('YourOrderIsOnTheWay')} style={styles.button}>
-            <Text style={styles.buttonText}>Details</Text>
-          </TouchableOpacity>
+  const renderOrder = ({item}) => (
+    <View style={styles.card}>
+      <View style={styles.cardTopRow}>
+        <View style={{flex: 1}}>
+          <Text style={styles.orderTitle}>Order {item.orderNo}</Text>
+        </View>
+        <View style={styles.statusContainer}>
+          <Image source={statusImages[item.status]} style={styles.statusIcon} />
+          <Text style={[styles.statusText, {color: statusColors[item.status]}]}>
+            {item.status}
+          </Text>
         </View>
       </View>
 
-      <View style={styles.imageBox} />
-    </View>
-  </View>
-);
+      <View style={styles.cardContent}>
+        <View style={{flex: 1}}>
+          <Text style={styles.subText}>
+            {item.date} {item.time}
+          </Text>
+          <Text style={styles.subText}>Quantity: {item.quantity}</Text>
+          <Text style={styles.subText}>
+            Subtotal: <Text style={styles.boldText}>{item.subtotal}</Text>
+          </Text>
 
+          <View style={styles.actions}>
+            {item.status === 'Pending' && (
+              <>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('YourOrderIsCancle')}
+                  style={styles.button}>
+                  <Text style={styles.buttonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate('YourOrderIsGettingPacked')
+                  }
+                  style={styles.button}>
+                  <Text style={styles.buttonText}>Details</Text>
+                </TouchableOpacity>
+              </>
+            )}
+            {item.status === 'Shipped' && (
+              <>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('YourOrderIsOnTheWay')}
+                  style={styles.button}>
+                  <Text style={styles.buttonText}>Details</Text>
+                </TouchableOpacity>
+              </>
+            )}
+            {item.status === 'Canceled' && (
+              <>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('YourOrderIsCancle')}
+                  style={styles.button}>
+                  <Text style={styles.buttonText}>Details</Text>
+                </TouchableOpacity>
+              </>
+            )}
+            {item.status === 'Delivered' && (
+              <>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('ReturnRequest')}
+                  style={styles.button}>
+                  <Text style={styles.buttonText}>Return</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('YourOrderIsDelever')}
+                  style={styles.button}>
+                  <Text style={styles.buttonText}>Details</Text>
+                </TouchableOpacity>
+              </>
+            )}
+            {/* <TouchableOpacity
+              onPress={() => navigation.navigate('YourOrderIsOnTheWay')}
+              style={styles.button}>
+              <Text style={styles.buttonText}>Details</Text>
+            </TouchableOpacity> */}
+          </View>
+        </View>
+
+        <View style={styles.imageBox} />
+      </View>
+    </View>
+  );
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
@@ -130,7 +168,12 @@ const Myorder = ({navigation}) => {
           style={styles.backButton}>
           <Ionicons name="chevron-back" size={22} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Order</Text>
+        <View>
+          <Text style={styles.headerTitle}>My Order</Text>
+        </View>
+        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+          <Ionicons name="search" size={24} color="#333" />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.tabs}>
@@ -166,30 +209,21 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 15,
-    borderColor: '#ccc',
-    position: 'relative',
+    paddingVertical: 10,
+    justifyContent: 'space-between',
+    marginHorizontal: 10,
   },
-
   backButton: {
-    left: 15,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
     borderRadius: 20,
     padding: 6,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: {width: 0, height: 2},
-    shadowRadius: 2,
+    left: 0,
   },
-
   headerTitle: {
     fontSize: 16,
     fontWeight: '500',
     color: '#000',
     textAlign: 'center',
-    flex: 1,
   },
   tabs: {
     flexDirection: 'row',
@@ -241,8 +275,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#555',
     marginTop: 4,
-    fontWeight:"regular",
-    marginTop:8,
+    fontWeight: 'regular',
+    marginTop: 8,
   },
   boldText: {
     fontWeight: 'bold',
@@ -265,7 +299,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#000',
   },
-    cardTopRow: {
+  cardTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
@@ -286,5 +320,4 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     marginRight: 4,
   },
-
 });

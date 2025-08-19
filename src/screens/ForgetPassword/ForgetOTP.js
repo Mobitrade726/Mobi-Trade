@@ -10,12 +10,14 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import {styles_forgetotp} from './styles';
 
 const ForgetOTP = ({navigation}) => {
-  const [otp, setOtp] = useState(['', '', '', '']);
+  const [otpforget, setOtp] = useState(['', '', '', '']);
   const [timer, setTimer] = useState(20);
   const inputs = useRef([]);
   const [errors, setErrors] = useState({});
+  const [submitted, setSubmitted] = useState(false);
 
-  useEffect(() => {
+  // ✅ Validation logic reused
+  const validateInputs = (otp = otpforget) => {
     const newErrors = {};
     const combinedOtp = otp.join('');
 
@@ -26,7 +28,14 @@ const ForgetOTP = ({navigation}) => {
     }
 
     setErrors(newErrors);
-  }, [otp]);
+  };
+
+  // ✅ Real-time validation if form was submitted
+  useEffect(() => {
+    if (submitted) {
+      validateInputs();
+    }
+  }, [otpforget]);
 
   useEffect(() => {
     if (timer > 0) {
@@ -37,7 +46,7 @@ const ForgetOTP = ({navigation}) => {
 
   const handleChange = (text, index) => {
     if (/^\d$/.test(text)) {
-      const newOtp = [...otp];
+      const newOtp = [...otpforget];
       newOtp[index] = text;
       setOtp(newOtp);
       // Focus next input
@@ -45,13 +54,19 @@ const ForgetOTP = ({navigation}) => {
         inputs.current[index + 1].focus();
       }
     } else if (text === '') {
-      const newOtp = [...otp];
+      const newOtp = [...otpforget];
       newOtp[index] = '';
       setOtp(newOtp);
     }
   };
 
   const handleVerify = () => {
+    
+    setSubmitted(true);
+    const isValid = validateInputs();
+
+    if (!isValid) return;
+
     if (Object.keys(errors).length === 0) {
       navigation.navigate('setPassword');
     }
@@ -74,13 +89,13 @@ const ForgetOTP = ({navigation}) => {
         </Text>
 
         <View style={styles_forgetotp.otpContainer}>
-          {otp.map((digit, index) => (
+          {otpforget.map((digit, index) => (
             <TextInput
               key={index}
               ref={el => (inputs.current[index] = el)}
               style={[
                 styles_forgetotp.otpBox,
-                errors.otp && {borderColor: 'red'},
+                errors.otpforget && {borderColor: 'red'},
               ]}
               keyboardType="number-pad"
               maxLength={1}

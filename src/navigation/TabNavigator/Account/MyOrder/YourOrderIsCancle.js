@@ -18,10 +18,15 @@ const YourOrderIsCancle = ({navigation}) => {
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          style={styles.backBtn}>
+          style={styles.backButton}>
           <Ionicons name="chevron-back" size={22} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Order #1514</Text>
+        <View>
+          <Text style={styles.headerTitle}>Order #1514</Text>
+        </View>
+        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+          <Ionicons name="search" size={24} color="#333" />
+        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={{padding: 16}}>
@@ -123,26 +128,21 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 15,
-    position: 'relative',
+    paddingVertical: 10,
+    justifyContent: 'space-between',
+    marginHorizontal: 10,
   },
-  backBtn: {
-    position: 'absolute',
-    left: 15,
-    backgroundColor: '#fff',
+  backButton: {
+    backgroundColor: '#f5f5f5',
     borderRadius: 20,
     padding: 6,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: {width: 0, height: 2},
-    shadowRadius: 2,
+    left: 0,
   },
   headerTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
     color: '#000',
+    textAlign: 'center',
   },
   trackBanner: {
     backgroundColor: 'red',

@@ -8,31 +8,21 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 15,
-    borderBottomWidth: 0.5,
-    borderColor: '#ccc',
-    position: 'relative',
+    paddingVertical: 10,
+    justifyContent: 'space-between',
+    marginHorizontal: 10,
   },
-
   backButton: {
-    left: 15,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
     borderRadius: 20,
     padding: 6,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: {width: 0, height: 2},
-    shadowRadius: 2,
+    left: 0,
   },
-
   headerTitle: {
     fontSize: 16,
     fontWeight: '500',
     color: '#000',
     textAlign: 'center',
-    flex: 1,
   },
   content: {
     padding: 0,
@@ -48,7 +38,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'medium',
     marginBottom: 10,
-    marginTop:10
+    marginTop: 10,
   },
   divider: {
     height: 1,

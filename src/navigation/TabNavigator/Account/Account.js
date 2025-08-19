@@ -17,6 +17,7 @@ import DeviceInfo from 'react-native-device-info';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import Toast from 'react-native-toast-message';
+import {API_BASE_URL} from '../../../utils/utils';
 
 const ProfileScreen = ({navigation}) => {
   const [appVersion, setAppVersion] = useState('');
@@ -41,15 +42,12 @@ const ProfileScreen = ({navigation}) => {
 
       try {
         const token = await AsyncStorage.getItem('TOKEN');
-        const response = await axios.get(
-          'https://api.mobitrade.in/api/profile',
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
+        const response = await axios.get(API_BASE_URL + 'profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
           },
-        );
+        });
 
         console.log('Profile API Response:', response.data);
 
@@ -78,9 +76,19 @@ const ProfileScreen = ({navigation}) => {
       screen: 'Myorder',
     },
     {
+      label: 'KYC Status',
+      image: require('../../../../assets/images/kycstatus.png'),
+      screen: 'KYCStatus',
+    },
+    {
       label: 'Wishlist',
       image: require('../../../../assets/images/WishlistIcon.png'),
       screen: 'WatchList',
+    },
+    {
+      label: 'My Wallet',
+      image: require('../../../../assets/images/wallet.png'),
+      screen: 'Wallet',
     },
     {
       label: 'Saved Addresses',
@@ -120,7 +128,10 @@ const ProfileScreen = ({navigation}) => {
 
   const handleNavigation = screen => {
     if (screen) {
-      navigation.navigate(screen);
+      navigation.navigate(screen, {
+        cat: cat,
+        profileEdit: data,
+      });
     }
   };
 
@@ -134,7 +145,7 @@ const ProfileScreen = ({navigation}) => {
       }
 
       const response = await axios.post(
-        'https://api.mobitrade.in/api/logout',
+        API_BASE_URL + 'logout',
         {},
         {
           headers: {
@@ -173,6 +184,20 @@ const ProfileScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#fff7f5'}}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}>
+          <Ionicons name="chevron-back" size={22} color="#000" />
+        </TouchableOpacity>
+        <View>
+          <Text style={styles.headerTitle}>Profile info</Text>
+        </View>
+        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+          <Ionicons name="search" size={24} color="#333" />
+        </TouchableOpacity>
+      </View>
       <ScrollView
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}>
@@ -180,7 +205,7 @@ const ProfileScreen = ({navigation}) => {
         <View style={styles.profileContainer}>
           <Text style={styles.name}>{name}</Text>
           <Text style={styles.email}>{email}</Text>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() =>
               navigation.navigate('SignUpTab', {
                 cat: cat,
@@ -188,7 +213,7 @@ const ProfileScreen = ({navigation}) => {
               })
             }>
             <Text>Edit</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {/* Options */}
@@ -219,14 +244,33 @@ const ProfileScreen = ({navigation}) => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
     backgroundColor: '#fff7f5',
-    flexGrow: 1,
     paddingBottom: 40,
+    marginHorizontal:10,
+    flex:1,
+  },
+   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 0,
+    justifyContent: 'space-between',
+    marginHorizontal: 10,
+  },
+  backButton: {
+    backgroundColor: '#f5f5f5',
+    borderRadius: 20,
+    padding: 6,
+    left: 0,
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#000',
+    textAlign: 'center',
   },
   profileContainer: {
     alignItems: 'center',
-    marginVertical: 0,
+    marginBottom: 10,
   },
   avatar: {
     borderWidth: 1,

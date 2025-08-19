@@ -64,13 +64,19 @@ const TrackOrder = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
+ {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}>
           <Ionicons name="chevron-back" size={22} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Order #1514</Text>
-        <View style={{ width: 22 }} /> {/* placeholder for spacing */}
+        <View>
+          <Text style={styles.headerTitle}>Order #1514</Text>
+        </View>
+        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+          <Ionicons name="search" size={24} color="#333" />
+        </TouchableOpacity>
       </View>
 
       {/* Info */}
@@ -122,17 +128,24 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  header: {
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+ header: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 10,
     justifyContent: 'space-between',
+    marginHorizontal: 10,
+  },
+  backButton: {
+    backgroundColor: '#f5f5f5',
+    borderRadius: 20,
+    padding: 6,
+    left: 0,
   },
   headerTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '500',
     color: '#000',
+    textAlign: 'center',
   },
   infoText: {
     fontSize: 13,

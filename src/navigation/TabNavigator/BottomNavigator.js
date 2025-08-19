@@ -6,6 +6,9 @@ import Home from '../../screens/Home/Home';
 import Account from './Account/Account';
 import Discover from './Discover/Discover';
 import {Image} from 'react-native';
+import WatchList from '../TabNavigator/Account/Watchlist/WatchList';
+import Cart from './Cart/Cart';
+import Categories from '../../screens/Home/Categories/Categories';
 
 const Tab = createBottomTabNavigator();
 
@@ -14,18 +17,21 @@ const BottomNavigator = () => {
     <Tab.Navigator
       screenOptions={({route}) => ({
         tabBarIcon: ({color, size}) => {
-          if (route.name === 'Discover') {
+          if (route.name === 'Category') {
             return (
               <Image
-                source={require('../../../assets/images/ShopIcon.png')} // Update path to your image
+                source={require('../../../assets/images/cat.png')} // Update path to your image
                 style={{width: size, height: size, tintColor: color}}
-
               />
             );
           } else if (route.name === 'Home') {
             return <Ionicons name="home-outline" size={size} color={color} />;
           } else if (route.name === 'Account') {
             return <AntDesign name="user" size={size} color={color} />;
+          } else if (route.name === 'WatchList') {
+            return <AntDesign name="hearto" size={size} color={color} />;
+          } else if (route.name === 'Cart') {
+            return <AntDesign name="shoppingcart" size={size} color={color} />;
           }
         },
         tabBarActiveTintColor: '#00b894',
@@ -33,7 +39,9 @@ const BottomNavigator = () => {
         headerShown: false,
       })}>
       <Tab.Screen name="Home" component={Home} />
-      <Tab.Screen name="Discover" component={Discover} />
+      <Tab.Screen name="Category" component={Categories} />
+      <Tab.Screen name="WatchList" component={WatchList} />
+      <Tab.Screen name="Cart" component={Cart} />
       <Tab.Screen name="Account" component={Account} />
     </Tab.Navigator>
   );

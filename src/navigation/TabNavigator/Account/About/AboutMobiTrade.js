@@ -14,10 +14,17 @@ const AboutMobiTrade = ({navigation}) => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}>
           <Ionicons name="chevron-back" size={22} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>About Mobi Trade</Text>
+        <View>
+          <Text style={styles.headerTitle}>About Mobi Trade</Text>
+        </View>
+        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+          <Ionicons name="search" size={24} color="#333" />
+        </TouchableOpacity>
       </View>
 
       {/* Body */}
@@ -31,8 +38,9 @@ const AboutMobiTrade = ({navigation}) => {
           </Text>
 
           <Text style={styles.bodyText}>
-            <Text style={styles.bold}>At Mobi Trade</Text>, we believe that great technology should be
-            accessible to everyone — not just the newest, but the smartest.{'\n'}
+            <Text style={styles.bold}>At Mobi Trade</Text>, we believe that
+            great technology should be accessible to everyone — not just the
+            newest, but the smartest.{'\n'}
             By giving a second life to high-quality devices, we{' '}
             <Text style={styles.bold}>reduce e-waste</Text>,{' '}
             <Text style={styles.bold}>support sustainability</Text>, and offer{' '}

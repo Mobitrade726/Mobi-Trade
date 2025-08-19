@@ -9,27 +9,19 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     paddingVertical: 10,
-    borderColor: '#ccc',
-    position: 'relative',
-    height: 50, // optional, to help with alignment
+    justifyContent: 'space-between',
+    marginHorizontal: 10,
   },
   backButton: {
-    position: 'absolute', // ADD THIS
-    left: 15,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
     borderRadius: 20,
     padding: 6,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: {width: 0, height: 2},
-    shadowRadius: 2,
+    left: 0,
   },
   headerTitle: {
     fontSize: 16,
-    fontWeight: 'medium', // change 'medium' to a valid value
+    fontWeight: '500',
     color: '#000',
     textAlign: 'center',
   },

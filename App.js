@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import DrawerNavigator from './src/navigation/DrawerNavigator';
+import {Provider} from 'react-redux';
+import {store} from './src/redux/store';
 
 const {width} = Dimensions.get('window');
 
@@ -30,7 +32,11 @@ const App = () => {
   }, []);
 
   if (isConnected) {
-    return <DrawerNavigator />;
+    return (
+      <Provider store={store}>
+        <DrawerNavigator />;
+      </Provider>
+    );
   }
 
   return (

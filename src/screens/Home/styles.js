@@ -1,9 +1,230 @@
-import {Dimensions, StyleSheet} from 'react-native';
+import {Dimensions, Platform, StyleSheet} from 'react-native';
 const {width} = Dimensions.get('window');
-
+const CARD_MARGIN = 16;
+const cardWidth = (width - CARD_MARGIN * 3) / 2;
 
 const styles = StyleSheet.create({
+  listContainerD: {
+    padding: 10,
+  },
+  cardD: {
+    width: 200,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginRight: 15,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: {width: 0, height: 2},
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cardM: {
+    width: 200,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginRight: 0,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: {width: 0, height: 2},
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  imageContainerD: {
+    position: 'relative',
+    backgroundColor: '#f4f4f4',
+  },
+  imageD: {
+    width: '100%',
+    height: 250,
+    resizeMode: 'stretch',
+  },
+  imageM: {
+    width: '90%',
+    height: 200,
+    resizeMode: 'stretch',
+  },
+  refurbishedLabelD: {
+    position: 'absolute',
+    alignSelf: 'center',
+    fontSize: 12,
+    color: '#000',
+    backgroundColor: '#EAE6E5',
+    width: '98%',
+    textAlign: 'center',
+    padding: 5,
+  },
+  heartIconD: {
+    position: 'absolute',
+    top: 25,
+    right: 6,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 5,
+    elevation: 2,
+  },
+  badge: {
+    position: 'absolute',
+    left: -8,
+    top: 10,
+    backgroundColor: '#FF3C3C',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  badgeTextD: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  gradeBoxD: {
+    paddingVertical: 2,
+    position: 'absolute',
+    marginTop: 225,
+    alignSelf: 'center',
+    backgroundColor: '#fff',
+    width: '92%',
+    borderRadius: 10,
+    borderWidth: 0.2,
+  },
+  gradeTextD: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#555',
+    textAlign: 'center',
+  },
+  productNameD: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginTop: 6,
+    marginHorizontal: 10,
+    color: '#000',
+  },
+  colorTextD: {
+    fontSize: 13,
+    color: '#000',
+    marginHorizontal: 10,
+    marginTop: 2,
+  },
+  priceRowD: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 10,
+    marginTop: 4,
+    marginBottom: 10,
+  },
+  priceD: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#000',
+    marginRight: 6,
+  },
+  originalPriceD: {
+    fontSize: 13,
+    color: '#888',
+    textDecorationLine: 'line-through',
+  },
+  leftContainer: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  heading: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+    marginBottom: 6,
+  },
+  subheading: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#333',
+    marginBottom: 8,
+  },
+  description: {
+    fontSize: 16,
+    color: '#7E7E7E',
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: '#EAE8E8',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    alignSelf: 'flex-start',
+  },
+  buttonText: {
+    fontSize: 16,
+    color: '#000',
+    fontWeight: '600',
+  },
+  imageG: {
+    width: width * 0.3,
+    height: width * 0.3,
+  },
+
   container: {flex: 1, backgroundColor: 'white'},
+
+  swiper: {
+    height: 220,
+  },
+  card_Top: {
+    width: width - 15,
+    marginHorizontal: 20,
+    height: 200,
+    borderRadius: 16,
+    overflow: 'hidden',
+    alignSelf: 'center',
+  },
+  image: {
+    resizeMode: 'stretch',
+    borderRadius: 16,
+  },
+  textContainer: {
+    flex: 1,
+  },
+  titleT: {
+    fontSize: 12,
+    color: '#fff',
+    marginTop: 5,
+    width: '50%',
+  },
+  subtitleT: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: '600',
+    marginBottom: 5,
+    width: '40%',
+  },
+
+  dot: {
+    backgroundColor: '#aaa',
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    margin: 3,
+  },
+  activeDot: {
+    backgroundColor: '#fff',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    margin: 3,
+  },
+  badge: {
+    position: 'absolute',
+    bottom: 12,
+    right: 12,
+    backgroundColor: '#ff3e3e',
+    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  badgeText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
 
   headerRow_r: {
     flexDirection: 'row',
@@ -21,7 +242,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Source Serif 4',
   },
   ratingRow_r: {
-    flexDirection:"row",
+    flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     marginBottom: 15,
@@ -59,7 +280,7 @@ const styles = StyleSheet.create({
   message_r: {
     color: '#11A5D7',
     marginVertical: 5,
-    fontWeight:"regular",
+    fontWeight: 'regular',
   },
   userInfo_r: {
     flexDirection: 'row',
@@ -76,6 +297,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 5,
+    backgroundColor: '#1C9C48',
   },
   logo: {width: 80, height: 58},
   hero: {height: 400, marginBottom: 50},
@@ -222,14 +444,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   quantityButton: {
-    padding: 6,
+    padding: 5,
     backgroundColor: '#fff',
     borderWidth: 2,
     borderColor: '#1C9C48',
     borderRadius: 4,
   },
   quantityBox: {
-    width: 90,
+    width: 80,
     height: 32,
     marginHorizontal: 6,
     backgroundColor: '#1C9C48',
@@ -315,7 +537,7 @@ const styles = StyleSheet.create({
     height: 220,
   },
   offerList: {
-    marginTop: 20,
+    marginTop: 10,
     gap: 0,
   },
   offerCard: {
@@ -371,6 +593,256 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
+  timerWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginHorizontal: 10,
+  },
+  timeContainer: {
+    alignItems: 'center',
+  },
+  timeBox: {
+    backgroundColor: '#E6F5EA',
+    paddingVertical: 20,
+    paddingHorizontal: 25,
+    borderRadius: 12,
+    marginBottom: 5,
+  },
+  timeValue: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  timeLabel: {
+    fontSize: 14,
+    color: '#000',
+    fontWeight: '500',
+  },
+  card_bulk: {
+    width: width,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  cardContent_bulk: {
+    backgroundColor: '#eee',
+    borderRadius: 16,
+    padding: 20,
+    flex: 1,
+    marginRight: 10,
+  },
+  tag_bulk: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 5,
+  },
+  title_bulk: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#111',
+    marginBottom: 4,
+  },
+  subtitle_bulk: {
+    fontSize: 14,
+    color: '#444',
+  },
+  iconBtn_bulk: {
+    width: 50,
+    height: 50,
+    backgroundColor: '#222',
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dotsContainer_bulk: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 15,
+  },
+  dot_bulk: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#00AEEF',
+    marginHorizontal: 5,
+  },
+  activeDot_bulk: {
+    backgroundColor: '#00AEEF',
+  },
+
+  cardDO: {
+    width: width * 0.9,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    alignSelf: 'center',
+    marginVertical: 10,
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 4},
+        shadowOpacity: 0.12,
+        shadowRadius: 8,
+        borderWidth: 0.2,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+
+  imageDO: {
+    width: '100%',
+    height: 180,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  contentDO: {
+    padding: 16,
+  },
+  titleDO: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#222',
+    marginBottom: 6,
+  },
+  subtitleDO: {
+    fontSize: 15,
+    color: '#666',
+    marginBottom: 20,
+    lineHeight: 22,
+  },
+  buttonDO: {
+    backgroundColor: '#03A9F4',
+    borderRadius: 30,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignSelf: 'flex-start',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#03A9F4',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  buttonTextDO: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+
+  gridSD: {
+    paddingHorizontal: CARD_MARGIN,
+    paddingTop: 20,
+    paddingBottom: 0,
+  },
+  rowSD: {
+    justifyContent: 'space-between',
+    marginBottom: CARD_MARGIN,
+  },
+  cardSD: {
+    width: cardWidth,
+    backgroundColor: '#F3F3F3',
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 0,
+  },
+  iconCircleSD: {
+    backgroundColor: '#23A455',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  cardTitleSD: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#111',
+    marginBottom: 6,
+  },
+  cardDescriptionSD: {
+    fontSize: 13,
+    color: '#666',
+    lineHeight: 18,
+  },
+
+  containerSUPPORT_CARDS: {
+    paddingHorizontal: 0,
+    paddingTop: 12,
+    paddingBottom: 24,
+  },
+  cardSUPPORT_CARDS: {
+    backgroundColor: '#ECE9E8', // soft gray from screenshot
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+  },
+  iconCircleSUPPORT_CARDS: {
+    backgroundColor: '#23A455',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  cardTitleSUPPORT_CARDS: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#111',
+    marginBottom: 6,
+  },
+  cardDescriptionSUPPORT_CARDS: {
+    fontSize: 13,
+    color: '#666',
+    lineHeight: 18,
+  },
+
+  categoryCard: {
+    alignItems: 'center',
+    marginRight: 12,
+    marginHorizontal: 15,
+    marginTop:10,
+  },
+  categoryImage: {
+    width: 70,
+    height: 70,
+    resizeMode: 'contain',
+  },
+  categoryText: {
+    marginTop: 6,
+    fontSize: 12,
+    color: '#222',
+  },
+  banner: {
+    width: '100%',
+    height: 200,
+    justifyContent: 'flex-end',
+  },
+  bannerOverlay: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+  },
+  bannerText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+  },
 });
 
 const stylesSupport = StyleSheet.create({
@@ -421,4 +893,4 @@ const stylesSupport = StyleSheet.create({
   },
 });
 
-export { styles, stylesSupport };
+export {styles, stylesSupport};

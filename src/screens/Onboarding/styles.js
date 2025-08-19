@@ -1,101 +1,105 @@
-import { Dimensions, StyleSheet } from 'react-native';
-import { scale } from 'react-native-size-matters';
-const {width} = Dimensions.get('window');
+import { Dimensions, Platform, StyleSheet } from "react-native";
 
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#3b7a3e',
   },
   slide: {
     width,
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
     flex: 1,
-    marginVertical: scale(50),
   },
   image: {
-    width: '100%',
-    height: scale(350),
-    marginTop: 30,
-    marginBottom: 20,
+    width: width * 0.9,
+    height: height * 0.5,
+    marginTop: Platform.OS === 'ios' ? 30 : 40,
   },
   textContainer: {
     width: '100%',
-    backgroundColor: '#fff',
-    padding: 30,
+    backgroundColor: '#e6f2ec',
+    padding: width * 0.06,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    minHeight: 280,
+    minHeight: height * 0.35,
   },
   title: {
-    fontSize: 48,
+    fontSize: width * 0.08,
     fontWeight: 'bold',
     color: '#1c1c1c',
-    fontFamily: 'Inter', // Optional
-    width: '90%',
+    marginTop: 5,
+    fontFamily: 'SourceSerif4',
   },
   subtitle: {
-    fontSize: 17,
-    color: '#171D1C',
-    fontWeight: 'semibold',
-    fontFamily: 'Source Serif 4', // Optional
-  },
-  subtitle2: {
-    fontSize: 24,
-    color: '#171D1C',
-    marginTop: 0,
-    fontWeight: 'bold',
+    fontSize: width * 0.045,
+    color: '#333',
+    fontWeight: '600',
+    marginTop: 5,
+    fontFamily: 'SourceSerif4',
   },
   buttonRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 30,
-    marginTop: 30,
+    marginTop: height * 0.04,
+    gap: width * 0.12,
     flexWrap: 'wrap',
   },
   skipButton: {
     borderColor: '#3b7a3e',
     borderWidth: 2,
     borderRadius: 10,
-    paddingVertical: 15,
-    paddingHorizontal: 50,
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    minWidth: width * 0.35,
   },
   skipText: {
     color: '#3b7a3e',
     fontWeight: '600',
     textAlign: 'center',
   },
-  primaryButton: {
+  nextButton: {
     backgroundColor: '#3b7a3e',
     borderRadius: 10,
-    paddingVertical: 15,
-    paddingHorizontal: 35,
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    minWidth: width * 0.35,
   },
-  primaryText: {
+  nextText: {
+    color: '#fff',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  nextButton1: {
+    backgroundColor: '#3b7a3e',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    minWidth: width * 0.35,
+  },
+  nextText1: {
     color: '#fff',
     fontWeight: '600',
     textAlign: 'center',
   },
   pagination: {
+    position: 'absolute',
+    bottom: height * 0.42,
     flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 25,
+    alignSelf: 'center',
   },
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
     backgroundColor: '#ccc',
-    marginHorizontal: 4,
+    marginHorizontal: 5,
   },
   activeDot: {
-    backgroundColor: '#3b7a3e',
+    backgroundColor: '#fff',
     width: 10,
     height: 10,
   },
 });
-
-export default styles;
+export default styles

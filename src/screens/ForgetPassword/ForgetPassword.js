@@ -5,16 +5,21 @@ import {
   TextInput,
   TouchableOpacity,
   SafeAreaView,
+  useColorScheme,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {styles_forgetpassword} from './styles';
 
 const ForgotPasswordScreen = ({navigation}) => {
-  const [email, setEmail] = useState('');
+  const [emailforget, setEmail] = useState('');
   const [selectedOption, accountType] = useState('individual');
+  const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
 
-  useEffect(() => {
+  // ✅ Validation logic reused
+  const validateInputs = (email = emailforget) => {
     const newErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^[0-9]{10}$/;
@@ -29,9 +34,23 @@ const ForgotPasswordScreen = ({navigation}) => {
     }
 
     setErrors(newErrors);
-  }, [email]);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // ✅ Real-time validation if form was submitted
+  useEffect(() => {
+    if (submitted) {
+      validateInputs();
+    }
+  }, [emailforget]);
+
+
 
   const handleSendCode = () => {
+    setSubmitted(true);
+    const isValid = validateInputs();
+
+    if (!isValid) return;
     if (Object.keys(errors).length === 0) {
       navigation.navigate('ForgetOTP');
     }
@@ -61,9 +80,9 @@ const ForgotPasswordScreen = ({navigation}) => {
             errors.email && {borderColor: 'red'},
           ]}
           placeholder="Enter your email address"
-          placeholderTextColor="#999"
+          placeholderTextColor={isDarkMode ? '#aaa' : '#666'}
           keyboardType="email-address"
-          value={email}
+          value={emailforget}
           onChangeText={setEmail}
         />
         {errors.email && (

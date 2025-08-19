@@ -79,7 +79,12 @@ const WarrantyTrackingScreen = ({navigation}) => {
           style={styles.backButton}>
           <Ionicons name="chevron-back" size={22} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Warranty Tracking </Text>
+        <View>
+          <Text style={styles.headerTitle}>Warranty Tracking</Text>
+        </View>
+        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+          <Ionicons name="search" size={24} color="#333" />
+        </TouchableOpacity>
       </View>
 
       <Text style={styles.sectionTitle}>Purchased Products</Text>
@@ -109,13 +114,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: 16,
   },
-  title: {
-    fontSize: 20,
-    fontWeight: '600',
-    alignSelf: 'center',
-    marginBottom: 10,
+ header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    justifyContent: 'space-between',
+    marginHorizontal: 10,
+  },
+  backButton: {
+    backgroundColor: '#f5f5f5',
+    borderRadius: 20,
+    padding: 6,
+    left: 0,
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#000',
+    textAlign: 'center',
   },
   sectionTitle: {
     fontSize: 16,
@@ -185,32 +202,5 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: 'medium',
     fontFamily: 'Source Serif 4',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    borderColor: '#ccc',
-    position: 'relative',
-    height: 50, // optional, to help with alignment
-  },
-  backButton: {
-    position: 'absolute', // ADD THIS
-    left: 15,
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 6,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: {width: 0, height: 2},
-    shadowRadius: 2,
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: 'medium', // change 'medium' to a valid value
-    color: '#000',
-    textAlign: 'center',
   },
 });

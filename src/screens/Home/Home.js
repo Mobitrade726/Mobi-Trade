@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useCallback, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -7,131 +7,22 @@ import {
   TouchableOpacity,
   ImageBackground,
   ScrollView,
-  TextInput,
   FlatList,
   Dimensions,
+  BackHandler,
+  Alert,
+  StatusBar,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import Carousel from 'react-native-reanimated-carousel';
-import MaskedView from '@react-native-masked-view/masked-view';
-import {styles, stylesSupport} from '../Home/styles';
-
-const reviews = [
-  {
-    id: '1',
-    title: 'Great Service!',
-    message: 'I had a wonderful experience with Mobitrade.',
-    name: 'Aurelia Nightshade',
-    date: '2 days ago',
-    rating: 5,
-  },
-  {
-    id: '2',
-    title: 'Outstanding Experience!',
-    message:
-      'I had an exceptional interaction with Mobitrade, their support team was incredibly responsive.',
-    name: 'Jasper Greenfield',
-    date: '1 day ago',
-    rating: 5,
-  },
-  {
-    id: '3',
-    title: 'Exceptional Support!',
-    message: 'The team was extremely helpful and resolved my issues quickly.',
-    name: "Liam O'Reilly",
-    date: '1 week ago',
-    rating: 4,
-  },
-];
-
-const RatingStars = ({rating}) => (
-  <View style={{flexDirection: 'row', alignItems: 'center'}}>
-    {[...Array(5)].map((_, i) => (
-      <Ionicons
-        key={i}
-        name={i < rating ? 'star' : 'star-outline'}
-        size={24}
-        color="#22c55e"
-      />
-    ))}
-  </View>
-);
-
-const TestimonialCard = ({item}) => {
-  const cardBackground = item.id === '3' ? '#fff' : '#ecfeff';
-
-  return (
-    <View style={[styles.card_r, {backgroundColor: cardBackground}]}>
-      <View style={styles.cardHeader_r}>
-        <Text style={styles.cardTitle_r}>{item.title}</Text>
-        <Text style={styles.ratingText_r}>⭐ {item.rating} stars</Text>
-      </View>
-      <Text style={styles.message_r}>{item.message}</Text>
-      <View style={styles.userInfo_r}>
-        <Ionicons name="person-circle-outline" size={18} />
-        <Text style={styles.userText_r}>{`${item.name} • ${item.date}`}</Text>
-      </View>
-    </View>
-  );
-};
-
-const TestimonialSection = () => (
-  <View style={{padding: 15}}>
-    <View style={styles.headerRow_r}>
-      <Text style={styles.header_r}>What Our Users Say</Text>
-      <Text style={styles.link_r}>See All Reviews</Text>
-    </View>
-    <View style={styles.ratingRow_r}>
-      <Text style={styles.rating_r}>4.0</Text>
-      <View>
-        <RatingStars rating={4} />
-        <Text style={styles.totalReviews_r}>1,234</Text>
-      </View>
-    </View>
-
-    <FlatList
-      data={reviews}
-      keyExtractor={item => item.id}
-      renderItem={({item}) => <TestimonialCard item={item} />}
-    />
-  </View>
-);
-
-const SupportMenu = () => {
-  const [open, setOpen] = useState(false);
-
-  const menuItems = [
-    'Help and Support',
-    'Chat Support',
-    'Explore',
-    'View Wallet',
-    'View Orders',
-  ];
-
-  return (
-    <View style={stylesSupport.container}>
-      {open && (
-        <View style={stylesSupport.menu}>
-          {menuItems.map((item, index) => (
-            <Text key={index} style={stylesSupport.menuItem}>
-              {item}
-            </Text>
-          ))}
-        </View>
-      )}
-
-      <TouchableOpacity
-        onPress={() => setOpen(!open)}
-        style={stylesSupport.floatingButton}>
-        <Ionicons name="chatbubble-ellipses-outline" size={30} color="#fff" />
-        <View style={stylesSupport.badge}>
-          <Text style={stylesSupport.badgeText}>16</Text>
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
-};
+import Swiper from 'react-native-swiper';
+import {styles} from '../Home/styles';
+import Icon from 'react-native-vector-icons/Feather'; // or use MaterialIcons, etc.
+import {useFocusEffect} from '@react-navigation/native';
+import {Item} from 'react-native-paper/lib/typescript/components/Drawer/Drawer';
 
 const {width} = Dimensions.get('window');
 
@@ -141,246 +32,222 @@ const phoneImages = [
   'https://i.postimg.cc/Hn1SKj4F/realistic-detailed-3d-mobile-phone-big-sale-banner-concept-ad-poster-card-vector.png',
 ];
 
-const offers = [
+const carouselData = [
   {
-    id: '1',
-    title: 'Summer Sale',
-    subtitle: 'Up to 50% off',
+    id: 1,
+    image: 'https://i.postimg.cc/9MMJdTFM/Frame-90.png',
+    title: 'Get the finest in Smartphones & Laptops, pre-owned & certified.',
+    subtitle: 'Best from Your Favourite Brand ',
+    titleColor: '#fff',
+    subtitleColor: '#fff',
+    subtitleMarginTop: 80,
+    marginLeft: 40,
   },
   {
-    id: '2',
-    title: 'Exclusive Deals',
-    subtitle: 'Members only',
+    id: 2,
+    image: 'https://i.postimg.cc/DyqHyrWk/Content-1.png',
+    title: 'Extra 5% Off"',
+    subtitle: '"On All Prepaid Orders',
+    titleColor: '#666666',
+    subtitleColor: '#333333',
+    subtitleMarginTop: 100,
+    marginLeft: 40,
+    fontSize: 25,
+    fontWeight: 'bold',
   },
   {
-    id: '3',
-    title: 'HR Deals',
-    subtitle: 'Members',
+    id: 3,
+    image: 'https://i.postimg.cc/ZKhsgWwf/Frame-36799-1.png',
+    title: 'Hurry!\nFree Delivery',
+    subtitle: 'On Every Order — No Minimum Spend',
+    titleColor: '#000',
+    subtitleColor: '#666666',
+    subtitleMarginTop: 10,
+    titlewidth: '40%',
+    marginLeft: 10,
+    titleMarginLeft: 250, // 👈 only here
+    titleMarginTop: 100, // 👈 only here
+    titleFontSize: 20, // 👈 only here
   },
 ];
 
+const offers = [
+  {id: '1', image: 'https://i.postimg.cc/sxhk6FPT/Img-Placeholder.png'},
+  {id: '2', image: 'https://i.postimg.cc/bJ2V8xGJ/Img-Placeholder-2.png'},
+  {id: '3', image: 'https://i.postimg.cc/rFh1ndmY/Img-Placeholder-3.png'},
+  {id: '4', image: 'https://i.postimg.cc/kXx4GLrN/Img-Placeholder-4.png'},
+  {id: '5', image: 'https://i.postimg.cc/sxhk6FPT/Img-Placeholder.png'},
+  {id: '6', image: 'https://i.postimg.cc/bJ2V8xGJ/Img-Placeholder-2.png'},
+  {id: '7', image: 'https://i.postimg.cc/rFh1ndmY/Img-Placeholder-3.png'},
+  {id: '8', image: 'https://i.postimg.cc/kXx4GLrN/Img-Placeholder-4.png'},
+];
+
 const HomeScreen = ({navigation}) => {
-  // Categories, products, etc.
-  const Categories = [
-    {id: '1', title: 'Buy Now', desc: 'Latest Laptops'},
-    {id: '2', title: 'Trending', desc: 'Smartphones'},
-    {id: '3', title: 'Offers', desc: 'Accessories'},
-    {id: '4', title: 'New Arrivals', desc: 'Tablets'},
-  ];
-
-  const CATEGORIES = ['New Arrivals', 'Mobile', 'Laptop', 'Macbook'];
-
-  const [searchText, setSearchText] = useState('');
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [searchIcon, setSearchIcon] = useState('phone-portrait-outline');
-
-  const categories = [
-    {name: 'Smartphones', icon: 'phone-portrait-outline'},
-    {name: 'Windows pc', icon: 'laptop-outline'},
-    {name: 'Macbook', icon: 'laptop-outline'},
-    {name: 'Accessories', icon: 'watch-outline'},
-  ];
-
-  const CATEGORIES_GRADE = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7'];
-
-  const mobileData = [
-    {id: '1', name: 'Galaxy Z Fold 5', price: '₹1,49,999', image: ''},
-    {id: '2', name: 'Xiaomi 13 Pro', price: '₹99,999', image: ''},
-  ];
-  const mobileData_Grade = [
+  const products = [
     {
       id: '1',
-      name: 'Redmi 13 5G',
-      image: 'https://i.postimg.cc/VL2jJkfS/81-Q9jp-YOFd-L-2x.png',
+      image:
+        'https://i.postimg.cc/LXhJrGfL/Whats-App-Image-2025-07-11-at-3-38-17-PM.jpg',
+      name: 'Samsung Galaxy S21',
+      color: 'Black',
+      price: '₹20,999',
+      originalPrice: '₹24,999',
+      grade: 'A1',
+      refurbished: true,
     },
     {
       id: '2',
-      name: 'Redmi 13 5G',
-      image: 'https://i.postimg.cc/VL2jJkfS/81-Q9jp-YOFd-L-2x.png',
+      image:
+        'https://i.postimg.cc/jjxvm6XP/Whats-App-Image-2025-07-11-at-3-38-17-PM-1.jpg',
+      name: 'Apple iPhone 13',
+      color: 'Midnight',
+      price: '₹69,900',
+      originalPrice: '₹79,900',
+      grade: 'A1',
+      refurbished: true,
     },
     {
       id: '3',
-      name: 'Redmi 13 5G',
-      image: 'https://i.postimg.cc/VL2jJkfS/81-Q9jp-YOFd-L-2x.png',
+      image:
+        'https://i.postimg.cc/x1R3vJ2C/Whats-App-Image-2025-07-11-at-3-38-17-PM-2.jpg',
+      name: 'OnePlus 9',
+      color: 'Winter Mist',
+      price: '₹44,999',
+      originalPrice: '₹49,999',
+      grade: 'A1',
+      refurbished: true,
+    },
+  ];
+  const flashsale = [
+    {
+      id: '1',
+      image:
+        'https://i.postimg.cc/tJ86hcpd/Whats-App-Image-2025-07-11-at-5-45-27-PM.jpg',
+      name: 'Samsung Galaxy S21',
+      color: 'Black',
+      price: '₹20,999',
+      originalPrice: '₹24,999',
+      grade: 'A1',
+      refurbished: true,
     },
     {
-      id: '4',
-      name: 'Redmi 13 5G',
-      image: 'https://i.postimg.cc/VL2jJkfS/81-Q9jp-YOFd-L-2x.png',
+      id: '2',
+      image:
+        'https://i.postimg.cc/FR7g3304/Whats-App-Image-2025-07-11-at-5-45-27-PM-1.jpg',
+      name: 'Apple iPhone 13',
+      color: 'Midnight',
+      price: '₹69,900',
+      originalPrice: '₹79,900',
+      grade: 'A1',
+      refurbished: true,
+    },
+    {
+      id: '3',
+      image:
+        'https://i.postimg.cc/7Yg13xJf/Whats-App-Image-2025-07-11-at-5-45-27-PM-2.jpg',
+      name: 'OnePlus 9',
+      color: 'Winter Mist',
+      price: '₹44,999',
+      originalPrice: '₹49,999',
+      grade: 'A1',
+      refurbished: true,
+    },
+  ];
+  const recentlyView = [
+    {
+      id: '1',
+      image:
+        'https://i.postimg.cc/FR7g3304/Whats-App-Image-2025-07-11-at-5-45-27-PM-1.jpg',
+      name: 'Samsung Galaxy S21',
+      color: 'Black',
+      price: '₹20,999',
+      originalPrice: '₹24,999',
+      grade: 'A1',
+      refurbished: true,
+    },
+    {
+      id: '2',
+      image:
+        'https://i.postimg.cc/FR7g3304/Whats-App-Image-2025-07-11-at-5-45-27-PM-1.jpg',
+      name: 'Apple iPhone 13',
+      color: 'Midnight',
+      price: '₹69,900',
+      originalPrice: '₹79,900',
+      grade: 'A1',
+      refurbished: true,
+    },
+    {
+      id: '3',
+      image:
+        'https://i.postimg.cc/FR7g3304/Whats-App-Image-2025-07-11-at-5-45-27-PM-1.jpg',
+      name: 'OnePlus 9',
+      color: 'Winter Mist',
+      price: '₹44,999',
+      originalPrice: '₹49,999',
+      grade: 'A1',
+      refurbished: true,
     },
   ];
 
-  const featuredProducts = [
-    {id: '1', name: 'Apple iPhone 14', storage: '128GB', price: '₹30,799'},
-    {id: '2', name: 'Samsung Galaxy S23', storage: '256GB', price: '₹30,799'},
-    {id: '3', name: 'Google Pixel 7', storage: '128GB', price: '₹30,799'},
-    {id: '4', name: 'OnePlus 11', storage: '256GB', price: '₹30,799'},
-    {id: '5', name: 'Microsoft Pro 9', storage: '512GB', price: '₹30,799'},
-    {id: '6', name: 'Microsoft Pro 10', storage: '512GB', price: '₹30,799'},
-  ];
-
-  const [activeTab, setActiveTab] = useState('Mobile');
-  const [quantities, setQuantities] = useState(
-    Object.fromEntries(featuredProducts.map(item => [item.id, 1])),
-  );
-
-  const increment = id => {
-    setQuantities(prev => ({...prev, [id]: prev[id] + 1}));
-  };
-
-  const decrement = id => {
-    setQuantities(prev => ({
-      ...prev,
-      [id]: prev[id] > 1 ? prev[id] - 1 : 1,
-    }));
-  };
-
-  // Categories
-  const renderCategory = ({item}) => (
-    <>
-      <View style={{marginBottom: 10}}>
-        <View style={styles.card}>
-          <Text style={styles.imageIcon}>🖼️</Text>
-        </View>
-        <View style={{marginHorizontal: 10}}>
-          <View style={{flexDirection: 'row'}}>
-            <Text
-              style={{
-                fontWeight: 'bold',
-                fontSize: 15,
-                fontFamily: 'Source Serif 4',
-                marginBottom: 2,
-                marginTop: 5,
-              }}>
-              {item?.title}
-            </Text>
-          </View>
-          <Text
-            style={{
-              fontWeight: 'regular',
-              fontSize: 13,
-              fontFamily: 'Source Serif 4',
-            }}>
-            {item?.desc}
-          </Text>
-        </View>
-      </View>
-    </>
-  );
-
-  // Tabs
-  const renderTabs = () => (
-    <View style={styles.tabContainer}>
-      {CATEGORIES.map(category => (
-        <TouchableOpacity key={category} onPress={() => setActiveTab(category)}>
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === category && styles.activeTabText,
-            ]}>
-            {category}
-          </Text>
+  const ProductCard = ({item}) => (
+    <View style={styles.cardD}>
+      <View style={styles.imageContainerD}>
+        <TouchableOpacity onPress={() => navigation.navigate('ProductList')}>
+          <Image source={{uri: item.image}} style={styles.imageD} />
+          {item.refurbished && (
+            <Text style={styles.refurbishedLabelD}>(Refurbished)</Text>
+          )}
         </TouchableOpacity>
-      ))}
+        <TouchableOpacity style={styles.heartIconD}>
+          <Ionicons name="heart-outline" size={20} color="#333" />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.gradeBoxD}>
+        <Text style={styles.gradeTextD}>Grade {item.grade}</Text>
+      </View>
+      <Text style={styles.productNameD}>{item.name}</Text>
+      <Text style={styles.colorTextD}>● {item.color}</Text>
+      <View style={styles.priceRowD}>
+        <Text style={styles.priceD}>{item.price}</Text>
+        <Text style={styles.originalPriceD}>{item.originalPrice}</Text>
+      </View>
     </View>
   );
-  //Grade Tabs
-  const renderTabs_Grade = () => (
-    <View style={styles.tabContainer}>
-      {CATEGORIES_GRADE.map(category => (
-        <TouchableOpacity key={category} onPress={() => setActiveTab(category)}>
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === category && styles.activeTabText,
-            ]}>
-            {category}
-          </Text>
+  const RecentlyView = ({item}) => (
+    <View style={styles.cardD}>
+      <View style={styles.imageContainerD}>
+        <Image source={{uri: item.image}} style={styles.imageD} />
+        {item.refurbished && (
+          <Text style={styles.refurbishedLabelD}>(Refurbished)</Text>
+        )}
+        <TouchableOpacity style={styles.heartIconD}>
+          <Ionicons name="heart-outline" size={20} color="#333" />
         </TouchableOpacity>
-      ))}
-    </View>
-  );
-
-  // Product Card
-  const renderProduct = ({item}) => (
-    <View style={{marginBottom: 10, marginTop: 15}}>
-      <View style={styles.card}>
-        <Text style={styles.imageIcon}>🖼️</Text>
       </View>
-      <View style={{marginHorizontal: 10}}>
-        <View style={{flexDirection: 'row'}}>
-          <Text
-            style={{
-              fontWeight: 'bold',
-              fontSize: 15,
-              fontFamily: 'Source Serif 4',
-              marginBottom: 2,
-              marginTop: 5,
-            }}>
-            {item?.name}
-          </Text>
-        </View>
-        <Text
-          style={{
-            fontWeight: 'regular',
-            fontSize: 13,
-            fontFamily: 'Source Serif 4',
-          }}>
-          {item?.price}
-        </Text>
+      <View style={styles.gradeBoxD}>
+        <Text style={styles.gradeTextD}>Grade {item.grade}</Text>
+      </View>
+      <Text style={styles.productNameD}>{item.name}</Text>
+      <Text style={styles.colorTextD}>● {item.color}</Text>
+      <View style={styles.priceRowD}>
+        <Text style={styles.priceD}>{item.price}</Text>
+        <Text style={styles.originalPriceD}>{item.originalPrice}</Text>
       </View>
     </View>
   );
 
-  // Featured Product Card
-  const renderProductFeature = ({item}) => (
-    <View style={styles.productCard}>
-      <View style={styles.imagePlaceholder}>
-        <Text style={styles.imageIcon}>🖼️</Text>
-      </View>
-      <Text style={styles.productName}>{item.name}</Text>
-      <Text style={styles.storage}>{item.storage}</Text>
-      <Text style={styles.productPrice}>{item.price}</Text>
-
-      {/* Quantity Selector */}
-      <View style={styles.quantityContainer}>
-        <TouchableOpacity
-          style={styles.quantityButton}
-          onPress={() => decrement(item.id)}>
-          <Text style={styles.quantityText}>−</Text>
-        </TouchableOpacity>
-        <View style={styles.quantityBox}>
-          <Text style={styles.quantityNumber}>{quantities[item.id]}</Text>
-        </View>
-        <TouchableOpacity
-          style={styles.quantityButton}
-          onPress={() => increment(item.id)}>
-          <Text style={styles.quantityText}>＋</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Buy Now Button */}
-      <TouchableOpacity style={styles.buyButton}>
-        <Text style={styles.buyButtonText}>Buy Now</Text>
-      </TouchableOpacity>
+  const ProductMobile = ({item}) => (
+    <View style={styles.cardM}>
+      <Image source={{uri: item.image}} style={styles.imageM} />
+      <Text style={styles.productNameD}>{item.name}</Text>
+      <Text style={styles.colorTextD}>{item.subname}</Text>
     </View>
   );
-
-  const renderProduct_Grade = ({item}) => (
-    <View style={styles.cardWrapper_g}>
-      <View style={styles.card_g}>
-        <ImageBackground
-          source={{uri: item.image}}
-          style={styles.imageBackground_g}
-          imageStyle={{borderTopLeftRadius: 20, borderTopRightRadius: 20}}
-          resizeMode="stretch">
-          <LinearGradient
-            colors={['#d2f7d1', '#22c55e']}
-            style={styles.gradientBox_g}>
-            <Text style={styles.productName_g}>{item.name}</Text>
-          </LinearGradient>
-        </ImageBackground>
-      </View>
+  const ProductLaptop = ({item}) => (
+    <View style={styles.cardM}>
+      <Image source={{uri: item.image}} style={styles.imageM} />
+      <Text style={styles.productNameD}>{item.name}</Text>
+      <Text style={styles.colorTextD}>{item.subname}</Text>
     </View>
   );
 
@@ -397,268 +264,316 @@ const HomeScreen = ({navigation}) => {
 
   const renderOfferItem = ({item}) => (
     <ImageBackground
-      source={{uri: 'https://i.postimg.cc/j2TZPRYT/whiteimage.jpg'}} // Background image
+      source={{uri: item.image}}
       style={styles.offerCard}
-      imageStyle={styles.offerImageBackground}>
-      <Text style={styles.offerTitle}>{item.title}</Text>
-      <Text style={styles.offerSubtitle}>{item.subtitle}</Text>
-    </ImageBackground>
+      imageStyle={styles.image}
+    />
   );
 
-  return (
-    <SafeAreaView style={styles.container}>
-      {/* Header Section */}
-      <View style={styles.header}>
-        {/* Menu icon */}
-        <TouchableOpacity
-          onPress={() => navigation.openDrawer()}
-          style={styles.avatar}>
-          <Ionicons name="menu-outline" size={30} color="#42A5D5" />
-        </TouchableOpacity>
+  const timer = {
+    days: 2,
+    hours: 12,
+    minutes: 34,
+    seconds: 56,
+  };
 
-        {/* Company logo */}
-        <Image
-          source={require('../../../assets/images/Logo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-
-        {/* Profile icon */}
-        <Ionicons name="person-circle" size={40} color="#42A5D5" />
+  const renderBox = (value, label) => (
+    <View style={styles.timeContainer}>
+      <View style={styles.timeBox}>
+        <Text style={styles.timeValue}>{value}</Text>
       </View>
+      <Text style={styles.timeLabel}>{label}</Text>
+    </View>
+  );
 
-      {/* Scrollable content starts here */}
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollView}>
-        {/* Hero Section */}
-        <ImageBackground
-          source={require('../../../assets/images/homeboard.png')}
-          style={styles.hero}>
-          <View style={{margin: 15}}>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                borderWidth: 2,
-                borderColor: 'green',
-                borderRadius: 12,
-                paddingHorizontal: 10,
-                backgroundColor: '#fff',
-              }}>
-              {/* 🔄 Icon that changes */}
-              <Ionicons name={searchIcon} size={24} color="#333" />
+  const bulkOffer = [
+    {
+      id: '1',
+      tag: '#brandsweek',
+      title: '50% off',
+      subtitle: 'On all iOS devices',
+    },
+    {
+      id: '2',
+      tag: 'New user deal',
+      title: 'Free shipping & more',
+      subtitle: 'Sign up as business account and get exclusive bulk deals',
+    },
+    {
+      id: '3',
+      tag: '#newin',
+      title: 'NOTE 23',
+      subtitle: 'Samsung new drop',
+    },
+  ];
 
-              <TextInput
-                style={{flex: 1, padding: 10, fontSize: 16}}
-                placeholder="Search devices..."
-                placeholderTextColor="#888"
-                value={searchText}
-                onChangeText={text => {
-                  setSearchText(text);
-                  setShowDropdown(true);
+  const flatListRef = useRef();
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-                  // Dynamically update icon based on match
-                  const match = categories.find(c =>
-                    c.name.toLowerCase().includes(text.toLowerCase()),
-                  );
-                  if (match) {
-                    setSearchIcon(match.icon);
-                  } else {
-                    setSearchIcon('search'); // fallback icon
-                  }
-                }}
-              />
+  const handleScroll = event => {
+    const index = Math.round(event.nativeEvent.contentOffset.x / width);
+    setCurrentIndex(index);
+  };
 
-              <TouchableOpacity onPress={() => {}}>
-                <Ionicons name="mic-outline" size={26} color="#11A5D7" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => {}}>
-                <Ionicons
-                  name="search"
-                  size={26}
-                  color="#11A5D7"
-                  style={{marginLeft: 10}}
-                />
-              </TouchableOpacity>
+  const goToNext = () => {
+    const nextIndex = currentIndex + 1;
+    if (nextIndex < bulkOffer.length) {
+      flatListRef.current?.scrollToIndex({index: nextIndex, animated: true});
+      setCurrentIndex(nextIndex);
+    }
+  };
+
+  const renderItem = ({item}) => (
+    <View style={{width}}>
+      {' '}
+      {/* Full screen width */}
+      <View style={styles.card_bulk}>
+        <View style={styles.cardContent_bulk}>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+            <View>
+              <Text style={styles.tag_bulk}>{item.tag}</Text>
+              <Text style={styles.title_bulk}>{item.title}</Text>
+              <Text style={styles.subtitle_bulk}>{item.subtitle}</Text>
             </View>
-
-            {/* Dropdown suggestions */}
-            {showDropdown && (
-              <View
-                style={{
-                  backgroundColor: '#fff',
-                  borderWidth: 2,
-                  borderColor: 'green',
-                  borderTopWidth: 0,
-                  borderBottomLeftRadius: 12,
-                  borderBottomRightRadius: 12,
-                  paddingVertical: 5,
-                }}>
-                {categories
-                  .filter(item =>
-                    item.name.toLowerCase().includes(searchText.toLowerCase()),
-                  )
-                  .map((item, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      onPress={() => {
-                        setSearchText(item.name);
-                        setSearchIcon(item.icon);
-                        setShowDropdown(false);
-                      }}
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        padding: 10,
-                        paddingLeft: 15,
-                        gap: 10,
-                      }}>
-                      <Ionicons name={item.icon} size={22} color="#333" />
-                      <Text style={{fontSize: 16, color: '#333'}}>
-                        {item.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-              </View>
-            )}
-          </View>
-
-          <View
-            style={{
-              flex: 1,
-              justifyContent: 'center',
-              marginLeft: 15,
-              marginTop: 150,
-            }}>
-            <MaskedView
-              maskElement={
-                <Text
-                  style={[styles.subtitle, {backgroundColor: 'transparent'}]}>
-                  Explore the latest in tech
-                </Text>
-              }>
-              <LinearGradient
-                colors={['#11A5D7', '#1C9C48']}
-                start={{x: 0, y: 0}}
-                end={{x: 1, y: 0}}>
-                <Text style={[styles.subtitle, {opacity: 0}]}>
-                  Explore the latest in tech
-                </Text>
-              </LinearGradient>
-            </MaskedView>
-            <MaskedView
-              maskElement={
-                <Text style={[styles.title, {backgroundColor: 'transparent'}]}>
-                  Welcome to{'\n'}
-                  Mobi Trade
-                </Text>
-              }>
-              <LinearGradient
-                colors={['#11A5D7', '#1C9C48']}
-                start={{x: 0, y: 0}}
-                end={{x: 1, y: 0}}>
-                <Text style={[styles.title, {opacity: 0}]}>
-                  Welcome to{'\n'}
-                  Mobi Trade
-                </Text>
-              </LinearGradient>
-            </MaskedView>
-            <TouchableOpacity style={styles.shopBtn}>
-              <LinearGradient
-                colors={['#11A5D7', '#1C9C48']}
-                start={{x: 0, y: 0}}
-                end={{x: 1, y: 0}}
-                style={{borderRadius: 16, height: 40}}>
-                <Text style={styles.shopBtnText}>Shop</Text>
-              </LinearGradient>
+            <TouchableOpacity style={styles.iconBtn_bulk} onPress={goToNext}>
+              <Ionicons name="chevron-forward" size={20} color="#fff" />
             </TouchableOpacity>
           </View>
-        </ImageBackground>
-
-        {/* Categories Section */}
-        <FlatList
-          showsHorizontalScrollIndicator={false}
-          data={Categories}
-          renderItem={renderCategory}
-          horizontal
-          keyExtractor={item => item.id}
-          showsVerticalScrollIndicator={false}
-        />
-        {/* Tabs Section */}
-        {renderTabs()}
-        {activeTab === 'Mobile' && (
-          <>
-            <FlatList
-              data={mobileData}
-              renderItem={renderProduct}
-              keyExtractor={item => item.id}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-            />
-            <Text style={styles.seeMore}>See more ...</Text>
-          </>
-        )}
-
-        <ImageBackground
-          style={{
-            height: 200,
-            width: '100%',
-            justifyContent: 'flex-end',
-            alignItems: 'flex-end',
-          }}
-          source={require('../../../assets/images/gradebyimage.png')}>
-          <View style={{alignItems: 'center'}}>
-            <Text style={{fontSize: 22, fontWeight: 'bold', color: '#FFFBFA'}}>
-              Get Products
-            </Text>
-            {/* adding some space manually with margin */}
-            <View style={{width: 40}} />
-            <Text style={{fontSize: 22, fontWeight: 'bold', color: '#FFFBFA'}}>
-              by Grade
-            </Text>
-          </View>
-        </ImageBackground>
-
-        {renderTabs_Grade()}
-        {activeTab === 'A1' && (
-          <>
-            <FlatList
-              data={mobileData_Grade}
-              renderItem={renderProduct_Grade}
-              keyExtractor={item => item.id}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-            />
-          </>
-        )}
-
-        <ImageBackground
-          style={{
-            height: 200,
-            width: '100%',
-            justifyContent: 'flex-end',
-            alignItems: 'flex-end',
-            marginVertical: 10,
-          }}
-          source={require('../../../assets/images/gstrate.png')}></ImageBackground>
-
-        {/* Featured Section */}
-        <View style={{marginHorizontal: 2}}>
-          <View style={styles.header1}>
-            <Text style={styles.title1}>Featured Products</Text>
-            <Text style={styles.arrow1}>&gt;</Text>
-          </View>
-          <FlatList
-            data={featuredProducts}
-            keyExtractor={item => item?.id}
-            renderItem={renderProductFeature}
-            numColumns={2}
-            contentContainerStyle={styles.productList1}
-          />
         </View>
-        {/* Phone Promo Banner Carousel */}
-        <Carousel
+      </View>
+    </View>
+  );
+
+  const mobileBudget = [
+    {
+      id: '1',
+      image:
+        'https://i.postimg.cc/B6HGCYW5/A-sleek-smartphone-with-a-modern-design-resting-on-a-wooden-table-surrounded-by-small-decorative-pla.png',
+      name: 'Under ₹10,000',
+      subname: 'Great for budget buyers',
+    },
+    {
+      id: '2',
+      image:
+        'https://i.postimg.cc/B6HGCYW5/A-sleek-smartphone-with-a-modern-design-resting-on-a-wooden-table-surrounded-by-small-decorative-pla.png',
+      name: '₹20,000 – ₹30,000',
+      subname: 'Ideal for beginners ',
+    },
+    {
+      id: '3',
+      image:
+        'https://i.postimg.cc/B6HGCYW5/A-sleek-smartphone-with-a-modern-design-resting-on-a-wooden-table-surrounded-by-small-decorative-pla.png',
+      name: '₹30,000 – ₹40,000',
+      subname: 'Premium selections ',
+    },
+  ];
+  const LaptopBudget = [
+    {
+      id: '1',
+      image:
+        'https://i.postimg.cc/T3pKjD0d/A-sleek-modern-chair-with-a-minimalist-design-placed-in-a-well-lit-room-with-elegant-decor.png',
+      name: 'Under ₹20,000',
+      subname: 'Ideal for savvy students',
+    },
+    {
+      id: '2',
+      image:
+        'https://i.postimg.cc/nrFzXjMt/A-sleek-smartphone-with-a-modern-design-resting-on-a-wooden-table-surrounded-by-small-decorative-pla.png',
+      name: '₹30,000 – ₹40,000',
+      subname: 'Premium selections ',
+    },
+    {
+      id: '3',
+      image:
+        'https://i.postimg.cc/DZgf3v6p/A-sleek-modern-laptop-placed-on-a-wooden-desk-with-a-potted-plant-beside-it.png',
+      name: 'Above ₹40,000',
+      subname: 'Luxury Macbooks & Windows PC',
+    },
+  ];
+  const AccessoriesBudget = [
+    {
+      id: '1',
+      image:
+        'https://i.postimg.cc/6prC4Rp8/A-luxurious-handbag-displayed-on-a-marble-countertop-with-soft-lighting.png',
+      name: 'Under ₹10,000',
+      subname: 'Perfect Accessories',
+    },
+    {
+      id: '2',
+      image:
+        'https://i.postimg.cc/ryRjFDxr/A-stylish-electronic-gadget-displayed-on-a-simple-wooden-table-with-a-soft-focus-background.png',
+      name: '₹10,000 – ₹20,000',
+      subname: 'Premium selections ',
+    },
+    {
+      id: '3',
+      image:
+        'https://i.postimg.cc/pXGLGLcs/A-stylish-collection-of-mid-range-electronics-and-home-goods-displayed-on-a-wooden-table.png',
+      name: 'Above ₹20,000',
+      subname: 'Best from us',
+    },
+  ];
+
+  const SHOWING_DATA = [
+    {
+      id: '1',
+      icon: 'tag',
+      title: 'Dealer Volume Discounts',
+      description: 'Get better rates when you buy in bulk.',
+    },
+    {
+      id: '2',
+      icon: 'message-circle',
+      title: 'Request a Quote',
+      description: 'You suggest the price. We mediate the deal.',
+    },
+    {
+      id: '3',
+      icon: 'shield',
+      title: '15-Day Return Window',
+      description: 'Test your device. Return if not satisfied.',
+    },
+    {
+      id: '4',
+      icon: 'rotate-ccw',
+      title: 'Compare Products',
+      description: 'Make smarter decisions with side-by-side specs.',
+    },
+  ];
+
+  const GridCard = ({item}) => (
+    <View style={styles.cardSD}>
+      <View style={styles.iconCircleSD}>
+        <Icon name={item.icon} size={20} color="#fff" />
+      </View>
+      <Text style={styles.cardTitleSD}>{item.title}</Text>
+      <Text style={styles.cardDescriptionSD}>{item.description}</Text>
+    </View>
+  );
+
+  const SUPPORT_CARDS = [
+    {
+      id: '1',
+      icon: 'refresh-ccw',
+      title: 'Video-Backed Returns',
+      description: 'Sales return ticketing with secure video proof.',
+    },
+    {
+      id: '2',
+      icon: 'map-pin',
+      title: 'Track Your Orders',
+      description: 'Real-time updates on your deliveries.',
+    },
+  ];
+
+  const SUPPORT_CARDS_renderItem = ({item}) => (
+    <View style={styles.cardSUPPORT_CARDS}>
+      <View style={styles.iconCircleSUPPORT_CARDS}>
+        <Icon name={item.icon} size={20} color="#fff" />
+      </View>
+      <Text style={styles.cardTitleSUPPORT_CARDS}>{item.title}</Text>
+      <Text style={styles.cardDescriptionSUPPORT_CARDS}>
+        {item.description}
+      </Text>
+    </View>
+  );
+
+  const categories = [
+    {
+      id: '1',
+      title: 'Android',
+      image: 'https://i.postimg.cc/bvfB5mLG/Product-Image-2x.png',
+    },
+    {
+      id: '2',
+      title: 'iOS',
+      image: 'https://i.postimg.cc/T1K01bCM/Product-Image-1.png',
+    },
+    {
+      id: '3',
+      title: 'Windows OS',
+      image: 'https://i.postimg.cc/66419sS7/Product-Image-2.png',
+    },
+    {
+      id: '4',
+      title: 'MacOS',
+      image: 'https://i.postimg.cc/Jht5PZCy/Product-Image-3.png',
+    },
+  ];
+
+  return (
+    <>
+      <SafeAreaView style={styles.container}>
+        <Header navigation={navigation} />
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollView}>
+          <HeroCarousel navigation={navigation} />
+          {/* <DiscoverBanner navigation={navigation} /> */}
+          {/* Categories Row */}
+          <FlatList
+            horizontal
+            data={categories}
+            keyExtractor={item => item.id}
+            showsHorizontalScrollIndicator={false}
+            renderItem={({item}) => (
+              <TouchableOpacity
+                onPress={() => navigation.navigate('CategoriesSmartphones')}
+                style={styles.categoryCard}>
+                <Image
+                  source={{uri: item.image}}
+                  style={styles.categoryImage}
+                />
+                <Text style={styles.categoryText}>{item.title}</Text>
+              </TouchableOpacity>
+            )}
+          />
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Recentlyadd')}
+            style={{flex: 1, backgroundColor: '#fff', marginHorizontal: 10}}>
+            {/* Recently Added Banner */}
+            <TouchableOpacity
+              style={{marginTop: 16}}
+              onPress={() => navigation.navigate('Recentlyadd')}>
+              <ImageBackground
+                source={{
+                  uri: 'https://i.postimg.cc/3wdk2CDW/Banner-Background-1.png',
+                }}
+                style={styles.banner}
+                imageStyle={{borderRadius: 12}}>
+                <View style={styles.bannerOverlay}>
+                  <Text style={styles.bannerText}>Recently Added</Text>
+                  <Ionicons name="chevron-forward" size={20} color="#fff" />
+                </View>
+              </ImageBackground>
+            </TouchableOpacity>
+          </TouchableOpacity>
+
+          {/* <Section
+          title="Recently Added"
+          onPress={() => navigation.navigate('Recentlyadd')}>
+          <FlatList
+            horizontal
+            data={products}
+            renderItem={({item}) => <ProductCard item={item} />}
+            keyExtractor={item => item.id}
+            contentContainerStyle={styles.listContainerD}
+            showsHorizontalScrollIndicator={false}
+          />
+        </Section> */}
+          <Section
+            title="Shop by brands"
+            onPress={() => navigation.navigate('shopbybrand')}>
+            <FlatList
+              horizontal
+              data={offers}
+              renderItem={renderOfferItem}
+              keyExtractor={item => item.id}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.offerList}
+            />
+          </Section>
+          {/* <Carousel
           loop
           width={width}
           height={220}
@@ -672,35 +587,357 @@ const HomeScreen = ({navigation}) => {
             parallaxScrollingScale: 0.95,
             parallaxScrollingOffset: 0,
           }}
-        />
-        <View style={{marginHorizontal: 10}}>
-          {/* Offer FlatList */}
+        /> */}
+
+          {/* <Section
+          title="Flash sale"
+          onPress={() => navigation.navigate('Flashsale')}>
+          <View style={styles.timerWrapper}>
+            {renderBox(timer.days, 'Days')}
+            {renderBox(timer.hours, 'Hours')}
+            {renderBox(timer.minutes, 'Minutes')}
+            {renderBox(timer.seconds, 'Seconds')}
+          </View>
           <FlatList
-            data={offers}
-            keyExtractor={item => item.id}
-            renderItem={renderOfferItem}
             horizontal
+            data={flashsale}
+            renderItem={({item}) => <ProductCard item={item} />}
+            keyExtractor={item => item.id}
+            contentContainerStyle={styles.listContainerD}
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.offerList}
           />
+          <FlatList
+            ref={flatListRef}
+            data={bulkOffer}
+            renderItem={renderItem}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={item => item.id.toString()}
+            onMomentumScrollEnd={handleScroll}
+            getItemLayout={(data, index) => ({
+              length: width,
+              offset: width * index,
+              index,
+            })}
+          />
+          <View style={styles.dotsContainer_bulk}>
+            {bulkOffer.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.dot_bulk,
+                  currentIndex === index && styles.activeDot_bulk,
+                ]}
+              />
+            ))}
+          </View>
+        </Section> */}
 
-          {/* CTA Buttons */}
-          <TouchableOpacity style={styles.greenButton}>
-            <Text style={styles.greenButtonText}>Shop more Phones</Text>
-          </TouchableOpacity>
+          <Section title="Shop by budget">
+            <View
+              style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+              <Text>Get Smartphones</Text>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('shopbybudgetSmartphones')}>
+                <Ionicons name="chevron-forward" size={20} color="#333" />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              horizontal
+              data={mobileBudget}
+              renderItem={({item}) => <ProductMobile item={item} />}
+              keyExtractor={item => item.id}
+              contentContainerStyle={styles.listContainerD}
+              showsHorizontalScrollIndicator={false}
+            />
+            <View
+              style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+              <Text>Get Macbooks & Windows PC</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate('shopbybudgetWindowsMacbook')
+                }>
+                <Ionicons name="chevron-forward" size={20} color="#333" />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              horizontal
+              data={LaptopBudget}
+              renderItem={({item}) => <ProductLaptop item={item} />}
+              keyExtractor={item => item.id}
+              contentContainerStyle={styles.listContainerD}
+              showsHorizontalScrollIndicator={false}
+            />
+            {/* <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+            <Text>Get Accessories</Text>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('shopbybudgetAccessories')}>
+              <Ionicons name="chevron-forward" size={20} color="#333" />
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            horizontal
+            data={AccessoriesBudget}
+            renderItem={({item}) => <ProductLaptop item={item} />}
+            keyExtractor={item => item.id}
+            contentContainerStyle={styles.listContainerD}
+            showsHorizontalScrollIndicator={false}
+          /> */}
+          </Section>
 
-          <TouchableOpacity style={styles.darkButton}>
-            <Text style={styles.darkButtonText}>
-              Shop more Laptops & Macbooks
-            </Text>
-          </TouchableOpacity>
-        </View>
+          <Section
+            title="Recently Viewed"
+            onPress={() => navigation.navigate('RecentlyView')}>
+            <FlatList
+              horizontal
+              data={recentlyView}
+              renderItem={({item}) => <RecentlyView item={item} />}
+              keyExtractor={item => item.id}
+              contentContainerStyle={styles.listContainerD}
+              showsHorizontalScrollIndicator={false}
+            />
+            {/* <View style={styles.cardDO}>
+            <Image
+              source={{
+                uri: 'https://i.postimg.cc/Bvkjbnfh/Depth-4-Frame-1-1.png',
+              }}
+              style={styles.imageDO}
+              resizeMode="cover"
+            />
+            <View style={styles.contentDO}>
+              <Text style={styles.titleDO}>Dealer Offer</Text>
+              <Text style={styles.subtitleDO}>
+                Unlock exclusive deals on bulk orders.{'\n'}
+                Perfect for resellers and businesses.
+              </Text>
+              <TouchableOpacity style={styles.buttonDO}>
+                <Text style={styles.buttonTextDO}>Explore Bulk Offers</Text>
+              </TouchableOpacity>
+            </View>
+          </View> */}
+            <ImageBackground
+              style={{
+                height: 200,
+                width: '100%',
+                justifyContent: 'flex-end',
+                alignItems: 'flex-end',
+              }}
+              source={require('../../../assets/images/gstrate.png')}></ImageBackground>
 
-        <TestimonialSection />
-        <SupportMenu />
-      </ScrollView>
-    </SafeAreaView>
+            {/* Grade A1 to A9  */}
+          </Section>
+          <View
+            style={{
+              alignItems: 'center',
+              alignSelf: 'center',
+              justifyContent: 'center',
+              marginLeft: 15,
+              marginVertical: 15,
+              flexDirection: 'row',
+            }}>
+            <View style={styles.leftContainer}>
+              <Text style={styles.heading}>What is A1 to A9?</Text>
+              <Text style={styles.subheading}>How Does Our Grading Work?</Text>
+              <Text style={styles.description}>
+                Grading ranges from A1 (like new) to A9 (heavily used).
+              </Text>
+
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Grade')}
+                style={styles.button}>
+                <Text style={styles.buttonText}>Learn More</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Right Image Section */}
+            <Image
+              source={require('../../../assets/images/mini.png')} // Replace with your image path
+              style={styles.imageG}
+              resizeMode="contain"
+            />
+          </View>
+          {/* <FlatList
+          data={SHOWING_DATA}
+          renderItem={({item}) => <GridCard item={item} />}
+          keyExtractor={item => item.id}
+          numColumns={2}
+          scrollEnabled={false}
+          contentContainerStyle={styles.gridSD}
+          columnWrapperStyle={styles.rowSD}
+        /> */}
+
+          <Section title="More Features">
+            <FlatList
+              data={SUPPORT_CARDS}
+              renderItem={SUPPORT_CARDS_renderItem}
+              keyExtractor={item => item.id}
+              scrollEnabled={false}
+              contentContainerStyle={styles.containerSUPPORT_CARDS}
+            />
+          </Section>
+        </ScrollView>
+      </SafeAreaView>
+    </>
   );
 };
+
+const Header = ({navigation}) => (
+  <View
+    style={{
+      backgroundColor: '#1ca147',
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 10,
+      paddingVertical: 16,
+      justifyContent: 'space-between',
+    }}>
+    <Text
+      style={{
+        color: 'white',
+        fontSize: 20,
+        fontWeight: 'bold',
+        letterSpacing: 1,
+      }}>
+      MOBI TRADE
+    </Text>
+    <View style={{flexDirection: 'row', alignItems: 'center'}}>
+      <TouchableOpacity
+        style={{
+          backgroundColor: '#fff',
+          borderRadius: 20,
+          paddingHorizontal: 16,
+          paddingVertical: 10,
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginRight: 12,
+          shadowColor: '#000',
+          shadowOffset: {width: 0, height: 1},
+          shadowOpacity: 0.2,
+          shadowRadius: 2,
+          elevation: 2,
+        }}>
+        <MaterialCommunityIcons name="cube-outline" size={24} color="#555" />
+        <Text
+          style={{
+            fontSize: 16,
+            marginLeft: 8,
+            color: '#333',
+            fontWeight: '500',
+          }}>
+          Bulk Deals
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+        <EvilIcons name="search" size={45} color="#fff" />
+      </TouchableOpacity>
+    </View>
+  </View>
+);
+
+const HeroCarousel = ({navigation}) => (
+  <LinearGradient
+    colors={['#FFFBFA', '#666666', '#1C9C48', '#EAE6E5']}
+    locations={[1, 1, 0.3, 1]}>
+    <Swiper
+      showsPagination
+      dotStyle={styles.dot}
+      activeDotStyle={styles.activeDot}
+      autoplay
+      loop
+      style={styles.swiper}>
+      {carouselData.map((item, index) => (
+        <TouchableOpacity
+          key={index}
+          onPress={() => {
+            if (item.id === 1) {
+              navigation.navigate('carousel1'); // Replace with your screen name
+            } else if (item.id === 2) {
+              navigation.navigate('carousel2');
+            } else if (item.id === 3) {
+              navigation.navigate('carousel3');
+            }
+          }}>
+          <ImageBackground
+            source={{uri: item.image}}
+            style={styles.card_Top}
+            imageStyle={styles.image}>
+            <View style={styles.textContainer}>
+              {item.subtitle && (
+                <Text
+                  style={[
+                    styles.subtitleT,
+                    {
+                      color: item.subtitleColor || '#fff',
+                      marginTop: item.subtitleMarginTop || 0,
+                      marginLeft: item.marginLeft || 0,
+                      width: item.width,
+                    },
+                  ]}>
+                  {item.subtitle}
+                </Text>
+              )}
+              <Text
+                style={[
+                  styles.titleT,
+                  {
+                    color: item.titleColor,
+                    marginLeft: item.titleMarginLeft ?? 40,
+                    marginTop: item.titleMarginTop ?? 0,
+                    fontSize: item.titleFontSize ?? item.fontSize,
+                    width: item.titlewidth ?? item.width,
+                    fontWeight: item.fontWeight,
+                  },
+                ]}>
+                {item.title}
+              </Text>
+            </View>
+          </ImageBackground>
+        </TouchableOpacity>
+      ))}
+    </Swiper>
+  </LinearGradient>
+);
+
+const DiscoverBanner = ({navigation}) => (
+  <View style={{margin: 16}}>
+    <View
+      style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 10,
+      }}>
+      <Text style={{fontSize: 20, fontWeight: '600', color: '#222'}}>
+        Categories
+      </Text>
+      <TouchableOpacity onPress={() => navigation.navigate('Categories')}>
+        <Ionicons name="chevron-forward" size={20} color="#333" />
+      </TouchableOpacity>
+    </View>
+  </View>
+);
+
+const Section = ({title, children, onPress}) => (
+  <View style={{marginTop: 15, paddingHorizontal: 16}}>
+    <View
+      style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 10,
+      }}>
+      <Text style={{fontSize: 20, fontWeight: '600', color: '#222'}}>
+        {title}
+      </Text>
+      {title !== 'More Features' && title !== 'Shop by budget' ? (
+        <TouchableOpacity onPress={onPress}>
+          <Ionicons name="chevron-forward" size={20} color="#333" />
+        </TouchableOpacity>
+      ) : null}
+    </View>
+    {children}
+  </View>
+);
 
 export default HomeScreen;
