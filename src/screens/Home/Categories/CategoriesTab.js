@@ -7,7 +7,7 @@ import Signup_Address from '../../SignupScreen/Signup_Address';
 import Signup from '../../SignupScreen/Signup';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useRoute} from '@react-navigation/native';
-import Android from './Android';
+import Android from './Android/Android';
 import iOS from './iOS';
 import WindowsOS from './WindowsOS';
 import MacOS from './MacOS';

@@ -68,7 +68,7 @@ import WalletTransactions from './TabNavigator/Cart/Wallet/WalletTransactions';
 import WalletAddMoney from './TabNavigator/Cart/Wallet/WalletAddMoney';
 import Withdraw from './TabNavigator/Cart/Wallet/Withdraw';
 import Grade from '../screens/Home/Grade/Grade';
-import Android from '../screens/Home/Categories/Android';
+import Android from '../screens/Home/Categories/Android/Android';
 import iOS from '../screens/Home/Categories/iOS';
 import WindowsOS from '../screens/Home/Categories/WindowsOS';
 import MacOS from '../screens/Home/Categories/MacOS';
@@ -81,6 +81,8 @@ import carousel2 from '../screens/Home/carousel/carousel2';
 import carousel3 from '../screens/Home/carousel/carousel3';
 import YourOrderIsGettingPacked from './TabNavigator/Account/MyOrder/YourOrderIsGettingPacked';
 import UpgradeNow from './TabNavigator/Cart/UpgradeNow/UpgradeNow';
+import Home from '../screens/Home/Home';
+import Header from '../screens/Home/Header';
 
 const Stack = createNativeStackNavigator();
 
@@ -90,6 +92,8 @@ const StackNavigator = () => (
       initialRouteName="Splash"
       screenOptions={{headerShown: false}}>
       <Stack.Screen name="Splash" component={Splash} />
+      <Stack.Screen name="Home" component={Home} />
+      <Stack.Screen name="Header" component={Header} />
       <Stack.Screen name="OnboardingScreen" component={OnboardingScreen} />
       <Stack.Screen name="LoginScreen" component={LoginScreen} />
       <Stack.Screen name="Signup" component={Signup} />

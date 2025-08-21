@@ -14,20 +14,21 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import {Dimensions} from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import RangeSlider from 'rn-range-slider';
+import {useSelector} from 'react-redux';
 
 const {width} = Dimensions.get('window');
 
 const Android = ({navigation}) => {
+  const {uri} = useSelector(state => state.cat);
+
   const budgetOptions = [
     {
       label: 'Under ₹10,000',
-      image:
-        'https://i.postimg.cc/Pf3MBSK6/Category-Card-01-1.png',
+      image: 'https://i.postimg.cc/Pf3MBSK6/Category-Card-01-1.png',
     },
     {
       label: '₹10,000 - ₹20,000',
-      image:
-        'https://i.postimg.cc/0NRJJB0y/Category-Card-02.png',
+      image: 'https://i.postimg.cc/0NRJJB0y/Category-Card-02.png',
     },
     {
       label: '₹20,000 - ₹30,000',
@@ -36,8 +37,7 @@ const Android = ({navigation}) => {
     },
     {
       label: 'Above ₹30,000',
-      image:
-        'https://i.postimg.cc/Ls3hg6sx/Category-Card-4.png',
+      image: 'https://i.postimg.cc/Ls3hg6sx/Category-Card-4.png',
     },
   ];
 
@@ -578,7 +578,7 @@ const Android = ({navigation}) => {
         <Image
           style={styles.bannerImage}
           source={{
-            uri: 'https://i.postimg.cc/7ZxSBcTt/Whats-App-Image-2025-08-14-at-3-35-45-PM.jpg',
+            uri: uri?.url,
           }}
         />
 
@@ -586,7 +586,10 @@ const Android = ({navigation}) => {
         <Text style={styles.sectionTitle}>Shop by Budget</Text>
         <TouchableOpacity style={styles.grid}>
           {budgetOptions.map((item, index) => (
-            <TouchableOpacity onPress={()=> navigation.navigate('shopbybudgetSmartphones')} key={index} style={styles.budgetCard}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('shopbybudgetSmartphones')}
+              key={index}
+              style={styles.budgetCard}>
               <View style={styles.imageWrapper}>
                 <Image source={{uri: item.image}} style={styles.budgetImage} />
                 <Text style={styles.budgetLabel}>{item.label}</Text>
@@ -649,7 +652,7 @@ const Android = ({navigation}) => {
 
           {/* Right Image Section */}
           <Image
-            source={require('../../../../assets/images/mini.png')} // Replace with your image path
+            source={require('../../../../../assets/images/mini.png')} // Replace with your image path
             style={styles.imageG}
             resizeMode="contain"
           />
@@ -1582,5 +1585,3 @@ const styles = StyleSheet.create({
 });
 
 export default Android;
-
-
