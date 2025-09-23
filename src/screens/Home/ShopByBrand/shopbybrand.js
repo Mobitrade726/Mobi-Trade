@@ -1,4 +1,284 @@
-import React, {useState} from 'react';
+// import React, {useEffect, useState, useCallback, useRef} from 'react';
+// import {
+//   View,
+//   Text,
+//   SafeAreaView,
+//   Image,
+//   TouchableOpacity,
+//   StyleSheet,
+//   TextInput,
+//   FlatList,
+//   Dimensions,
+//   ActivityIndicator,
+// } from 'react-native';
+// import Ionicons from 'react-native-vector-icons/Ionicons';
+// import EvilIcons from 'react-native-vector-icons/EvilIcons';
+// import axios from 'axios';
+// import _ from 'lodash';
+
+// const {width} = Dimensions.get('window');
+// const LIMIT = 6;
+
+// const ShopByBrand = ({navigation}) => {
+//   const [search, setSearch] = useState('');
+//   const [activeTab, setActiveTab] = useState('Android');
+//   // States
+//   const [brands, setBrands] = useState([]);
+//   const [page, setPage] = useState(1);
+//   const [loading, setLoading] = useState(false);
+//   const [hasMore, setHasMore] = useState(true);
+
+//   // Cancel token reference
+//   const cancelSource = useRef(null);
+
+//   // ✅ Fetch brands with axios + lock
+//   const fetchBrands = useCallback(
+//     async (pageNo = 1, query = search) => {
+//       if (loading || !hasMore) return;
+//       setLoading(true);
+
+//       // Cancel previous request if still running
+//       if (cancelSource.current) {
+//         cancelSource.current.cancel('Cancelled due to new request');
+//       }
+//       cancelSource.current = axios.CancelToken.source();
+
+//       try {
+//         const skip = (pageNo - 1) * LIMIT;
+//         const response = await axios.get(
+//           `https://api.mobitrade.in/api/brand?skip=${skip}&limit=${LIMIT}&search=${query}`,
+//           {
+//             headers: {Accept: 'application/json'},
+//             cancelToken: cancelSource.current.token,
+//           },
+//         );
+
+//         const result = response.data;
+
+//         if (result?.status) {
+//           setBrands(prev =>
+//             pageNo === 1 ? result.data : [...prev, ...result.data],
+//           );
+//           setHasMore(pageNo < result.total_pages);
+//         } else {
+//           console.error('❌ API Error:', result?.message);
+//         }
+//       } catch (error) {
+//         if (axios.isCancel(error)) {
+//           console.log('Request cancelled:', error.message);
+//         } else if (error.response?.status === 429) {
+//           console.warn('Rate limit hit, retrying in 3s...');
+//           setTimeout(() => fetchBrands(pageNo, query), 3000);
+//         } else {
+//           console.error('❌ Error fetching brands:', error.message);
+//         }
+//       } finally {
+//         setLoading(false);
+//       }
+//     },
+//     [loading, hasMore, search],
+//   );
+
+//   // ✅ Debounce search
+//   const debouncedSearch = useCallback(
+//     _.debounce(value => {
+//       setPage(1);
+//       fetchBrands(1, value);
+//     }, 600),
+//     [],
+//   );
+
+//   useEffect(() => {
+//     debouncedSearch(search);
+//   }, [search]);
+
+//   useEffect(() => {
+//     fetchBrands(1, search);
+//   }, [activeTab]);
+
+//   // ✅ Load more
+//   const loadMore = () => {
+//     if (!loading && hasMore) {
+//       const nextPage = page + 1;
+//       setPage(nextPage);
+//       fetchBrands(nextPage, search);
+//     }
+//   };
+
+//   const filteredBrands = brands.filter(item => {
+//     // Tab filter (check if any os_name matches activeTab)
+//     const matchesTab = item.operatingsystem?.some(
+//       os => os.os_name?.toLowerCase() === activeTab.toLowerCase(),
+//     );
+
+
+//     // Search filter (check brand_name)
+//     const matchesSearch = item.brand_name
+//       ?.toLowerCase()
+//       .includes(search.toLowerCase());
+
+//     return matchesTab && matchesSearch;
+//   });
+
+
+//   const renderProduct = ({item}) => (
+//     <TouchableOpacity
+//       onPress={() => navigation.navigate('shopbybrandfilter', {brand: item})}
+//       // style={styles.cardContainer}
+//     >
+//       <TouchableOpacity style={styles.imageWrapper}>
+//         <Image
+//           source={
+//             item.brand_image_url
+//               ? {uri: item.brand_image_url}
+//               : require('../../../../assets/images/empty.jpeg')
+//           }
+//           style={styles.cardImage}
+//           resizeMode="contain"
+//         />
+//       </TouchableOpacity>
+//       <Text style={styles.cardLabel}>{item.brand_name}</Text>
+//     </TouchableOpacity>
+//   );
+
+//   return (
+//     <SafeAreaView style={styles.container}>
+//       {/* Header */}
+//       <View style={styles.header}>
+//         <TouchableOpacity
+//           onPress={() => navigation.goBack()}
+//           style={styles.backButton}>
+//           <Ionicons name="chevron-back" size={22} color="#000" />
+//         </TouchableOpacity>
+//         <Text style={styles.headerTitle}>Shop by Brands</Text>
+//         <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+//           <Ionicons name="search" size={24} color="#333" />
+//         </TouchableOpacity>
+//       </View>
+
+//       {/* Tabs */}
+//       <View style={styles.tabContainer}>
+//         {['Android', 'iOS', 'Windows', 'Macbook'].map(category => (
+//           <TouchableOpacity
+//             key={category}
+//             onPress={() => setActiveTab(category)}>
+//             <Text
+//               style={[
+//                 styles.tabText,
+//                 activeTab === category && styles.activeTabText,
+//               ]}>
+//               {category}
+//             </Text>
+//           </TouchableOpacity>
+//         ))}
+//       </View>
+
+//       {/* Search */}
+//       <View style={styles.containersearch}>
+//         <TextInput
+//           style={styles.inputsearch}
+//           placeholder="Search Brands..."
+//           placeholderTextColor="#777"
+//           value={search}
+//           onChangeText={text => setSearch(text)}
+//         />
+//         <EvilIcons
+//           name="search"
+//           size={22}
+//           color="#00AEEF"
+//           style={styles.iconsearch}
+//         />
+//       </View>
+
+//       {/* List */}
+//       <FlatList
+//         data={filteredBrands}
+//         renderItem={renderProduct}
+//         keyExtractor={item => item.id.toString()}
+//         numColumns={2}
+//         columnWrapperStyle={styles.row}
+//         contentContainerStyle={{paddingBottom: 20}}
+//         onEndReached={loadMore}
+//         onEndReachedThreshold={0.5}
+//         ListFooterComponent={
+//           loading && <ActivityIndicator size="small" color="#00AEEF" />
+//         }
+//       />
+//     </SafeAreaView>
+//   );
+// };
+
+// const styles = StyleSheet.create({
+//   container: {flex: 1, backgroundColor: '#fff'},
+//   header: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     paddingVertical: 15,
+//     justifyContent: 'space-between',
+//     marginHorizontal: 10,
+//   },
+//   backButton: {
+//     backgroundColor: '#fff',
+//     borderRadius: 20,
+//     padding: 6,
+//   },
+//   headerTitle: {
+//     fontSize: 16,
+//     fontWeight: '500',
+//     color: '#000',
+//     textAlign: 'center',
+//   },
+//   cardContainer: {
+//     width: (width - 48) / 2,
+//     marginBottom: 12,
+//     marginTop: 10,
+//     marginHorizontal: 8,
+//   },
+//   imageWrapper: {
+//     width: (width - 48) / 2,
+//     aspectRatio: 1,
+//     borderRadius: 12,
+//     backgroundColor: '#f5f5f5',
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//     overflow: 'hidden',
+//     marginHorizontal: 8,
+//   },
+//   cardImage: {width: '70%', height: '70%'},
+//   cardLabel: {
+//     marginTop: 8,
+//     fontSize: 14,
+//     fontWeight: '500',
+//     textAlign: 'center',
+//   },
+//   tabContainer: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-around',
+//     borderBottomWidth: 1,
+//     paddingBottom: 10,
+//     marginTop: 10,
+//   },
+//   tabText: {fontWeight: '600', color: 'gray', fontSize: 16},
+//   activeTabText: {color: 'black', borderBottomWidth: 2, borderColor: 'black'},
+//   containersearch: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     borderWidth: 1,
+//     borderColor: '#999',
+//     borderRadius: 20,
+//     paddingHorizontal: 12,
+//     paddingVertical: 2,
+//     margin: 10,
+//   },
+//   inputsearch: {flex: 1, fontSize: 14, color: '#333'},
+//   iconsearch: {marginLeft: 8},
+//   row: {justifyContent: 'space-between'},
+// });
+
+// export default ShopByBrand;
+
+
+import React, {useEffect, useState, useCallback, useRef} from 'react';
 import {
   View,
   Text,
@@ -6,156 +286,209 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
-  ImageBackground,
-  ScrollView,
   TextInput,
   FlatList,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
+import axios from 'axios';
+import _ from 'lodash';
 
 const {width} = Dimensions.get('window');
+const LIMIT = 6;
 
-const shopbybrand = ({navigation}) => {
+const ShopByBrand = ({navigation}) => {
   const [search, setSearch] = useState('');
-
-  const CATEGORIES = ['Android', 'iOS', 'Windows', 'Macbook'];
-
-  const mobileData = [
-    {
-      id: '1',
-      name: 'Samsung',
-      image: 'https://i.postimg.cc/0NLZqrRY/Depth-5-Frame-0-1.png',
-    },
-    {
-      id: '2',
-      name: 'OnePlus',
-      image: 'https://i.postimg.cc/HnQ77sNC/Depth-5-Frame-0-2.png',
-    },
-    {
-      id: '3',
-      name: 'Xiaomi',
-      image: 'https://i.postimg.cc/7LfGnNR9/Depth-5-Frame-0-3.png',
-    },
-    {
-      id: '4',
-      name: 'Oppo',
-      image: 'https://i.postimg.cc/kXzk5Mm5/Depth-5-Frame-0-4.png',
-    },
-    {
-      id: '5',
-      name: 'Vivo',
-      image: 'https://i.postimg.cc/xTJ4BrzV/Depth-5-Frame-0-6.png',
-    },
-    {
-      id: '6',
-      name: 'Realme',
-      image: 'https://i.postimg.cc/d0Kp8WDP/Depth-5-Frame-0-5.png',
-    },
-    {
-      id: '7',
-      name: 'Motorola',
-      image: 'https://i.postimg.cc/QCR0jtTG/Depth-5-Frame-0-8.png',
-    },
-    {
-      id: '8',
-      name: 'Google',
-      image: 'https://i.postimg.cc/tgXDq8YT/Depth-5-Frame-0-9.png',
-    },
-  ];
-
   const [activeTab, setActiveTab] = useState('Android');
+  const [brands, setBrands] = useState([]);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
-  // Tabs
-  const renderTabs = () => (
-    <View style={styles.tabContainer}>
-      {CATEGORIES.map(category => (
-        <TouchableOpacity key={category} onPress={() => setActiveTab(category)}>
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === category && styles.activeTabText,
-            ]}>
-            {category}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </View>
+  const cancelSource = useRef(null);
+
+  // ✅ Fetch brands
+  const fetchBrands = useCallback(
+    async (pageNo = 1, query = search) => {
+      if (loading || !hasMore) return;
+      setLoading(true);
+
+      if (cancelSource.current) {
+        cancelSource.current.cancel('Cancelled due to new request');
+      }
+      cancelSource.current = axios.CancelToken.source();
+
+      try {
+        const skip = (pageNo - 1) * LIMIT;
+        const response = await axios.get(
+          `https://api.mobitrade.in/api/brand?skip=${skip}&limit=${LIMIT}&search=${query}`,
+          {
+            headers: {Accept: 'application/json'},
+            cancelToken: cancelSource.current.token,
+          },
+        );
+
+        const result = response.data;
+
+        if (result?.status) {
+          setBrands(prev =>
+            pageNo === 1 ? result.data : [...prev, ...result.data],
+          );
+          setHasMore(pageNo < result.total_pages);
+        } else {
+          console.error('❌ API Error:', result?.message);
+        }
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          console.log('Request cancelled:', error.message);
+        } else if (error.response?.status === 429) {
+          console.warn('Rate limit hit, retrying in 3s...');
+          setTimeout(() => fetchBrands(pageNo, query), 3000);
+        } else {
+          console.error('❌ Error fetching brands:', error.message);
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    [loading, hasMore, search],
   );
+
+  // ✅ Debounced search
+  const debouncedSearch = useCallback(
+    _.debounce(value => {
+      setPage(1);
+      fetchBrands(1, value);
+    }, 600),
+    [],
+  );
+
+  useEffect(() => {
+    debouncedSearch(search);
+  }, [search]);
+
+  useEffect(() => {
+    fetchBrands(1, search);
+  }, [activeTab]);
+
+  const loadMore = () => {
+    if (!loading && hasMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchBrands(nextPage, search);
+    }
+  };
+
+  // ✅ Map tab → API os_name
+  const osMap = {
+    Android: 'Android',
+    iOS: 'iOS',
+    Windows: 'windows',
+    Macbook: 'macOS',
+  };
+
+  const filteredBrands = brands.filter(item => {
+    const matchesTab = item.operatingsystem?.some(
+      os => os.os_name?.toLowerCase() === osMap[activeTab]?.toLowerCase(),
+    );
+    const matchesSearch = item.brand_name
+      ?.toLowerCase()
+      .includes(search.toLowerCase());
+
+    return matchesTab && matchesSearch;
+  });
+
+  console.log("filteredBrands----------------------------->", filteredBrands)
 
   const renderProduct = ({item}) => (
     <TouchableOpacity
-      onPress={() => navigation.navigate('shopbybrandfilter')}
-      style={styles.cardContainer}>
-      <Image
-        source={{uri: item.image}}
-        style={styles.cardImage}
-        resizeMode="contain"
-      />
-      <Text style={styles.cardLabel}>{item.name}</Text>
+      onPress={() => navigation.navigate('shopbybrandfilter', {brand: item})}>
+      <TouchableOpacity style={styles.imageWrapper}>
+        <Image
+          source={
+            item.brand_image_url
+              ? {uri: item.brand_image_url}
+              : require('../../../../assets/images/empty.jpeg')
+          }
+          style={styles.cardImage}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
+      <Text style={styles.cardLabel}>{item.brand_name}</Text>
     </TouchableOpacity>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Scrollable content starts here */}
-      <ScrollView>
-        <View style={{margin: 10}}>
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              style={styles.backButton}>
-              <Ionicons name="chevron-back" size={22} color="#000" />
-            </TouchableOpacity>
-            <View>
-              <Text style={styles.headerTitle}>Shop by Brands</Text>
-            </View>
-            <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-              <Ionicons name="search" size={24} color="#333" />
-            </TouchableOpacity>
-          </View>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}>
+          <Ionicons name="chevron-back" size={22} color="#000" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Shop by Brands</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+          <Ionicons name="search" size={24} color="#333" />
+        </TouchableOpacity>
+      </View>
 
-          {/* Tabs Section */}
-          {renderTabs()}
+      {/* Tabs */}
+      <View style={styles.tabContainer}>
+        {['Android', 'iOS', 'Windows', 'Macbook'].map(category => (
+          <TouchableOpacity
+            key={category}
+            onPress={() => setActiveTab(category)}>
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === category && styles.activeTabText,
+              ]}>
+              {category}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
-          <View style={styles.containersearch}>
-            <TextInput
-              style={styles.inputsearch}
-              placeholder="Search Brands..."
-              placeholderTextColor="#777"
-              value={search}
-              onChangeText={setSearch}
-            />
-            <EvilIcons
-              name="search"
-              size={22}
-              color="#00AEEF"
-              style={styles.iconsearch}
-            />
-          </View>
+      {/* Search */}
+      <View style={styles.containersearch}>
+        <TextInput
+          style={styles.inputsearch}
+          placeholder="Search Brands..."
+          placeholderTextColor="#777"
+          value={search}
+          onChangeText={text => setSearch(text)}
+        />
+        <EvilIcons
+          name="search"
+          size={22}
+          color="#00AEEF"
+          style={styles.iconsearch}
+        />
+      </View>
 
-          {activeTab === 'Android' && (
-            <>
-              <FlatList
-                data={mobileData}
-                renderItem={renderProduct}
-                keyExtractor={item => item.id}
-                numColumns={2}
-                columnWrapperStyle={styles.row}
-                contentContainerStyle={{paddingBottom: 20}}
-              />
-            </>
-          )}
-        </View>
-      </ScrollView>
+      {/* List */}
+      <FlatList
+        data={filteredBrands}
+        renderItem={renderProduct}
+        keyExtractor={item => item.id.toString()}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+        contentContainerStyle={{paddingBottom: 20}}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loading && <ActivityIndicator size="small" color="#00AEEF" />
+        }
+      />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1},
+  container: {flex: 1, backgroundColor: '#fff'},
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -167,7 +500,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 6,
-    left: 0,
   },
   headerTitle: {
     fontSize: 16,
@@ -175,39 +507,25 @@ const styles = StyleSheet.create({
     color: '#000',
     textAlign: 'center',
   },
-  cardContainer: {
-    width: (width - 48) / 2, // Adjust for 2 cards + margins
-    marginBottom: 12,
-    marginTop: 10,
-    marginHorizontal: 8,
-  },
-
-  cardImage: {
-    width: '100%',
-    aspectRatio: 1, // Square image
+  imageWrapper: {
+    width: (width - 48) / 2,
+    aspectRatio: 1,
     borderRadius: 12,
     backgroundColor: '#f5f5f5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    marginHorizontal: 8,
+    marginBottom: 12,
+    marginTop: 10,
   },
-
+  cardImage: {width: '70%', height: '70%'},
   cardLabel: {
     marginTop: 8,
     fontSize: 14,
     fontWeight: '500',
     textAlign: 'center',
   },
-
-  micIcon: {marginLeft: 'auto'},
-  imagePlaceholder: {
-    width: 100,
-    height: 100,
-    backgroundColor: '#eee',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#aaa',
-  },
-  imageIcon: {fontSize: 20},
   tabContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -217,19 +535,6 @@ const styles = StyleSheet.create({
   },
   tabText: {fontWeight: '600', color: 'gray', fontSize: 16},
   activeTabText: {color: 'black', borderBottomWidth: 2, borderColor: 'black'},
-  productList: {padding: 10},
-  productCard: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    margin: 5,
-    padding: 10,
-    alignItems: 'center',
-    borderRadius: 10,
-  },
-  productName: {fontWeight: 'bold', fontSize: 14},
-  productPrice: {fontSize: 14, color: 'gray'},
-
   containersearch: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -237,18 +542,12 @@ const styles = StyleSheet.create({
     borderColor: '#999',
     borderRadius: 20,
     paddingHorizontal: 12,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    marginTop: 10,
+    paddingVertical: 2,
+    margin: 10,
   },
-  inputsearch: {
-    flex: 1,
-    fontSize: 14,
-    color: '#333',
-  },
-  iconsearch: {
-    marginLeft: 8,
-  },
+  inputsearch: {flex: 1, fontSize: 14, color: '#333'},
+  iconsearch: {marginLeft: 8},
+  row: {justifyContent: 'space-between'},
 });
 
-export default shopbybrand;
+export default ShopByBrand;

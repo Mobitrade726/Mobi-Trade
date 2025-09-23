@@ -173,6 +173,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 15,
+    marginBottom:20,
   },
   claimButton: {
     backgroundColor: '#eee',

@@ -166,13 +166,11 @@ const BestOfAndroid = ({navigation}) => {
     {key: 'lowToHigh', label: 'Price (Low to High)'},
     {key: 'highToLow', label: 'Price (High to Low)'},
     {key: 'grade', label: 'Grade (A1–A9)'},
-    {key: 'newest', label: 'Newest Arrivals'},
   ];
   const sortFilter = [
     {key: 'lowToHigh', label: 'Price (Low to High)'},
     {key: 'highToLow', label: 'Price (High to Low)'},
     {key: 'grade', label: 'Grade (A1–A9)'},
-    {key: 'newest', label: 'Newest Arrivals'},
   ];
 
   const FILTER_TABS = [
@@ -972,10 +970,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: {width: 0, height: 2},
+    // shadowOpacity: 0.1,
+    // shadowOffset: {width: 0, height: 2},
     shadowRadius: 4,
-    elevation: 3,
+    // elevation: 3,
   },
 
   leftContainer: {

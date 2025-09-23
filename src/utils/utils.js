@@ -1,7 +1,7 @@
-export const BASE_URL = 'https://api.mobitrade.in/'
+export const BASE_URL = 'https://api.mobitrade.in/';
 
 
-export const API_BASE_URL = BASE_URL+'api/'
+export const API_BASE_URL = BASE_URL + 'api/';
 
 export const ERROR_MESSAGE = 'We are facing some techical issue. Team is looking into it.'
 

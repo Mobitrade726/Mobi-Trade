@@ -1,44 +1,67 @@
-import {createSlice} from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+export const fetchBanners = createAsyncThunk('home/fetchBanners', async () => {
+  try {
+    const token = await AsyncStorage.getItem('TOKEN'); // get token from storage
+    const response = await axios.get(
+      'https://api.mobitrade.in/api/bannerlist',
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // 👈 pass token here
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+    return response.data.data; // API response (array of banners)
+  } catch (error) {
+    console.error(
+      'Error fetching banners:',
+      error.response?.data || error.message,
+    );
+    throw error;
+  }
+});
+export const fetchOsList = createAsyncThunk('home/fetchOsList', async () => {
+  try {
+    const token = await AsyncStorage.getItem('TOKEN'); // get token from storage
+    const response = await axios.get('https://api.mobitrade.in/api/oslist', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.data.data; // return only the OS list array
+  } catch (error) {
+    console.error(
+      'Error fetching OS List:',
+      error.response?.data || error.message,
+    );
+    throw error;
+  }
+});
+
+export const fetchBrands = createAsyncThunk('home/fetchBrands', async () => {
+  try {
+    const response = await axios.get('https://api.mobitrade.in/api/brand');
+    return response.data.data; // return only the OS list array
+  } catch (error) {
+    console.error(
+      'Error fetching OS List:',
+      error.response?.data || error.message,
+    );
+    throw error;
+  }
+});
 
 const initialState = {
-  carouselData: [
-    {
-      id: 1,
-      image: 'https://i.postimg.cc/9MMJdTFM/Frame-90.png',
-      title: 'Get the finest in Smartphones & Laptops, pre-owned & certified.',
-      subtitle: 'Best from Your Favourite Brand ',
-      titleColor: '#fff',
-      subtitleColor: '#fff',
-      subtitleMarginTop: 80,
-      marginLeft: 40,
-    },
-    {
-      id: 2,
-      image: 'https://i.postimg.cc/DyqHyrWk/Content-1.png',
-      title: 'Extra 5% Off',
-      subtitle: 'On All Prepaid Orders',
-      titleColor: '#666666',
-      subtitleColor: '#333333',
-      subtitleMarginTop: 100,
-      marginLeft: 40,
-      fontSize: 25,
-      fontWeight: 'bold',
-    },
-    {
-      id: 3,
-      image: 'https://i.postimg.cc/ZKhsgWwf/Frame-36799-1.png',
-      title: 'Hurry!\nFree Delivery',
-      subtitle: 'On Every Order — No Minimum Spend',
-      titleColor: '#000',
-      subtitleColor: '#666666',
-      subtitleMarginTop: 10,
-      titlewidth: '40%',
-      marginLeft: 10,
-      titleMarginLeft: 250,
-      titleMarginTop: 100,
-      titleFontSize: 20,
-    },
-  ],
+  carouselData: [],
+  osList: [],
+  brands: [], // 👈 add this
+  offers: [],
+  status: 'idle', // loading status
+  error: null,
   categories: [
     {
       id: '1',
@@ -110,12 +133,6 @@ const initialState = {
       subname: 'Luxury Macbooks & Windows PC',
     },
   ],
-  offers: [
-    {id: '1', image: 'https://i.postimg.cc/sxhk6FPT/Img-Placeholder.png'},
-    {id: '2', image: 'https://i.postimg.cc/bJ2V8xGJ/Img-Placeholder-2.png'},
-    {id: '3', image: 'https://i.postimg.cc/rFh1ndmY/Img-Placeholder-3.png'},
-    {id: '4', image: 'https://i.postimg.cc/kXx4GLrN/Img-Placeholder-4.png'},
-  ],
   recentlyView: [
     {
       id: '1',
@@ -164,6 +181,44 @@ const homeSlice = createSlice({
         item.wishlist = !item.wishlist;
       }
     },
+  },
+  extraReducers: builder => {
+    builder
+      .addCase(fetchBanners.pending, state => {
+        state.status = 'loading';
+      })
+      .addCase(fetchBanners.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.carouselData = action.payload; // now this is the array
+      })
+      .addCase(fetchBanners.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message;
+      })
+      // 👇 OS List cases
+      .addCase(fetchOsList.pending, state => {
+        state.status = 'loading';
+      })
+      .addCase(fetchOsList.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.osList = action.payload;
+      })
+      .addCase(fetchOsList.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message;
+      })
+      // 👇 Brads List cases
+      .addCase(fetchBrands.pending, state => {
+        state.status = 'loading';
+      })
+      .addCase(fetchBrands.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.brands = action.payload; // ✅ store brands separately
+      })
+      .addCase(fetchBrands.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message;
+      });
   },
 });
 

@@ -4,13 +4,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: 20,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 30,
-    gap: 10,
   },
   headerTitle: {
     fontSize: 17,

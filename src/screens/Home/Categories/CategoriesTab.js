@@ -2,53 +2,20 @@ import React from 'react';
 import {Text, View, StyleSheet, TouchableOpacity} from 'react-native';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-// import Signup from './Signup';
-import Signup_Address from '../../SignupScreen/Signup_Address';
-import Signup from '../../SignupScreen/Signup';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useRoute} from '@react-navigation/native';
 import Android from './Android/Android';
-import iOS from './iOS';
-import WindowsOS from './WindowsOS';
-import MacOS from './MacOS';
-import Accessories from './Accessories';
+import iOS from './iOS/iOS';
+import WindowsOS from './WindowsOS/WindowsOS';
+import MacOS from './MacOS/MacOS';
 
 const Tab = createMaterialTopTabNavigator();
 
-const SignUpTab = ({navigation}) => {
-  const route = useRoute();
-  const accountType = route?.params?.accountType;
-  const catEdit = route?.params?.cat;
-  const profileData = route?.params?.profileEdit;
-
-  const derivedAccountType = accountType
-    ? accountType
-    : catEdit === 'vendor_customer'
-    ? 'individual'
-    : catEdit
-    ? 'business'
-    : '';
+const CategoriesSmartphones = ({navigation, route}) => {
+    const { initialTab } = route.params || {}; // Get passed param
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      {/* <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <View style={styles.backIcon}>
-            <Ionicons name="chevron-back" size={24} color="#333" />
-          </View>
-        </TouchableOpacity>
-        {accountType ? (
-          <Text style={styles.title}>Register as {accountType}</Text>
-        ) : catEdit ? (
-          <Text style={styles.title}>
-            Register as{' '}
-            {catEdit === 'vendor_customer' ? 'individual' : 'business'}
-          </Text>
-        ) : null}
-        <View style={{width: 24}} /> 
-      </View> */}
-
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -66,10 +33,9 @@ const SignUpTab = ({navigation}) => {
 
       {/* Top Tabs */}
       <Tab.Navigator
+        initialRouteName={initialTab} // 👈 this activates correct tab
         screenOptions={{
-          tabBarLabelStyle: {
-            fontSize: 12,
-          },
+          tabBarLabelStyle: {fontSize: 12},
           tabBarActiveTintColor: '#2E8BFF',
           tabBarInactiveTintColor: '#aaa',
           tabBarIndicatorStyle: {
@@ -81,7 +47,6 @@ const SignUpTab = ({navigation}) => {
         <Tab.Screen name="iOS" component={iOS} />
         <Tab.Screen name="WindowsOS" component={WindowsOS} />
         <Tab.Screen name="MacOS" component={MacOS} />
-        {/* <Tab.Screen name="Accessories" component={Accessories} /> */}
       </Tab.Navigator>
     </SafeAreaView>
   );
@@ -113,4 +78,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SignUpTab;
+export default CategoriesSmartphones;

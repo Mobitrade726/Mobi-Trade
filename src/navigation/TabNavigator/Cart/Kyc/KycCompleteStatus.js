@@ -9,9 +9,10 @@ import {
   ScrollView,
   Platform,
   PermissionsAndroid,
+  Alert,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import DocumentPicker from 'react-native-document-picker';
+import {launchImageLibrary} from 'react-native-image-picker';
 
 const KycScreen = ({navigation}) => {
   const [documentName, setDocumentName] = useState('');
@@ -29,20 +30,23 @@ const KycScreen = ({navigation}) => {
     'Pan Card',
   ];
 
-  const handleBrowseFile = async () => {
-    try {
-      const res = await DocumentPicker.pickSingle({
-        type: [DocumentPicker.types.pdf, DocumentPicker.types.images],
+  const handleBrowseFile = () => {
+      const options = {
+        mediaType: 'mixed', // photo | video | mixed
+        selectionLimit: 1,  // allow only one file
+      };
+      launchImageLibrary(options, (response) => {
+        if (response.didCancel) {
+          console.log('User cancelled picker');
+        } else if (response.errorMessage) {
+          Alert.alert('Error', response.errorMessage);
+        } else {
+          const file = response.assets[0];
+          console.log('Selected File:', file);
+          setSelectedFile(file);
+        }
       });
-      setSelectedFile(res);
-    } catch (err) {
-      if (DocumentPicker.isCancel(err)) {
-        console.log('User canceled file picker');
-      } else {
-        console.error('File Picker Error:', err);
-      }
-    }
-  };
+    };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -325,3 +329,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+

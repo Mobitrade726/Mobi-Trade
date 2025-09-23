@@ -1,30 +1,26 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import {View, Text, Image, TouchableOpacity, StyleSheet} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
-const WishlistCard = ({ data, onRemove }) => {
+const WishlistCard = ({data, onRemove}) => {
   return (
     <View style={styles.card}>
       <View style={styles.row}>
         {/* Image & Grade */}
         <View style={styles.imageContainer}>
-          <Image source={{ uri: data.image }} style={styles.image} />
+          <Image source={{uri: data.image}} style={styles.image} />
           <View style={styles.gradeTag}>
-            <Text style={styles.gradeText}>Grade {data.grade}</Text>
+            <Text style={styles.gradeText}>
+              {data.grade_number ? data.grade_number : 'N/A'}
+            </Text>
           </View>
         </View>
 
         {/* Details */}
         <View style={styles.detailsContainer}>
           <View style={styles.titleRow}>
-            <Text style={styles.title}>{data.name}</Text>
+            <Text style={styles.title}>{data.model_name}</Text>
 
             {/* Heart Button */}
             <TouchableOpacity
@@ -35,15 +31,24 @@ const WishlistCard = ({ data, onRemove }) => {
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.subtitle}>{data.subtitle}</Text>
-          <Text style={styles.specs}>{data.specs}</Text>
-
+          <Text style={styles.subtitle}>(Refurbished)</Text>
+          <Text style={styles.specs}>
+            {data?.os_name === 'iOS' || data?.os_name === 'Android' ? (
+              <>
+                {data?.variant_name ? data.variant_name : 'N/A'}  ●
+                {data?.color_name ? data?.color_name : 'N/A'}
+              </>
+            ) : (
+              <>
+                {data?.ram ? data.ram : 'N/A'}/{data?.storage ? data.storage : 'N/A' }
+              </>
+            )}
+          </Text>
           <View style={styles.priceRow}>
-            <Text style={styles.price}>{data.price}</Text>
-            <Text style={styles.originalPrice}>{data.originalPrice}</Text>
+            <Text style={styles.price}>₹ {data.price}</Text>
           </View>
 
-          <Text style={styles.warranty}>{data.warranty}</Text>
+          {/* <Text style={styles.warranty}>{data.warranty}</Text> */}
 
           {/* Compare Button */}
           <TouchableOpacity style={styles.compareBtn}>
@@ -74,7 +79,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
   },
-  row: { flexDirection: 'row' },
+  row: {flexDirection: 'row'},
   imageContainer: {
     width: 140,
     height: 140,
@@ -82,7 +87,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative',
   },
-  image: { width: '100%', height: '100%', resizeMode: 'stretch' },
+  image: {width: '100%', height: '100%', resizeMode: 'stretch'},
   gradeTag: {
     position: 'absolute',
     bottom: 2,
@@ -94,14 +99,14 @@ const styles = StyleSheet.create({
     elevation: 2,
     width: '98%',
   },
-  gradeText: { fontWeight: '600', fontSize: 12, textAlign: 'center' },
+  gradeText: {fontWeight: '600', fontSize: 12, textAlign: 'center'},
   detailsContainer: {
     flex: 1,
     paddingLeft: 12,
     justifyContent: 'space-between',
   },
-  titleRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  title: { fontWeight: 'bold', fontSize: 14, flex: 1, paddingRight: 20 },
+  titleRow: {flexDirection: 'row', justifyContent: 'space-between'},
+  title: {fontWeight: 'bold', fontSize: 14, flex: 1, paddingRight: 20},
   heartBtn: {
     position: 'absolute',
     top: -4,
@@ -111,21 +116,21 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     elevation: 3,
   },
-  subtitle: { fontSize: 12, color: '#777', marginTop: 2 },
-  specs: { fontSize: 12, marginTop: 6 },
+  subtitle: {fontSize: 12, color: '#777', marginTop: 2},
+  specs: {fontSize: 12, marginTop: 6},
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     marginTop: 6,
   },
-  price: { fontWeight: 'bold', fontSize: 16, color: '#000' },
+  price: {fontWeight: 'bold', fontSize: 16, color: '#000'},
   originalPrice: {
     fontSize: 13,
     color: '#999',
     textDecorationLine: 'line-through',
   },
-  warranty: { fontSize: 12, color: '#777', marginTop: 4 },
+  warranty: {fontSize: 12, color: '#777', marginTop: 4},
   compareBtn: {
     flexDirection: 'row',
     borderColor: '#666666',
@@ -137,7 +142,7 @@ const styles = StyleSheet.create({
     gap: 6,
     justifyContent: 'center',
   },
-  compareText: { fontSize: 12, color: '#333' },
+  compareText: {fontSize: 12, color: '#333'},
   cartBtn: {
     marginTop: 12,
     backgroundColor: '#1C1C1C',
@@ -148,7 +153,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  cartText: { color: '#fff', fontWeight: '600' },
+  cartText: {color: '#fff', fontWeight: '600'},
 });
 
 export default WishlistCard;

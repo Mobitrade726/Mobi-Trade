@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -11,180 +11,160 @@ import {
   Modal,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import {Dimensions} from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import RangeSlider from 'rn-range-slider';
+import {useDispatch, useSelector} from 'react-redux';
+import axios from 'axios';
+import Toast from 'react-native-toast-message';
+import {
+  fetchWishlist,
+  addToWishlistAPI,
+  removeFromWishlistAPI,
+} from '../../../../redux/slices/wishlistSlice';
 
 const {width} = Dimensions.get('window');
 
-const WindowsOS = ({navigation}) => {
+const MacOS = ({navigation, item}) => {
+  const {uri} = useSelector(state => state.cat);
+  const [productData, setProductData] = useState();
+  const [brandsData, setBrandsData] = useState();
+  const {items, loading} = useSelector(state => state.wishlist);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchWishlist());
+  }, [dispatch]);
+
+  // Safe filtering (if productData is undefined, use [])
+  const iosProducts = (productData || []).filter(
+    item => item.operating_systems && item.operating_systems === 'macOS',
+  );
+
+  useEffect(() => {
+    fetchPostalDetails();
+    fetchPostalBrands()
+  }, []);
+
+  const fetchPostalDetails = async zip => {
+    try {
+      const res = await axios.get(`https://api.mobitrade.in/api/product/list`);
+      setProductData(res?.data?.data);
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text2: JSON.stringify(error?.response?.data?.message),
+      });
+    }
+  };
+  const fetchPostalBrands = async zip => {
+    try {
+      const res = await axios.get(`https://api.mobitrade.in/api/brand`);
+      setBrandsData(res?.data?.data);
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text2: JSON.stringify(error?.response?.data?.message),
+      });
+    }
+  };
+
   const budgetOptions = [
     {
       label: 'Under ₹10,000',
-      image:
-        'https://i.postimg.cc/qqgMGwzz/Category-Card-01-2.png',
+      image: 'https://i.postimg.cc/Pf3MBSK6/Category-Card-01-1.png',
     },
     {
       label: '₹10,000 - ₹20,000',
-      image:
-        'https://i.postimg.cc/7Y8Zz3qY/Category-Card-02-1.png',
+      image: 'https://i.postimg.cc/0NRJJB0y/Category-Card-02.png',
     },
     {
       label: '₹20,000 - ₹30,000',
       image:
-        'https://i.postimg.cc/y69V7D0q/Category-Card-03.png',
+        'https://i.postimg.cc/zvBLrZ80/create-an-image-with-multiple-smartphones-that-are-under-10000-20000-rupees.png',
     },
     {
       label: 'Above ₹30,000',
-      image:
-        'https://i.postimg.cc/RZbr7mwQ/create-image-for-windows-high-end-pc-for-above-30000-rupees.png',
+      image: 'https://i.postimg.cc/Ls3hg6sx/Category-Card-4.png',
     },
   ];
 
-  const PRODUCTS = [
-    {
-      id: '1',
-      image:
-        'https://i.postimg.cc/YqMZW0Lm/Depth-5-Frame-2.png',
-      name: 'Samsung Galaxy S21',
-      color: 'Black',
-      price: '₹20,999',
-      originalPrice: '₹24,999',
-      grade: 'A1',
-      refurbished: true,
-    },
-    {
-      id: '2',
-      image:
-        'https://i.postimg.cc/YqMZW0Lm/Depth-5-Frame-2.png',
-      name: 'Apple iPhone 13',
-      color: 'Midnight',
-      price: '₹69,900',
-      originalPrice: '₹79,900',
-      grade: 'A1',
-      refurbished: true,
-    },
-  ];
-  const PRODUCTSFILTER = [
-    {
-      id: '1',
-      image:
-        'https://i.postimg.cc/YqMZW0Lm/Depth-5-Frame-2.png',
-      name: 'OnePlus 9',
-      color: 'Black',
-      price: '₹20,999',
-      originalPrice: '₹24,999',
-      grade: 'A1',
-      refurbished: true,
-    },
-    {
-      id: '2',
-      image:
-        'https://i.postimg.cc/YqMZW0Lm/Depth-5-Frame-2.png',
-      name: 'Apple iPhone 13',
-      color: 'Midnight',
-      price: '₹69,900',
-      originalPrice: '₹79,900',
-      grade: 'A1',
-      refurbished: true,
-    },
-    {
-      id: '3',
-      image:
-        'https://i.postimg.cc/YqMZW0Lm/Depth-5-Frame-2.png',
-      name: 'Apple iPhone 13',
-      color: 'Midnight',
-      price: '₹69,900',
-      originalPrice: '₹79,900',
-      grade: 'A1',
-      refurbished: true,
-    },
-    {
-      id: '4',
-      image:
-        'https://i.postimg.cc/YqMZW0Lm/Depth-5-Frame-2.png',
-      name: 'Apple iPhone 13',
-      color: 'Midnight',
-      price: '₹69,900',
-      originalPrice: '₹79,900',
-      grade: 'A1',
-      refurbished: true,
-    },
-  ];
+  const ProductCard = ({item, navigation}) => {
+    const dispatch = useDispatch();
+    const wishlistItems = useSelector(state => state.wishlist.items);
 
-  const ProductCard = ({item}) => (
-    <View style={styles.cardD}>
-      <View style={styles.imageContainerD}>
-        <Image source={{uri: item.image}} style={styles.imageD} />
-        {item.refurbished && (
-          <Text style={styles.refurbishedLabelD}>(Refurbished)</Text>
-        )}
-        <TouchableOpacity style={styles.heartIconD}>
-          <Ionicons name="heart-outline" size={20} color="#333" />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.gradeBoxD}>
-        <Text style={styles.gradeTextD}>Grade {item.grade}</Text>
-      </View>
-      <Text style={styles.productNameD}>{item.name}</Text>
-      <Text style={styles.colorTextD}>● {item.color}</Text>
-      <View style={styles.priceRowD}>
-        <Text style={styles.priceD}>{item.price}</Text>
-        <Text style={styles.originalPriceD}>{item.originalPrice}</Text>
-      </View>
-    </View>
-  );
-  const ProductCardFilter = ({item}) => (
-    <View style={styles.cardD}>
-      <View style={styles.imageContainerD}>
-        <Image source={{uri: item.image}} style={styles.imageD} />
-        {item.refurbished && (
-          <Text style={styles.refurbishedLabelD}>(Refurbished)</Text>
-        )}
-        <TouchableOpacity style={styles.heartIconD}>
-          <Ionicons name="heart-outline" size={20} color="#333" />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.gradeBoxD}>
-        <Text style={styles.gradeTextD}>Grade {item.grade}</Text>
-      </View>
-      <Text style={styles.productNameD}>{item.name}</Text>
-      <Text style={styles.colorTextD}>● {item.color}</Text>
-      <View style={styles.priceRowD}>
-        <Text style={styles.priceD}>{item.price}</Text>
-        <Text style={styles.originalPriceD}>{item.originalPrice}</Text>
-      </View>
-    </View>
-  );
+    // ✅ check product already in wishlist
+    const isInWishlist = wishlistItems.some(
+      w => w.barcode_id == item.barcode_id,
+    );
+    const handleWishlistToggle = () => {
+      if (isInWishlist) {
+        dispatch(removeFromWishlistAPI(item));
+      } else {
+        dispatch(addToWishlistAPI(item));
+      }
+    };
+
+    if (!item) return null;
+
+    return (
+      <TouchableOpacity
+        onPress={() => navigation.navigate('ProductDetail', {product: item})}
+        style={styles.cardD}>
+        {/* Image + Heart */}
+        <View style={styles.imageContainerD}>
+          <Image source={{uri: item.feature_image}} style={styles.imageD} />
+          {item && <Text style={styles.refurbishedLabelD}>(Refurbished)</Text>}
+
+          {/* ❤️ Wishlist Button */}
+          <TouchableOpacity
+            style={styles.heartIconD}
+            onPress={() => handleWishlistToggle()}>
+            <AntDesign
+              name={isInWishlist ? 'heart' : 'hearto'}
+              size={20}
+              color={isInWishlist ? '#E74C3C' : '#999'}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Grade Box */}
+        <View style={styles.gradeBoxD}>
+          <Text style={styles.gradeTextD}>Grade {item.grade_number}</Text>
+        </View>
+
+        {/* Product Info */}
+        <Text style={styles.productNameD}>{item.model_name}</Text>
+        <Text style={styles.colorTextD}>● {item.color_name}</Text>
+        <View style={styles.priceRowD}>
+          <Text style={styles.priceD}>₹ {item.price}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const [showSortModal, setShowSortModal] = useState(false);
   const [selectedOption, setSelectedOption] = useState('lowToHigh');
   const [showFilterModal, setFilterSortModal] = useState(false);
-  const [selectedOptionFilter, setSelectedOptionFilter] = useState('lowToHigh');
 
   const sortOptions = [
     {key: 'lowToHigh', label: 'Price (Low to High)'},
     {key: 'highToLow', label: 'Price (High to Low)'},
     {key: 'grade', label: 'Grade (A1–A9)'},
-    {key: 'newest', label: 'Newest Arrivals'},
-  ];
-  const sortFilter = [
-    {key: 'lowToHigh', label: 'Price (Low to High)'},
-    {key: 'highToLow', label: 'Price (High to Low)'},
-    {key: 'grade', label: 'Grade (A1–A9)'},
-    {key: 'newest', label: 'Newest Arrivals'},
   ];
 
+  // Filter;
+
   const FILTER_TABS = [
-    {key: 'category', label: 'Category', icon: 'apps-outline'},
+    // {key: 'category', label: 'Category', icon: 'apps-outline'},
     {key: 'brands', label: 'Brands', icon: 'pricetags-outline'},
     {key: 'price', label: 'Price', icon: 'cash-outline'},
     {key: 'color', label: 'Color', icon: 'color-palette-outline'},
     {key: 'grade', label: 'Grade', icon: 'shield-checkmark-outline'},
-    {key: 'discount', label: 'Discount', icon: 'ticket-outline'},
+    // {key: 'discount', label: 'Discount', icon: 'ticket-outline'},
     {key: 'specs', label: 'Specific', icon: 'document-text-outline'},
   ];
-
   const BRANDS = [
     {name: 'Apple', count: 128},
     {name: 'Samsung', count: 40},
@@ -272,10 +252,50 @@ const WindowsOS = ({navigation}) => {
   );
 
   const handleApply = () => {
+    let sortedProducts = [...iosProducts];
+
+    if (selectedOption === 'lowToHigh') {
+      sortedProducts.sort((a, b) => a.price - b.price);
+    } else if (selectedOption === 'highToLow') {
+      sortedProducts.sort((a, b) => b.price - a.price);
+    } else if (selectedOption === 'grade') {
+      sortedProducts.sort((a, b) =>
+        a.grade_number.localeCompare(b.grade_number),
+      );
+    }
+
+    setProductData(sortedProducts);
     setShowSortModal(false);
     setFilterSortModal(false);
-    // Perform sorting logic here if needed
   };
+
+  const submitApply = () => {
+    let filtered = [...iosProducts];
+
+    if (selectedBrands.length) {
+      filtered = filtered.filter(p => selectedBrands.includes(p.brand));
+    }
+    if (selectedColors.length) {
+      filtered = filtered.filter(p => selectedColors.includes(p.color_name));
+    }
+    if (selectedGrade) {
+      filtered = filtered.filter(p => p.grade_number === selectedGrade);
+    }
+    if (low && high) {
+      filtered = filtered.filter(p => p.price >= low && p.price <= high);
+    }
+    if (selectedRam) {
+      filtered = filtered.filter(p => p.ram === selectedRam);
+    }
+    if (selectedStorage) {
+      filtered = filtered.filter(p => p.storage === selectedStorage);
+    }
+
+    setProductData(filtered);
+    setShowSortModal(false);
+    setFilterSortModal(false);
+  };
+
   const toggleBrand = brand => {
     setSelectedBrands(prev =>
       prev.includes(brand) ? prev.filter(b => b !== brand) : [...prev, brand],
@@ -364,7 +384,7 @@ const WindowsOS = ({navigation}) => {
             </View>
             <FlatList
               key={`cat-brands`}
-              data={BRANDS}
+              data={brandsData}
               keyExtractor={item => item.name}
               renderItem={({item}) => {
                 const selected = selectedBrands.includes(item.name);
@@ -377,7 +397,7 @@ const WindowsOS = ({navigation}) => {
                     ]}>
                     <Text
                       style={[styles.brandText, selected && {color: '#fff'}]}>
-                      {item.name}
+                      {item.brand_name}
                     </Text>
                     <Text
                       style={[styles.itemCount, selected && {color: '#fff'}]}>
@@ -578,97 +598,76 @@ const WindowsOS = ({navigation}) => {
         <Image
           style={styles.bannerImage}
           source={{
-            uri: 'https://i.postimg.cc/C5bm8QRC/Whats-App-Image-2025-08-14-at-3-35-45-PM-1.jpg',
+            uri: uri?.urlmacos,
           }}
         />
 
-        {/* Shop by Budget */}
-        <Text style={styles.sectionTitle}>Shop by Budget</Text>
-        <View style={styles.grid}>
-          {budgetOptions.map((item, index) => (
-            <View key={index} style={styles.budgetCard}>
-              <View style={styles.imageWrapper}>
-                <Image source={{uri: item.image}} style={styles.budgetImage} />
-                <Text style={styles.budgetLabel}>{item.label}</Text>
-              </View>
-            </View>
-          ))}
-        </View>
-
         {/* Top android Devices */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Top Window’s Laptop</Text>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('TopWindowLaptop')}>
-            <Ionicons
-              marginRight={12}
-              name="chevron-forward"
-              size={18}
-              color="#555"
-            />
-          </TouchableOpacity>
-        </View>
-        <View
-          style={{
-            alignSelf: 'center',
-            flex: 1,
-          }}>
-          <FlatList
-            data={PRODUCTS}
-            renderItem={({item}) => <ProductCard item={item} />}
-            keyExtractor={item => item.id}
-            showsHorizontalScrollIndicator={false}
-            numColumns={2}
-          />
-        </View>
-
-        {/* Grade A1 to A9  */}
-        <View
-          style={{
-            alignItems: 'center',
-            alignItems: 'center',
-            alignSelf: 'center',
-            justifyContent: 'center',
-            marginLeft: 20,
-            marginVertical: 15,
-            flexDirection: 'row',
-          }}>
-          <View style={styles.leftContainer}>
-            <Text style={styles.heading}>What is A1 to A9?</Text>
-            <Text style={styles.subheading}>How Does Our Grading Work?</Text>
-            <Text style={styles.description}>
-              Grading ranges from A1 (like new) to A9 (heavily used).
-            </Text>
-
-            <TouchableOpacity
-              onPress={() => navigation.navigate('Grade')}
-              style={styles.button}>
-              <Text style={styles.buttonText}>Learn More</Text>
+        {iosProducts?.length > 0 ? (
+          <>
+            {/* Shop by Budget */}
+            <Text style={styles.sectionTitle}>Shop by Budget</Text>
+            <TouchableOpacity style={styles.grid}>
+              {budgetOptions.map((item, index) => (
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate('shopbybudgetSmartphones', {
+                      budget: item.label,
+                    })
+                  }
+                  key={index}
+                  style={styles.budgetCard}>
+                  <View style={styles.imageWrapper}>
+                    <Image
+                      source={{uri: item.image}}
+                      style={styles.budgetImage}
+                    />
+                    <Text style={styles.budgetLabel}>{item.label}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
             </TouchableOpacity>
-          </View>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Best of WindowsOS</Text>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('BestOfAndroid')}>
+                <Ionicons
+                  marginRight={12}
+                  name="chevron-forward"
+                  size={18}
+                  color="#555"
+                />
+              </TouchableOpacity>
+            </View>
 
-          {/* Right Image Section */}
-          <Image
-            source={require('../../../../assets/images/mini.png')} // Replace with your image path
-            style={styles.imageG}
-            resizeMode="contain"
-          />
-        </View>
-
-        <View style={styles.headerButtons}>
-          <TouchableOpacity
-            onPress={() => setShowSortModal(true)}
-            style={styles.sortButton}>
-            <Icon name="grid" size={16} color="#000" />
-            <Text style={styles.sortText}>Sort By</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setFilterSortModal(true)}
-            style={styles.filterButton}>
-            <Icon name="sliders" size={16} color="#000" />
-            <Text style={styles.sortText}>Filter</Text>
-          </TouchableOpacity>
-        </View>
+            <View style={styles.headerButtons}>
+              <TouchableOpacity
+                onPress={() => setShowSortModal(true)}
+                style={styles.sortButton}>
+                <Icon name="grid" size={16} color="#000" />
+                <Text style={styles.sortText}>Sort By</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setFilterSortModal(true)}
+                style={styles.filterButton}>
+                <Icon name="sliders" size={16} color="#000" />
+                <Text style={styles.sortText}>Filter</Text>
+              </TouchableOpacity>
+            </View>
+            <View
+              style={{
+                flex: 1,
+              }}>
+              <FlatList
+                data={iosProducts}
+                renderItem={({item}) => <ProductCard item={item} />}
+                keyExtractor={item => item.id}
+                showsHorizontalScrollIndicator={false}
+                numColumns={2}
+              />
+            </View>
+          </>
+        ) : null}
 
         {/* Sort Modal */}
         <Modal visible={showSortModal} transparent animationType="slide">
@@ -763,28 +762,44 @@ const WindowsOS = ({navigation}) => {
               <TouchableOpacity style={styles.resetBtn} onPress={handleReset}>
                 <Text style={styles.resetText}>Reset</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.applyBtn} onPress={handleApply}>
+              <TouchableOpacity style={styles.applyBtn} onPress={submitApply}>
                 <Text style={styles.applyText}>Apply</Text>
               </TouchableOpacity>
             </View>
           </SafeAreaView>
         </Modal>
 
+        {/* Grade A1 to A9  */}
         <View
           style={{
+            alignItems: 'center',
+            alignItems: 'center',
             alignSelf: 'center',
-            flex: 1,
+            justifyContent: 'center',
+            marginLeft: 20,
+            marginVertical: 15,
+            flexDirection: 'row',
           }}>
-          <FlatList
-            data={PRODUCTSFILTER}
-            renderItem={({item}) => <ProductCardFilter item={item} />}
-            keyExtractor={item => item.id}
-            showsHorizontalScrollIndicator={false}
-            numColumns={2}
+          <View style={styles.leftContainer}>
+            <Text style={styles.heading}>What is A1 to A9?</Text>
+            <Text style={styles.subheading}>How Does Our Grading Work?</Text>
+            <Text style={styles.description}>
+              Grading ranges from A1 (like new) to A9 (heavily used).
+            </Text>
+
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Grade')}
+              style={styles.button}>
+              <Text style={styles.buttonText}>Learn More</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Right Image Section */}
+          <Image
+            source={require('../../../../../assets/images/mini.png')} // Replace with your image path
+            style={styles.imageG}
+            resizeMode="contain"
           />
-          <TouchableOpacity style={styles.buttonL}>
-            <Text style={styles.buttonTextL}>Learn More</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -1012,7 +1027,7 @@ const styles = StyleSheet.create({
   },
   heartIconD: {
     position: 'absolute',
-    top: 25,
+    top: 30,
     right: 6,
     backgroundColor: '#fff',
     borderRadius: 20,
@@ -1037,10 +1052,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: {width: 0, height: 2},
     shadowRadius: 4,
-    elevation: 3,
+    marginHorizontal: 5,
   },
 
   leftContainer: {
@@ -1098,8 +1111,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-start',
     gap: 12,
-    marginVertical: 20,
     marginLeft: 15,
+    marginBottom: 10,
   },
   sortButton: {
     borderWidth: 1,
@@ -1581,6 +1594,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default WindowsOS;
-
-
+export default MacOS;

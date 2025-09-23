@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   ActivityIndicator,
   useColorScheme,
+  StatusBar,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import styles from './styles';
@@ -71,10 +72,14 @@ const LoginScreen = ({navigation}) => {
 
       if (response.data.status === true) {
         await AsyncStorage.setItem('TOKEN', response.data.data.token);
+        await AsyncStorage.setItem('USERID', JSON.stringify(response.data.data.user_id));
         Toast.show({type: 'success', text2: response.data.message});
         navigation.navigate('BottomNavigator');
       } else {
-        Toast.show({type: 'error', text2: response.data.message || 'Invalid credentials'});
+        Toast.show({
+          type: 'error',
+          text2: response.data.message || 'Invalid credentials',
+        });
       }
     } catch (error) {
       Toast.show({
@@ -88,8 +93,9 @@ const LoginScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{marginHorizontal: 10}}>
+      <StatusBar barStyle="dark-content" backgroundColor="#f0fefa" />
 
+      <View style={{marginHorizontal: 10}}>
         {/* Back Arrow */}
         <TouchableOpacity
           style={styles.backButton}
@@ -101,8 +107,6 @@ const LoginScreen = ({navigation}) => {
               backgroundColor: '#fff',
               borderRadius: 20,
               padding: 6,
-              elevation: 4,
-              shadowRadius: 2,
             }}
           />
         </TouchableOpacity>
@@ -117,7 +121,9 @@ const LoginScreen = ({navigation}) => {
           value={emailOrPhone}
           onChangeText={setEmailOrPhone}
         />
-        {errors.emailOrPhone && <Text style={styles.errorText}>{errors.emailOrPhone}</Text>}
+        {errors.emailOrPhone && (
+          <Text style={styles.errorText}>{errors.emailOrPhone}</Text>
+        )}
 
         {/* Password */}
         <TextInput
@@ -128,7 +134,9 @@ const LoginScreen = ({navigation}) => {
           value={password}
           onChangeText={setPassword}
         />
-        {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+        {errors.password && (
+          <Text style={styles.errorText}>{errors.password}</Text>
+        )}
 
         {/* Forgot Password */}
         <TouchableOpacity
@@ -142,7 +150,11 @@ const LoginScreen = ({navigation}) => {
           onPress={handleLogin}
           style={styles.loginButton}
           disabled={loading}>
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.loginText}>Log in</Text>}
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.loginText}>Log in</Text>
+          )}
         </TouchableOpacity>
 
         {/* Sign Up */}
@@ -155,7 +167,6 @@ const LoginScreen = ({navigation}) => {
         <TouchableOpacity onPress={() => navigation.navigate('LandingPage')}>
           <Text style={styles.bottomText}>New here? Create an Account?</Text>
         </TouchableOpacity>
-
       </View>
     </SafeAreaView>
   );

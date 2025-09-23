@@ -162,13 +162,11 @@ const AccessoriesTopDevices = ({navigation}) => {
     {key: 'lowToHigh', label: 'Price (Low to High)'},
     {key: 'highToLow', label: 'Price (High to Low)'},
     {key: 'grade', label: 'Grade (A1–A9)'},
-    {key: 'newest', label: 'Newest Arrivals'},
   ];
   const sortFilter = [
     {key: 'lowToHigh', label: 'Price (Low to High)'},
     {key: 'highToLow', label: 'Price (High to Low)'},
     {key: 'grade', label: 'Grade (A1–A9)'},
-    {key: 'newest', label: 'Newest Arrivals'},
   ];
 
   const FILTER_TABS = [

@@ -11,10 +11,10 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const supportOptions = [
   {id: '1', title: 'FAQs', screen: 'FAQsScreen'},
-  {id: '2', title: 'Return & Refund Policy', screen: 'ReturnPolicyScreen'},
-  {id: '3', title: 'Shipping & Delivery Info', screen: 'ShippingScreen'},
-  {id: '4', title: 'Terms & Conditions', screen: 'TermsScreen'},
-  {id: '5', title: 'Contact Us', screen: 'ContactScreen'},
+  {id: '2', title: 'Return & Refund Policy', screen: 'ReturnRefundPolicy'},
+  {id: '3', title: 'Shipping & Delivery Info', screen: 'ShippingDeliveryInfo'},
+  {id: '4', title: 'Terms & Conditions', screen: 'TermsConditions'},
+  {id: '5', title: 'Contact Us', screen: 'ContactUs'},
 ];
 
 const HelpSupport = ({navigation}) => {
@@ -36,7 +36,12 @@ const HelpSupport = ({navigation}) => {
           style={styles.backButton}>
           <Ionicons name="chevron-back" size={22} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Help & Support</Text>
+        <View>
+          <Text style={styles.headerTitle}>Help & Support</Text>
+        </View>
+        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+          <Ionicons name="search" size={24} color="#333" />
+        </TouchableOpacity>
       </View>
 
       {/* Support List */}
@@ -58,27 +63,19 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     paddingVertical: 10,
-    borderColor: '#ccc',
-    position: 'relative',
-    height: 50, // optional, to help with alignment
+    justifyContent: 'space-between',
+    marginHorizontal: 10,
   },
   backButton: {
-    position: 'absolute', // ADD THIS
-    left: 15,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
     borderRadius: 20,
     padding: 6,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: {width: 0, height: 2},
-    shadowRadius: 2,
+    left: 0,
   },
   headerTitle: {
     fontSize: 16,
-    fontWeight: 'medium', // change 'medium' to a valid value
+    fontWeight: '500',
     color: '#000',
     textAlign: 'center',
   },
@@ -96,8 +93,8 @@ const styles = StyleSheet.create({
   itemText: {
     fontSize: 16,
     color: '#000',
-    fontWeight:"medium",
-    color:"#171D1C"
+    fontWeight: 'medium',
+    color: '#171D1C',
   },
 });
 

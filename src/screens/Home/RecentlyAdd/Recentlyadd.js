@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -16,7 +16,14 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import Icon from 'react-native-vector-icons/Feather';
 import RangeSlider from 'rn-range-slider';
 import {useDispatch, useSelector} from 'react-redux';
-import {toggleWishlist} from '../../../redux/slices/wishlistSlice';
+import {
+  toggleWishlist,
+  addToWishlistAPI,
+  removeFromWishlistAPI,
+} from '../../../redux/slices/wishlistSlice';
+import {fetchOsList} from '../../../redux/slices/homeSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 const {width} = Dimensions.get('window');
 
@@ -73,6 +80,36 @@ const ramOptions = ['4GB', '6GB', '8GB', '12GB', '16GB', '32GB'];
 const storageOptions = ['64GB', '128GB', '256GB', '512GB', '1TB'];
 
 const Recentlyadd = ({navigation, visible, onClose, item}) => {
+  const [recentlyAdded, setRecentlyAdded] = useState('');
+  const dispatch = useDispatch();
+  const {osList} = useSelector(state => state.home);
+
+  useEffect(() => {
+    dispatch(fetchOsList());
+  }, [dispatch]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const token = await AsyncStorage.getItem('TOKEN');
+      const response = await axios.get(
+        `https://api.mobitrade.in/api/lateststocklist`,
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      setRecentlyAdded(response?.data?.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const [showSortModal, setShowSortModal] = useState(false);
   const [selectedOption, setSelectedOption] = useState('lowToHigh');
   const [showFilterModal, setFilterSortModal] = useState(false);
@@ -82,13 +119,11 @@ const Recentlyadd = ({navigation, visible, onClose, item}) => {
     {key: 'lowToHigh', label: 'Price (Low to High)'},
     {key: 'highToLow', label: 'Price (High to Low)'},
     {key: 'grade', label: 'Grade (A1–A9)'},
-    {key: 'newest', label: 'Newest Arrivals'},
   ];
   const sortFilter = [
     {key: 'lowToHigh', label: 'Price (Low to High)'},
     {key: 'highToLow', label: 'Price (High to Low)'},
     {key: 'grade', label: 'Grade (A1–A9)'},
-    {key: 'newest', label: 'Newest Arrivals'},
   ];
 
   const handleApply = () => {
@@ -132,80 +167,32 @@ const Recentlyadd = ({navigation, visible, onClose, item}) => {
       </View>
     </ImageBackground>
   );
-  const CATEGORIES = ['New Arrivals', 'Mobile', 'Laptop', 'Macbook'];
+  const CATEGORIES = ['Android', 'iOS', 'Windows', 'Macbook'];
 
-  const PRODUCTS = [
-    {
-      id: '1',
-      image:
-        'https://i.postimg.cc/FR7g3304/Whats-App-Image-2025-07-11-at-5-45-27-PM-1.jpg',
-      name: 'Samsung Galaxy S21',
-      subtitle: '(Refurbished)',
-      specs: '8GB 128GB ⚫ Black',
-      color: 'Black',
-      price: '₹20,999',
-      originalPrice: '₹24,999',
-      grade: 'A1',
-      refurbished: true,
-      warranty: '15-day warranty',
-    },
-    {
-      id: '2',
-      image:
-        'https://i.postimg.cc/FR7g3304/Whats-App-Image-2025-07-11-at-5-45-27-PM-1.jpg',
-      name: 'Apple iPhone 13',
-      subtitle: '(Refurbished)',
-      specs: '8GB 128GB ⚫ Black',
-      color: 'Black',
-      price: '₹20,999',
-      originalPrice: '₹24,999',
-      grade: 'A1',
-      refurbished: true,
-      warranty: '15-day warranty',
-    },
-    {
-      id: '3',
-      image:
-        'https://i.postimg.cc/FR7g3304/Whats-App-Image-2025-07-11-at-5-45-27-PM-1.jpg',
-      name: 'OnePlus 9',
-      subtitle: '(Refurbished)',
-      specs: '8GB 128GB ⚫ Black',
-      color: 'Black',
-      price: '₹20,999',
-      originalPrice: '₹24,999',
-      grade: 'A1',
-      refurbished: true,
-      warranty: '15-day warranty',
-    },
-    {
-      id: '4',
-      image:
-        'https://i.postimg.cc/FR7g3304/Whats-App-Image-2025-07-11-at-5-45-27-PM-1.jpg',
-      name: 'OnePlus 9',
-      subtitle: '(Refurbished)',
-      specs: '8GB 128GB ⚫ Black',
-      color: 'Black',
-      price: '₹20,999',
-      originalPrice: '₹24,999',
-      grade: 'A1',
-      refurbished: true,
-      warranty: '15-day warranty',
-    },
-  ];
-
-  const [activeTab, setActiveTab] = useState('Mobile');
+  const [activeTab, setActiveTab] = useState('Android');
 
   // Tabs
   const renderTabs = () => (
     <View style={styles.tabContainer}>
-      {CATEGORIES.map(category => (
-        <TouchableOpacity key={category} onPress={() => setActiveTab(category)}>
+      {osList.map(item => (
+        <TouchableOpacity
+          key={item.id}
+          style={[
+            styles.tabItem,
+            activeTab === item.os_name && styles.activeTab,
+          ]}
+          onPress={() => setActiveTab(item.os_name)}>
+          <Image
+            source={{uri: item.image_url}}
+            style={styles.tabIcon}
+            resizeMode="contain"
+          />
           <Text
             style={[
               styles.tabText,
-              activeTab === category && styles.activeTabText,
+              activeTab === item.os_name && styles.activeTabText,
             ]}>
-            {category}
+            {item.os_name}
           </Text>
         </TouchableOpacity>
       ))}
@@ -214,21 +201,39 @@ const Recentlyadd = ({navigation, visible, onClose, item}) => {
 
   const ProductCard = ({item}) => {
     const dispatch = useDispatch();
-    const wishlist = useSelector(state => state.wishlist);
-    const isInWishlist = wishlist.some(w => w.id === item.id);
 
-    if (!item) return null; // ✅ safety check
+    // ✅ Get wishlist items from Redux
+    const wishlistItems = useSelector(state => state.wishlist.items);
+
+    // ✅ Check if this product is in wishlist
+    const isInWishlist = wishlistItems.some(w => w.barcode_id === item.id);
+
+    const handleWishlistToggle = () => {
+      if (isInWishlist) {
+        // ❌ no need to pass userId
+        dispatch(removeFromWishlistAPI(item.id));
+      } else {
+        // ❌ no need to pass userId
+        dispatch(addToWishlistAPI(item));
+      }
+    };
+
+    if (!item) return null;
 
     return (
-      <View style={styles.cardD}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('ProductList')}
+        style={styles.cardD}>
         <View style={styles.imageContainerD}>
           <Image source={{uri: item.image}} style={styles.imageD} />
           {item.refurbished && (
             <Text style={styles.refurbishedLabelD}>(Refurbished)</Text>
           )}
+
+          {/* ❤️ Wishlist Button */}
           <TouchableOpacity
             style={styles.heartIconD}
-            onPress={() => dispatch(toggleWishlist(item))}>
+            onPress={handleWishlistToggle}>
             <Ionicons
               name={isInWishlist ? 'heart' : 'heart-outline'}
               size={20}
@@ -236,16 +241,17 @@ const Recentlyadd = ({navigation, visible, onClose, item}) => {
             />
           </TouchableOpacity>
         </View>
+
         <View style={styles.gradeBoxD}>
-          <Text style={styles.gradeTextD}>Grade {item.grade}</Text>
+          <Text style={styles.gradeTextD}>Grade {item.grade_number}</Text>
         </View>
-        <Text style={styles.productNameD}>{item.name}</Text>
-        <Text style={styles.colorTextD}>● {item.color}</Text>
+        <Text style={styles.productNameD}>{item.model_name}</Text>
+        <Text style={styles.colorTextD}>● {item.color_name}</Text>
+
         <View style={styles.priceRowD}>
-          <Text style={styles.priceD}>{item.price}</Text>
-          <Text style={styles.originalPriceD}>{item.originalPrice}</Text>
-        </View>{' '}
-      </View>
+          <Text style={styles.priceD}>₹ {item.price}</Text>
+        </View>
+      </TouchableOpacity>
     );
   };
 
@@ -598,6 +604,14 @@ const Recentlyadd = ({navigation, visible, onClose, item}) => {
     );
   };
 
+  // Safe filtering (if productData is undefined, use [])
+  const tabmacos = (recentlyAdded || []).filter(
+    item => item.operating_systems && item.operating_systems,
+  );
+
+  console.log("tabdata---------------->", tabmacos)
+  console.log("activeTab---------------->", activeTab)
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Scrollable content starts here */}
@@ -617,17 +631,9 @@ const Recentlyadd = ({navigation, visible, onClose, item}) => {
               <Ionicons name="search" size={24} color="#333" />
             </TouchableOpacity>
           </View>
-          <FlatList
-            data={data}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={item => item.id}
-            renderItem={({item}) => <RecentlyAdds item={item} />}
-            contentContainerStyle={{paddingHorizontal: 16, paddingVertical: 8}}
-          />
-          {/* Tabs Section */}
+
           {renderTabs()}
-          {activeTab === 'Mobile' && (
+          {activeTab && (
             <>
               <View style={styles.headerButtons}>
                 <TouchableOpacity
@@ -645,8 +651,8 @@ const Recentlyadd = ({navigation, visible, onClose, item}) => {
               </View>
 
               <FlatList
-                data={PRODUCTS}
-                keyExtractor={item => item.id.toString()}
+                data={recentlyAdded}
+                keyExtractor={item => item.id}
                 renderItem={({item}) => <ProductCard item={item} />}
                 showsHorizontalScrollIndicator={false}
                 numColumns={2}
@@ -963,11 +969,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginRight: 15,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: {width: 0, height: 2},
+    // shadowColor: '#000',
+    // shadowOpacity: 0.1,
+    // shadowOffset: {width: 0, height: 2},
     shadowRadius: 4,
-    elevation: 3,
+    // elevation: 3,
     marginVertical: 10,
   },
   cardM: {

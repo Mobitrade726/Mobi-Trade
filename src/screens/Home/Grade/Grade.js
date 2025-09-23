@@ -64,7 +64,8 @@ const Grade = ({navigation}) => {
     },
     {
       title: 'A5 – Fair',
-      description: 'Grade A5 works but has bigger appearance problems — maybe a cracked screen, broken camera glass, or mismatched parts. It’s fine if you care more about function than looks, or plan to repair it later.',
+      description:
+        'Grade A5 works but has bigger appearance problems — maybe a cracked screen, broken camera glass, or mismatched parts. It’s fine if you care more about function than looks, or plan to repair it later.',
       points: [
         'May have broken or cracked glass.',
         'Works but might look rough.',
@@ -75,7 +76,8 @@ const Grade = ({navigation}) => {
     },
     {
       title: 'A6 – Functional with Issues',
-      description: 'Still works but has some functional problems — maybe the Wi-Fi or Bluetooth doesn’t work, or there are lines on the screen. It’s fine for basic calls and texts, but not for full feature use.',
+      description:
+        'Still works but has some functional problems — maybe the Wi-Fi or Bluetooth doesn’t work, or there are lines on the screen. It’s fine for basic calls and texts, but not for full feature use.',
       points: [
         'Some features won’t work.',
         'Minor screen problems possible.',
@@ -86,7 +88,8 @@ const Grade = ({navigation}) => {
     },
     {
       title: 'A7 – Heavily Worn',
-      description: 'Has a lot of wear and several problems — maybe the camera doesn’t work, buttons are missing, or charging is tricky. Only get this if you’re okay with limited use or want it for parts.',
+      description:
+        'Has a lot of wear and several problems — maybe the camera doesn’t work, buttons are missing, or charging is tricky. Only get this if you’re okay with limited use or want it for parts.',
       points: [
         'Many features not working. ',
         'Body may be badly damaged.',
@@ -183,6 +186,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 15,
     justifyContent: 'space-between',
     marginHorizontal: 10,
   },

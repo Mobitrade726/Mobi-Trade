@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -15,11 +15,37 @@ import {Dimensions} from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import RangeSlider from 'rn-range-slider';
 import {useSelector} from 'react-redux';
+import axios from 'axios';
+import Toast from 'react-native-toast-message';
 
 const {width} = Dimensions.get('window');
 
 const Android = ({navigation}) => {
   const {uri} = useSelector(state => state.cat);
+  const [productData, setProductData] = useState();
+
+  // Safe filtering (if productData is undefined, use [])
+  const androidProducts = (productData || []).filter(
+    item =>
+      item.operating_systems &&
+      item.operating_systems === 'Android',
+  );
+
+  useEffect(() => {
+    fetchPostalDetails();
+  }, []);
+
+  const fetchPostalDetails = async zip => {
+    try {
+      const res = await axios.get(`https://api.mobitrade.in/api/product/list`);
+      setProductData(res?.data?.data);
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text2: JSON.stringify(error?.response?.data?.message),
+      });
+    }
+  };
 
   const budgetOptions = [
     {
@@ -41,118 +67,23 @@ const Android = ({navigation}) => {
     },
   ];
 
-  const PRODUCTS = [
-    {
-      id: '1',
-      image:
-        'https://i.postimg.cc/FR7g3304/Whats-App-Image-2025-07-11-at-5-45-27-PM-1.jpg',
-      name: 'Samsung Galaxy S21',
-      color: 'Black',
-      price: '₹20,999',
-      originalPrice: '₹24,999',
-      grade: 'A1',
-      refurbished: true,
-    },
-    {
-      id: '2',
-      image:
-        'https://i.postimg.cc/FR7g3304/Whats-App-Image-2025-07-11-at-5-45-27-PM-1.jpg',
-      name: 'Apple iPhone 13',
-      color: 'Midnight',
-      price: '₹69,900',
-      originalPrice: '₹79,900',
-      grade: 'A1',
-      refurbished: true,
-    },
-  ];
-  const PRODUCTSFILTER = [
-    {
-      id: '1',
-      image:
-        'https://i.postimg.cc/FR7g3304/Whats-App-Image-2025-07-11-at-5-45-27-PM-1.jpg',
-      name: 'OnePlus 9',
-      color: 'Black',
-      price: '₹20,999',
-      originalPrice: '₹24,999',
-      grade: 'A1',
-      refurbished: true,
-    },
-    {
-      id: '2',
-      image:
-        'https://i.postimg.cc/FR7g3304/Whats-App-Image-2025-07-11-at-5-45-27-PM-1.jpg',
-      name: 'Apple iPhone 13',
-      color: 'Midnight',
-      price: '₹69,900',
-      originalPrice: '₹79,900',
-      grade: 'A1',
-      refurbished: true,
-    },
-    {
-      id: '3',
-      image:
-        'https://i.postimg.cc/FR7g3304/Whats-App-Image-2025-07-11-at-5-45-27-PM-1.jpg',
-      name: 'Apple iPhone 13',
-      color: 'Midnight',
-      price: '₹69,900',
-      originalPrice: '₹79,900',
-      grade: 'A1',
-      refurbished: true,
-    },
-    {
-      id: '4',
-      image:
-        'https://i.postimg.cc/FR7g3304/Whats-App-Image-2025-07-11-at-5-45-27-PM-1.jpg',
-      name: 'Apple iPhone 13',
-      color: 'Midnight',
-      price: '₹69,900',
-      originalPrice: '₹79,900',
-      grade: 'A1',
-      refurbished: true,
-    },
-  ];
-
   const ProductCard = ({item}) => (
     <View style={styles.cardD}>
       <View style={styles.imageContainerD}>
         <Image source={{uri: item.image}} style={styles.imageD} />
-        {item.refurbished && (
-          <Text style={styles.refurbishedLabelD}>(Refurbished)</Text>
-        )}
+        {item && <Text style={styles.refurbishedLabelD}>(Refurbished)</Text>}
         <TouchableOpacity style={styles.heartIconD}>
           <Ionicons name="heart-outline" size={20} color="#333" />
         </TouchableOpacity>
       </View>
       <View style={styles.gradeBoxD}>
-        <Text style={styles.gradeTextD}>Grade {item.grade}</Text>
+        <Text style={styles.gradeTextD}>Grade {item.grade_number}</Text>
       </View>
-      <Text style={styles.productNameD}>{item.name}</Text>
-      <Text style={styles.colorTextD}>● {item.color}</Text>
+      <Text style={styles.productNameD}>{item.model_name}</Text>
+      <Text style={styles.colorTextD}>● {item.color_name}</Text>
       <View style={styles.priceRowD}>
-        <Text style={styles.priceD}>{item.price}</Text>
-        <Text style={styles.originalPriceD}>{item.originalPrice}</Text>
-      </View>
-    </View>
-  );
-  const ProductCardFilter = ({item}) => (
-    <View style={styles.cardD}>
-      <View style={styles.imageContainerD}>
-        <Image source={{uri: item.image}} style={styles.imageD} />
-        {item.refurbished && (
-          <Text style={styles.refurbishedLabelD}>(Refurbished)</Text>
-        )}
-        <TouchableOpacity style={styles.heartIconD}>
-          <Ionicons name="heart-outline" size={20} color="#333" />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.gradeBoxD}>
-        <Text style={styles.gradeTextD}>Grade {item.grade}</Text>
-      </View>
-      <Text style={styles.productNameD}>{item.name}</Text>
-      <Text style={styles.colorTextD}>● {item.color}</Text>
-      <View style={styles.priceRowD}>
-        <Text style={styles.priceD}>{item.price}</Text>
-        <Text style={styles.originalPriceD}>{item.originalPrice}</Text>
+        <Text style={styles.priceD}>₹ {item.price}</Text>
+        {/* <Text style={styles.originalPriceD}>{item.originalPrice}</Text> */}
       </View>
     </View>
   );
@@ -166,13 +97,11 @@ const Android = ({navigation}) => {
     {key: 'lowToHigh', label: 'Price (Low to High)'},
     {key: 'highToLow', label: 'Price (High to Low)'},
     {key: 'grade', label: 'Grade (A1–A9)'},
-    {key: 'newest', label: 'Newest Arrivals'},
   ];
   const sortFilter = [
     {key: 'lowToHigh', label: 'Price (Low to High)'},
     {key: 'highToLow', label: 'Price (High to Low)'},
     {key: 'grade', label: 'Grade (A1–A9)'},
-    {key: 'newest', label: 'Newest Arrivals'},
   ];
 
   const FILTER_TABS = [
@@ -578,100 +507,73 @@ const Android = ({navigation}) => {
         <Image
           style={styles.bannerImage}
           source={{
-            uri: uri?.url,
+            uri: uri?.urlandroid,
           }}
         />
 
-        {/* Shop by Budget */}
-        <Text style={styles.sectionTitle}>Shop by Budget</Text>
-        <TouchableOpacity style={styles.grid}>
-          {budgetOptions.map((item, index) => (
-            <TouchableOpacity
-              onPress={() => navigation.navigate('shopbybudgetSmartphones')}
-              key={index}
-              style={styles.budgetCard}>
-              <View style={styles.imageWrapper}>
-                <Image source={{uri: item.image}} style={styles.budgetImage} />
-                <Text style={styles.budgetLabel}>{item.label}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </TouchableOpacity>
-
         {/* Top android Devices */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Best of Android</Text>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('BestOfAndroid')}>
-            <Ionicons
-              marginRight={12}
-              name="chevron-forward"
-              size={18}
-              color="#555"
-            />
-          </TouchableOpacity>
-        </View>
-        <View
-          style={{
-            alignSelf: 'center',
-            flex: 1,
-          }}>
-          <FlatList
-            data={PRODUCTS}
-            renderItem={({item}) => <ProductCard item={item} />}
-            keyExtractor={item => item.id}
-            showsHorizontalScrollIndicator={false}
-            numColumns={2}
-          />
-        </View>
-
-        {/* Grade A1 to A9  */}
-        <View
-          style={{
-            alignItems: 'center',
-            alignItems: 'center',
-            alignSelf: 'center',
-            justifyContent: 'center',
-            marginLeft: 20,
-            marginVertical: 15,
-            flexDirection: 'row',
-          }}>
-          <View style={styles.leftContainer}>
-            <Text style={styles.heading}>What is A1 to A9?</Text>
-            <Text style={styles.subheading}>How Does Our Grading Work?</Text>
-            <Text style={styles.description}>
-              Grading ranges from A1 (like new) to A9 (heavily used).
-            </Text>
-
-            <TouchableOpacity
-              onPress={() => navigation.navigate('Grade')}
-              style={styles.button}>
-              <Text style={styles.buttonText}>Learn More</Text>
+        {androidProducts?.length > 0 ? (
+          <>
+            {/* Shop by Budget */}
+            <Text style={styles.sectionTitle}>Shop by Budget</Text>
+            <TouchableOpacity style={styles.grid}>
+              {budgetOptions.map((item, index) => (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('shopbybudgetSmartphones')}
+                  key={index}
+                  style={styles.budgetCard}>
+                  <View style={styles.imageWrapper}>
+                    <Image
+                      source={{uri: item.feature_image}}
+                      style={styles.budgetImage}
+                    />
+                    <Text style={styles.budgetLabel}>{item.label}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
             </TouchableOpacity>
-          </View>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Best of Android</Text>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('BestOfAndroid')}>
+                <Ionicons
+                  marginRight={12}
+                  name="chevron-forward"
+                  size={18}
+                  color="#555"
+                />
+              </TouchableOpacity>
+            </View>
 
-          {/* Right Image Section */}
-          <Image
-            source={require('../../../../../assets/images/mini.png')} // Replace with your image path
-            style={styles.imageG}
-            resizeMode="contain"
-          />
-        </View>
-
-        <View style={styles.headerButtons}>
-          <TouchableOpacity
-            onPress={() => setShowSortModal(true)}
-            style={styles.sortButton}>
-            <Icon name="grid" size={16} color="#000" />
-            <Text style={styles.sortText}>Sort By</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setFilterSortModal(true)}
-            style={styles.filterButton}>
-            <Icon name="sliders" size={16} color="#000" />
-            <Text style={styles.sortText}>Filter</Text>
-          </TouchableOpacity>
-        </View>
+            <View style={styles.headerButtons}>
+              <TouchableOpacity
+                onPress={() => setShowSortModal(true)}
+                style={styles.sortButton}>
+                <Icon name="grid" size={16} color="#000" />
+                <Text style={styles.sortText}>Sort By</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setFilterSortModal(true)}
+                style={styles.filterButton}>
+                <Icon name="sliders" size={16} color="#000" />
+                <Text style={styles.sortText}>Filter</Text>
+              </TouchableOpacity>
+            </View>
+            <View
+              style={{
+                alignSelf: 'center',
+                flex: 1,
+              }}>
+              <FlatList
+                data={androidProducts}
+                renderItem={({item}) => <ProductCard item={item} />}
+                keyExtractor={item => item.id}
+                showsHorizontalScrollIndicator={false}
+                numColumns={2}
+              />
+            </View>
+          </>
+        ) : null}
 
         {/* Sort Modal */}
         <Modal visible={showSortModal} transparent animationType="slide">
@@ -773,21 +675,37 @@ const Android = ({navigation}) => {
           </SafeAreaView>
         </Modal>
 
+        {/* Grade A1 to A9  */}
         <View
           style={{
+            alignItems: 'center',
+            alignItems: 'center',
             alignSelf: 'center',
-            flex: 1,
+            justifyContent: 'center',
+            marginLeft: 20,
+            marginVertical: 15,
+            flexDirection: 'row',
           }}>
-          <FlatList
-            data={PRODUCTSFILTER}
-            renderItem={({item}) => <ProductCardFilter item={item} />}
-            keyExtractor={item => item.id}
-            showsHorizontalScrollIndicator={false}
-            numColumns={2}
+          <View style={styles.leftContainer}>
+            <Text style={styles.heading}>What is A1 to A9?</Text>
+            <Text style={styles.subheading}>How Does Our Grading Work?</Text>
+            <Text style={styles.description}>
+              Grading ranges from A1 (like new) to A9 (heavily used).
+            </Text>
+
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Grade')}
+              style={styles.button}>
+              <Text style={styles.buttonText}>Learn More</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Right Image Section */}
+          <Image
+            source={require('../../../../../assets/images/mini.png')} // Replace with your image path
+            style={styles.imageG}
+            resizeMode="contain"
           />
-          <TouchableOpacity style={styles.buttonL}>
-            <Text style={styles.buttonTextL}>Learn More</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -1015,7 +933,7 @@ const styles = StyleSheet.create({
   },
   heartIconD: {
     position: 'absolute',
-    top: 25,
+    top: 30,
     right: 6,
     backgroundColor: '#fff',
     borderRadius: 20,
@@ -1040,10 +958,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: {width: 0, height: 2},
     shadowRadius: 4,
-    elevation: 3,
+    marginHorizontal: 5,
   },
 
   leftContainer: {
@@ -1101,8 +1017,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-start',
     gap: 12,
-    marginVertical: 20,
     marginLeft: 15,
+    marginBottom: 10,
   },
   sortButton: {
     borderWidth: 1,

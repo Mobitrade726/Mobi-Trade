@@ -67,7 +67,7 @@ const Privacy = ({navigation}) => {
 
       {/* Buttons */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.privacyButton}>
+        <TouchableOpacity onPress={()=> navigation.navigate('TermsConditions')} style={styles.privacyButton}>
           <Feather name="link" size={18} color="#fff" />
           <Text style={styles.privacyButtonText}> Read Privacy Policy</Text>
         </TouchableOpacity>

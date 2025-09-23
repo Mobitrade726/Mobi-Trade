@@ -171,7 +171,7 @@ const RecentlyView = ({navigation}) => {
               <Ionicons name="search" size={24} color="#333" />
             </TouchableOpacity>
           </View>
-          <Text style={{fontWeight: '600', fontSize: 18, marginVertical: 10}}>
+          {/* <Text style={{fontWeight: '600', fontSize: 18, marginVertical: 10}}>
             You Might Like
           </Text>
 
@@ -182,7 +182,7 @@ const RecentlyView = ({navigation}) => {
             keyExtractor={item => item.id}
             renderItem={({item}) => <RecentlyAdds item={item} />}
             contentContainerStyle={{paddingHorizontal: 16, paddingVertical: 8}}
-          />
+          /> */}
           <>
             <Text style={{fontWeight: '600', fontSize: 18, marginVertical: 10}}>
               Recently Viewed Products

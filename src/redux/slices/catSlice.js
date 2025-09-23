@@ -40,7 +40,10 @@ const initialState = {
     },
   ],
   uri: {
-    url: 'https://i.postimg.cc/7ZxSBcTt/Whats-App-Image-2025-08-14-at-3-35-45-PM.jpg',
+    urlandroid: 'https://i.postimg.cc/7ZxSBcTt/Whats-App-Image-2025-08-14-at-3-35-45-PM.jpg',
+    urlios: 'https://i.postimg.cc/nzTjxytw/Shopping-Immersive-Header-with-Image-and-CTA-4.png',
+    urlwindows: 'https://i.postimg.cc/vZGM8j8W/Shopping-Immersive-Header-with-Image-and-CTA-5.png',
+    urlmacos: 'https://i.postimg.cc/XY52h76L/Shopping-Immersive-Header-with-Image-and-CTA-6.png',
   },
 };
 

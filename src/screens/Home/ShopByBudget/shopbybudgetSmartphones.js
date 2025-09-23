@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -14,79 +14,56 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import {Dimensions} from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import RangeSlider from 'rn-range-slider';
+import axios from 'axios';
+import Toast from 'react-native-toast-message';
+import {useRoute} from '@react-navigation/native';
 
 const {width} = Dimensions.get('window');
 
 const shopbybudgetSmartphones = ({navigation}) => {
-  const PRODUCTSFILTER = [
-    {
-      id: '1',
-      image:
-        'https://i.postimg.cc/T3CgwmF9/Whats-App-Image-2025-07-31-at-12-05-42-PM.jpg',
-      name: 'OnePlus 9',
-      color: 'Black',
-      price: '₹20,999',
-      originalPrice: '₹24,999',
-      grade: 'A1',
-      refurbished: true,
-    },
-    {
-      id: '2',
-      image:
-        'https://i.postimg.cc/T3CgwmF9/Whats-App-Image-2025-07-31-at-12-05-42-PM.jpg',
-      name: 'Apple iPhone 13',
-      color: 'Midnight',
-      price: '₹69,900',
-      originalPrice: '₹79,900',
-      grade: 'A1',
-      refurbished: true,
-    },
-    {
-      id: '3',
-      image:
-        'https://i.postimg.cc/T3CgwmF9/Whats-App-Image-2025-07-31-at-12-05-42-PM.jpg',
-      name: 'Apple iPhone 13',
-      color: 'Midnight',
-      price: '₹69,900',
-      originalPrice: '₹79,900',
-      grade: 'A1',
-      refurbished: true,
-    },
-    {
-      id: '4',
-      image:
-        'https://i.postimg.cc/T3CgwmF9/Whats-App-Image-2025-07-31-at-12-05-42-PM.jpg',
-      name: 'Apple iPhone 13',
-      color: 'Midnight',
-      price: '₹69,900',
-      originalPrice: '₹79,900',
-      grade: 'A1',
-      refurbished: true,
-    },
-  ];
+  const [productData, setProductData] = useState([]);
+  const route = useRoute();
+  const {budget} = route.params || {}; // 👈 receive param
+  const androidProducts = (productData || []).filter(
+    item => item.operating_systems && item.operating_systems === 'iOS',
+  );
 
   const ProductCardFilter = ({item}) => (
     <View style={styles.cardD}>
       <View style={styles.imageContainerD}>
         <Image source={{uri: item.image}} style={styles.imageD} />
-        {item.refurbished && (
-          <Text style={styles.refurbishedLabelD}>(Refurbished)</Text>
-        )}
+        {item && <Text style={styles.refurbishedLabelD}>(Refurbished)</Text>}
         <TouchableOpacity style={styles.heartIconD}>
           <Ionicons name="heart-outline" size={20} color="#333" />
         </TouchableOpacity>
       </View>
       <View style={styles.gradeBoxD}>
-        <Text style={styles.gradeTextD}>Grade {item.grade}</Text>
+        <Text style={styles.gradeTextD}>Grade {item.grade_number}</Text>
       </View>
-      <Text style={styles.productNameD}>{item.name}</Text>
-      <Text style={styles.colorTextD}>● {item.color}</Text>
+      <Text style={styles.productNameD}>{item.model_name}</Text>
+      <Text style={styles.colorTextD}>● {item.color_name}</Text>
       <View style={styles.priceRowD}>
-        <Text style={styles.priceD}>{item.price}</Text>
-        <Text style={styles.originalPriceD}>{item.originalPrice}</Text>
+        <Text style={styles.priceD}>₹ {item.price}</Text>
+        {/* <Text style={styles.originalPriceD}>{item.originalPrice}</Text> */}
       </View>
     </View>
   );
+
+  useEffect(() => {
+    fetchPostalDetails();
+  }, []);
+
+  const fetchPostalDetails = async zip => {
+    try {
+      const res = await axios.get(`https://api.mobitrade.in/api/product/list`);
+      setProductData(res?.data?.data);
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text2: JSON.stringify(error?.response?.data?.message),
+      });
+    }
+  };
 
   const [showSortModal, setShowSortModal] = useState(false);
   const [selectedOption, setSelectedOption] = useState('lowToHigh');
@@ -97,13 +74,11 @@ const shopbybudgetSmartphones = ({navigation}) => {
     {key: 'lowToHigh', label: 'Price (Low to High)'},
     {key: 'highToLow', label: 'Price (High to Low)'},
     {key: 'grade', label: 'Grade (A1–A9)'},
-    {key: 'newest', label: 'Newest Arrivals'},
   ];
   const sortFilter = [
     {key: 'lowToHigh', label: 'Price (Low to High)'},
     {key: 'highToLow', label: 'Price (High to Low)'},
     {key: 'grade', label: 'Grade (A1–A9)'},
-    {key: 'newest', label: 'Newest Arrivals'},
   ];
 
   const FILTER_TABS = [
@@ -508,7 +483,31 @@ const shopbybudgetSmartphones = ({navigation}) => {
     '₹20,000 - ₹30,000',
     'Above ₹30,000',
   ];
-  const [selected, setSelected] = useState('Under ₹10,000');
+  const [selected, setSelected] = useState(budget || 'Under ₹10,000');
+  const [filteredProducts, setFilteredProducts] = useState([]);
+
+  // Apply filter whenever `selected` changes
+  useEffect(() => {
+    let filtered = androidProducts;
+
+    if (selected === 'Under ₹10,000') {
+      filtered = androidProducts.filter(item => parseFloat(item.price) < 10000);
+    } else if (selected === '₹10,000 - ₹20,000') {
+      filtered = androidProducts.filter(
+        item =>
+          parseFloat(item.price) >= 10000 && parseFloat(item.price) <= 20000,
+      );
+    } else if (selected === '₹20,000 - ₹30,000') {
+      filtered = androidProducts.filter(
+        item =>
+          parseFloat(item.price) > 20000 && parseFloat(item.price) <= 30000,
+      );
+    } else if (selected === 'Above ₹30,000') {
+      filtered = androidProducts.filter(item => parseFloat(item.price) > 30000);
+    }
+
+    setFilteredProducts(filtered);
+  }, [selected, androidProducts]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -558,20 +557,35 @@ const shopbybudgetSmartphones = ({navigation}) => {
           ))}
         </ScrollView>
 
+        {/* Header Buttons */}
         <View style={styles.headerButtons}>
           <TouchableOpacity
-            onPress={() => setShowSortModal(true)}
+            onPress={() => console.log('Sort')}
             style={styles.sortButton}>
             <Icon name="grid" size={16} color="#000" />
             <Text style={styles.sortText}>Sort By</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => setFilterSortModal(true)}
+            onPress={() => console.log('Filter')}
             style={styles.filterButton}>
             <Icon name="sliders" size={16} color="#000" />
             <Text style={styles.sortText}>Filter</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Product List */}
+        <FlatList
+          data={filteredProducts}
+          renderItem={({item}) => <ProductCardFilter item={item} />}
+          keyExtractor={item => item.id}
+          numColumns={2}
+          contentContainerStyle={{paddingBottom: 80}}
+        />
+
+        {/* Learn More Button */}
+        <TouchableOpacity style={styles.buttonL}>
+          <Text style={styles.buttonTextL}>Learn More</Text>
+        </TouchableOpacity>
 
         {/* Sort Modal */}
         <Modal visible={showSortModal} transparent animationType="slide">
@@ -672,23 +686,6 @@ const shopbybudgetSmartphones = ({navigation}) => {
             </View>
           </SafeAreaView>
         </Modal>
-
-        <View
-          style={{
-            alignSelf: 'center',
-            flex: 1,
-          }}>
-          <FlatList
-            data={PRODUCTSFILTER}
-            renderItem={({item}) => <ProductCardFilter item={item} />}
-            keyExtractor={item => item.id}
-            showsHorizontalScrollIndicator={false}
-            numColumns={2}
-          />
-          <TouchableOpacity style={styles.buttonL}>
-            <Text style={styles.buttonTextL}>Learn More</Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -940,11 +937,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: {width: 0, height: 2},
     shadowRadius: 4,
-    elevation: 3,
+    marginHorizontal: 5,
   },
 
   leftContainer: {
@@ -986,6 +980,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 16,
     marginHorizontal: 10,
+    alignSelf: 'center',
   },
   buttonTextL: {
     fontSize: 16,

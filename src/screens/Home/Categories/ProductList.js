@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,6 @@ import {
   ScrollView,
   FlatList,
   Dimensions,
-  ImageBackground,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
@@ -20,26 +19,10 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import Octicons from 'react-native-vector-icons/Octicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Swiper from 'react-native-swiper';
+import {useNavigation} from '@react-navigation/native';
+import axios from 'axios';
 
 const {width} = Dimensions.get('window');
-
-const mainImages = [
-  require('../../../../assets/images/productlistslider.png'),
-  require('../../../../assets/images/productlistslider.png'),
-  require('../../../../assets/images/productlistslider.png'),
-];
-
-const thumbnails = [
-  require('../../../../assets/images/productlist1.png'),
-  require('../../../../assets/images/productlist2.png'),
-  require('../../../../assets/images/productlist2.png'),
-];
-
-const conditions = [
-  'Body: Excellent',
-  'Screen: No scratches',
-  'Ports: Functional',
-];
 
 const InfoItem = ({label, value, working = true}) => (
   <View style={styles.row}>
@@ -63,67 +46,6 @@ const ProductCard = ({item}) => (
     <Text style={styles.productPrice}>{item.price}</Text>
   </View>
 );
-
-const videoData = [
-  {
-    id: '1',
-    title: 'Real Condition',
-    image:
-      'https://i.postimg.cc/N0wyMQ7g/A-person-gently-lifting-a-sleek-electronic-device-from-its-protective-packaging-on-a-wooden-table.png', // replace with actual image/video thumbnail
-  },
-  {
-    id: '2',
-    title: '360° View',
-    image:
-      'https://i.postimg.cc/MH4H8wpJ/A-person-showcasing-a-sleek-electronic-device-while-seated-on-a-stylish-sofa-in-a-contemporary-livin.png', // replace with actual image/video thumbnail
-  },
-  {
-    id: '3',
-    title: 'Feature Highlight',
-    image:
-      'https://i.postimg.cc/nhqzN68N/A-sleek-modern-gadget-positioned-on-a-clean-white-background-highlighting-its-elegant-design-1.png', // replace with actual image/video thumbnail
-  },
-];
-
-const VideoPreviewCard = ({item}) => (
-  <SafeAreaView>
-    <View style={styles.cardContainerV}>
-      <TouchableOpacity activeOpacity={0.8} style={styles.imageWrapperV}>
-        <ImageBackground
-          source={{uri: item.image}}
-          style={styles.imageV}
-          imageStyle={{borderRadius: 10}}></ImageBackground>
-      </TouchableOpacity>
-      <Text style={styles.labelV}>{item.title}</Text>
-    </View>
-  </SafeAreaView>
-);
-
-const productImage = require('../../../../assets/images/Logo.png'); // Your placeholder image
-
-const products = [
-  {
-    id: '1',
-    name: 'iPhone 13 Pro',
-    price: '₹59,999',
-    storage: '256GB',
-    grade: 'A1',
-  },
-  {
-    id: '2',
-    name: 'iPhone 13 Pro',
-    price: '₹49,999',
-    storage: '128GB',
-    grade: 'A2',
-  },
-  {
-    id: '3',
-    name: 'iPhone 13 Pro',
-    price: '₹39,999',
-    storage: '128GB',
-    grade: 'A3',
-  },
-];
 
 const suggestions = [
   {
@@ -223,10 +145,124 @@ const ProductCardD = ({item}) => (
   </View>
 );
 
-const ProductGallery = ({navigation, iconType, icon, text}) => {
+const ProductDetail = ({route, iconType, icon, text}) => {
+  const navigation = useNavigation();
   const swiperRef = useRef(null);
   const [showSpecs, setShowSpecs] = useState(false); // Toggle state
   const [showSpecs1, setShowSpecs1] = useState(false); // Toggle state
+  const {product_barcode_id} = route.params; // 👈 get product
+
+  console.log('product_barcode_id--------->', product_barcode_id);
+
+  const [loading, setLoading] = useState(true);
+  const [product, setProduct] = useState('');
+  const [error, setError] = useState(null);
+
+  let featureImage = product?.feature_images || [];
+  let barcodeDetails = product?.barcode || [];
+  let modelSpecification = product?.model_specification || [];
+
+  let device_qc_reports = product?.device_qc_reports || [];
+  console.log('barcodeDetails-------------->', device_qc_reports);
+
+  // 🔹 Utility function to safely extract values
+  const extractValues = (reports, pathFn) =>
+    (reports || []).map(pathFn).filter(Boolean);
+
+  // 🔹 Usage
+  const gradeNumbers = extractValues(
+    device_qc_reports,
+    item => item?.latest_info?.device_report_grade_number?.grade_number,
+  );
+
+  const switchings = extractValues(
+    device_qc_reports,
+    item => item?.latest_info?.device_switched_status,
+  );
+
+  const devicelocked = extractValues(
+    device_qc_reports,
+    item => item?.latest_info?.device_locked_status,
+  );
+  const deviceage = extractValues(
+    device_qc_reports,
+    item => item?.latest_info?.device_age,
+  );
+  const latest_info = extractValues(
+    device_qc_reports,
+    item => item?.latest_info,
+  );
+
+  const details =
+    device_qc_reports?.reduce((acc, item) => {
+      if (item?.latest_info?.details) {
+        acc.push(...item.latest_info.details);
+      }
+      return acc;
+    }, []) || [];
+
+  console.log('details---------->', details);
+
+  const getDeviceAgeLabel = age => {
+    switch (
+      String(age) // ensure string or number works
+    ) {
+      case '0':
+        return '0-3 Months';
+      case '1':
+        return '3-6 Months';
+      case '2':
+        return '6-9 Months';
+      case '3':
+        return '9-12 Months';
+      case '4':
+        return 'Out of Warranty';
+      default:
+        return 'N/A';
+    }
+  };
+
+  console.log('gradeNumbers----->', gradeNumbers);
+  console.log('switchings------->', switchings);
+  console.log('devicelocked----->', devicelocked);
+  console.log('deviceage----->', deviceage);
+  console.log('latest_info----->', latest_info);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+
+        const response = await axios.get(
+          `https://api.mobitrade.in/api/product_detail/${product_barcode_id}`,
+        );
+        if (response.data) {
+          setProduct(response.data.data);
+        } else {
+          setError('Product not found');
+        }
+      } catch (err) {
+        console.error(err);
+        setError('Failed to load product');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [product_barcode_id]);
+
+  // Suppose you already have `product` data from API
+  const productSpecs = [
+    ['IMEI Number', barcodeDetails?.imei_number],
+    ['Model Name', barcodeDetails?.barcode_model?.model_name],
+    ['Color', barcodeDetails?.barcode_color?.color_name],
+    ['SIM Type', modelSpecification?.sim_type],
+    // ['Hybrid Sim Slot', product?.hybrid_sim_slot ? 'Yes' : 'No'],
+    ['Touchscreen', modelSpecification?.touchscreen],
+    // ['Quick Charging', product?.quick_charging ? 'Yes' : 'No'],
+    // ['Sound Enhancements', product?.sound_enhancements],
+  ];
 
   const similarProducts = [
     {
@@ -283,10 +319,14 @@ const ProductGallery = ({navigation, iconType, icon, text}) => {
             activeDotColor="#000"
             loop
             style={styles.swiper}>
-            {mainImages.map((img, index) => (
+            {featureImage.map((imgObj, index) => (
               <Image
                 key={index}
-                source={img}
+                source={
+                  imgObj
+                    ? {uri: imgObj.url}
+                    : require('../../../../assets/images/empty.jpeg') // ✅ fallback image
+                }
                 style={styles.mainImage}
                 resizeMode="cover"
               />
@@ -324,24 +364,18 @@ const ProductGallery = ({navigation, iconType, icon, text}) => {
           showsHorizontalScrollIndicator={false}
           style={styles.thumbnailStrip}
           contentContainerStyle={{paddingHorizontal: 10}}>
-          {thumbnails.map((thumb, index) => (
+          {featureImage.map((imgObj, index) => (
+            // console.log("imgObj------------>", `${BASE_URL}${imgObj?.image}`)
             <Image
               key={index}
-              source={thumb}
+              source={
+                imgObj
+                  ? {uri: imgObj.url}
+                  : require('../../../../assets/images/empty.jpeg') // ✅ fallback image
+              }
               style={styles.thumbnail}
               resizeMode="cover"
             />
-          ))}
-        </ScrollView>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContainer}>
-          {conditions.map((item, index) => (
-            <View key={index} style={styles.pill}>
-              <Text style={styles.pillText}>{item}</Text>
-            </View>
           ))}
         </ScrollView>
 
@@ -355,11 +389,18 @@ const ProductGallery = ({navigation, iconType, icon, text}) => {
               alignItems: 'center',
             }}>
             <View>
-              <Text style={styles.brandP}>Apple</Text>
-              <Text style={styles.titleP}>iPhone 13 Pro</Text>
-              <Text style={styles.priceP}>₹34,999</Text>
-              <Text style={styles.strikePrice}>₹64,999</Text>
-              <Text style={styles.variant}>Size: 8GB | 128GB</Text>
+              <Text style={styles.brandP}>
+                {barcodeDetails?.barcode_brand?.brand_name || 'N/A'}
+              </Text>
+              <Text style={styles.titleP}>
+                {barcodeDetails?.barcode_model?.model_name || 'N/A'}
+              </Text>
+              <Text style={styles.priceP}>
+                ₹{barcodeDetails?.purchase_price || 'N/A'}
+              </Text>
+              <Text style={styles.variant}>
+                Size: {barcodeDetails?.barcode_variant?.variant_name || 'N/A'}
+              </Text>
               <View
                 style={{
                   flexDirection: 'row',
@@ -367,54 +408,40 @@ const ProductGallery = ({navigation, iconType, icon, text}) => {
                   alignSelf: 'center',
                   alignItems: 'center',
                 }}>
-                <Text style={styles.variant}>Color : Midnight Black</Text>
+                <Text style={styles.variant}>
+                  Color : {barcodeDetails?.barcode_color?.color_name || 'N/A'}
+                </Text>
                 <View style={{marginBottom: 2, marginLeft: 20}}>
                   <Octicons name="dot-fill" size={22} color="#000" />
                 </View>
               </View>
             </View>
             <View style={{marginRight: 20}}>
-              <Text style={{fontSize: 48, fontWeight: 'bold'}}>A1</Text>
+              <Text style={{fontSize: 48, fontWeight: 'bold'}}>
+                {gradeNumbers || 'N/A'}
+              </Text>
               <Text style={styles.grade}>Grade</Text>
             </View>
           </View>
           {/* Buttons */}
           <View style={{borderWidth: 0.5, marginTop: 10}}></View>
           <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.addToCart}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Cart')}
+              style={styles.addToCart}>
               <Text style={styles.btnText}>Add to Cart</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.buyNow}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Checkout')}
+              style={styles.buyNow}>
               <Text style={styles.btnTextWhite}>Buy Now</Text>
             </TouchableOpacity>
           </View>
           <View style={{borderWidth: 0.5, marginTop: 0}}></View>
-
-          {/* Bullet Points */}
-          <View style={styles.bullets}>
-            <Text style={styles.bullet}>
-              • Introducing the new iPhone featuring the powerful A14 Bionic
-              chip.
-            </Text>
-            <Text style={styles.bullet}>
-              • Experience lightning-fast performance, stunning graphics, and
-              enhanced battery life.
-            </Text>
-            <Text style={styles.bullet}>
-              • Capture breathtaking photos with advanced camera technology and
-              enjoy seamless connectivity.
-            </Text>
-            <Text style={styles.bullet}>
-              • Elevate your mobile experience with the latest innovation from
-              Apple.
-            </Text>
-          </View>
-
-          <Text style={styles.viewMore}>View More...</Text>
         </View>
 
         {/* Other Variants */}
-        <View style={styles.variantsSection}>
+        {/* <View style={styles.variantsSection}>
           <Text style={{fontSize: 18, fontWeight: '700', marginBottom: 20}}>
             Other Variants Available
           </Text>
@@ -455,16 +482,18 @@ const ProductGallery = ({navigation, iconType, icon, text}) => {
               <Text>Green - A3 Grade</Text>
             </View>
           </ScrollView>
-        </View>
+        </View> */}
 
         {/* Specifications & QC Report  */}
         <View style={styles.specSection}>
-          <Text style={styles.headlines}>iPhone 13 Pro Highlights</Text>
+          <Text style={styles.headlines}>
+            {barcodeDetails?.barcode_model?.model_name || 'N/A'} Highlights
+          </Text>
           <View style={{}}>
             <View style={{backgroundColor: '#EAE6E5', padding: 12}}>
               <Text>Key Features</Text>
             </View>
-            {[
+            {/* {[
               ['Model Number', 'SM-A546EZKGINS'],
               ['Model Name', 'Galaxy A54 5G'],
               ['Color', 'Graphite'],
@@ -482,6 +511,17 @@ const ProductGallery = ({navigation, iconType, icon, text}) => {
                 ]}>
                 <Text style={styles.specLabel}>{label}</Text>
                 <Text style={styles.specValue}>{value}</Text>
+              </View>
+            ))} */}
+            {productSpecs.map(([label, value], index) => (
+              <View
+                key={label}
+                style={[
+                  styles.specRow,
+                  {backgroundColor: index % 2 === 0 ? '#FFFBFA' : '#66666680'},
+                ]}>
+                <Text style={styles.specLabel}>{label}</Text>
+                <Text style={styles.specValue}>{value || 'N/A'}</Text>
               </View>
             ))}
           </View>
@@ -509,136 +549,121 @@ const ProductGallery = ({navigation, iconType, icon, text}) => {
               <Text style={styles.headlines}>OS & Processor Features</Text>
               <View style={styles.specRow}>
                 <Text style={styles.specLabel}>Operating System</Text>
-                <Text style={styles.specValue}>Android 13</Text>
+                <Text style={styles.specValue}>
+                  {modelSpecification?.operating_system || 'N/A'}
+                </Text>
               </View>
               <View style={styles.specRow}>
                 <Text style={styles.specLabel}>Processor</Text>
                 <Text style={styles.specValue}>
-                  Exynos, Octa Core, 2.4 GHz, 2 GHz
+                  {modelSpecification?.processor || 'N/A'}
                 </Text>
               </View>
 
               <Text style={styles.headlines}>Display Features</Text>
               <View style={styles.specRow}>
                 <Text style={styles.specLabel}>Display Size</Text>
-                <Text style={styles.specValue}>6.4 inch (16.26 cm)</Text>
+                <Text style={styles.specValue}>
+                  {modelSpecification?.screen_size || 'N/A'}
+                </Text>
               </View>
               <View style={styles.specRow}>
                 <Text style={styles.specLabel}>Resolution</Text>
                 <Text style={styles.specValue}>
-                  2340 x 1080 Pixels, Full HD+
+                  {modelSpecification?.resolution || 'N/A'}
                 </Text>
               </View>
               <View style={styles.specRow}>
                 <Text style={styles.specLabel}>GPU</Text>
-                <Text style={styles.specValue}>Mali-G68 MP5</Text>
+                <Text style={styles.specValue}>
+                  {modelSpecification?.graphics || 'N/A'}
+                </Text>
               </View>
-              <View style={styles.specRow}>
+              {/* <View style={styles.specRow}>
                 <Text style={styles.specLabel}>Display Type</Text>
                 <Text style={styles.specValue}>
                   Super AMOLED, 120Hz, Corning Gorilla Glass 5
                 </Text>
-              </View>
+              </View> */}
 
               <Text style={styles.headlines}>Memory & Storage</Text>
               <View style={styles.specRow}>
                 <Text style={styles.specLabel}>Internal Storage</Text>
-                <Text style={styles.specValue}>128 GB</Text>
-              </View>
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>RAM</Text>
-                <Text style={styles.specValue}>8 GB</Text>
-              </View>
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Expandable Storage</Text>
-                <Text style={styles.specValue}>1 TB</Text>
-              </View>
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Supported Memory Card </Text>
-                <Text style={styles.specValue}>microSD, Hybrid Slot</Text>
-              </View>
-              <Text style={styles.headlines}>Camera Features</Text>
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Primary Camera Available</Text>
-                <Text style={styles.specValue}>Yes, 50MP + 12MP + 5MP</Text>
-              </View>
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Primary Camera Features</Text>
-                <Text style={styles.specValue}>50MP (OIS) + 12MP</Text>
-              </View>
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Secondary Camera Available</Text>
-                <Text style={styles.specValue}>Yes, 32MP Front Camera</Text>
-              </View>
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Secondary Camera Features</Text>
-                <Text style={styles.specValue}>32MP, f/2.2 Aperture</Text>
-              </View>
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Flashs</Text>
-                <Text style={styles.specValue}>Rear: LED Flash</Text>
-              </View>
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>HD Recording</Text>
-                <Text style={styles.specValue}>Full HD Recording</Text>
-              </View>
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Video Recording</Text>
                 <Text style={styles.specValue}>
-                  Yes, 4K (3840 x 2160) at 30 fps
+                  {barcodeDetails?.barcode_storage || 'N/A'}
                 </Text>
               </View>
               <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Digital Zoom</Text>
-                <Text style={styles.specValue}>Upto 10x</Text>
+                <Text style={styles.specLabel}>RAM</Text>
+                <Text style={styles.specValue}>
+                  {barcodeDetails?.barcode_ram || 'N/A'}
+                </Text>
+              </View>
+              {/* <View style={styles.specRow}>
+                <Text style={styles.specLabel}>Expandable Storage</Text>
+                <Text style={styles.specValue}>1 TB</Text>
+              </View> */}
+              {/* <View style={styles.specRow}>
+                <Text style={styles.specLabel}>Supported Memory Card </Text>
+                <Text style={styles.specValue}>microSD, Hybrid Slot</Text>
+              </View> */}
+              <Text style={styles.headlines}>Camera Features</Text>
+              <View style={styles.specRow}>
+                <Text style={styles.specLabel}>Primary Camera</Text>
+                <Text style={styles.specValue}>
+                  {modelSpecification?.front_camera || 'N/A'}
+                </Text>
               </View>
               <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Frame Rate</Text>
-                <Text style={styles.specValue}>Upto 30 fps</Text>
+                <Text style={styles.specLabel}>Secondary Camera</Text>
+                <Text style={styles.specValue}>
+                  {modelSpecification?.no_of_rear_camera || 'N/A'}
+                </Text>
+              </View>
+              <View style={styles.specRow}>
+                <Text style={styles.specLabel}>Front Flashs</Text>
+                <Text style={styles.specValue}>
+                  {modelSpecification?.front_flash || 'N/A'}
+                </Text>
+              </View>
+              <View style={styles.specRow}>
+                <Text style={styles.specLabel}>Back Flashs</Text>
+                <Text style={styles.specValue}>
+                  {modelSpecification?.rear_flash || 'N/A'}
+                </Text>
               </View>
               <Text style={styles.headlines}>Other Details</Text>
               <View style={styles.specRow}>
                 <Text style={styles.specLabel}>Sensors</Text>
                 <Text style={styles.specValue}>
-                  Accelerometer, Gyro Sensor, Geomagnetic Sensor, Hall Sensor,
-                  Light Sensor, Proximity Sensor
-                </Text>
-              </View>
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Other Features</Text>
-                <Text style={styles.specValue}>
-                  IP67 Rated for Dust and Water Resistance
+                  {modelSpecification?.fingerprint_sensor || 'N/A'}
                 </Text>
               </View>
               <View style={styles.specRow}>
                 <Text style={styles.specLabel}>GPS Type</Text>
                 <Text style={styles.specValue}>
-                  GPS, Glonass, Beidou, Galileo, QZSS
+                  {modelSpecification?.gps || 'N/A'}
                 </Text>
               </View>
               <Text style={styles.headlines}>Battery & Power</Text>
               <View style={styles.specRow}>
                 <Text style={styles.specLabel}>Battery Capacity</Text>
-                <Text style={styles.specValue}>5000 mAh</Text>
-              </View>
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Battery Type</Text>
-                <Text style={styles.specValue}>Li-Ion</Text>
-              </View>
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Charging Type</Text>
-                <Text style={styles.specValue}>Type-C</Text>
+                <Text style={styles.specValue}>
+                  {modelSpecification?.battery_capacity || 'N/A'}
+                </Text>
               </View>
               <Text style={styles.headlines}>Dimensions</Text>
               <View style={styles.specRow}>
                 <Text style={styles.specLabel}>Size</Text>
                 <Text style={styles.specValue}>
-                  76.7 mm x 158.2 mm x 8.2 mm
+                  {modelSpecification?.dimensions || 'N/A'}
                 </Text>
               </View>
               <View style={styles.specRow}>
                 <Text style={styles.specLabel}>Weight</Text>
-                <Text style={styles.specValue}>202 g</Text>
+                <Text style={styles.specValue}>
+                  {modelSpecification?.weight || 'N/A'}
+                </Text>
               </View>
               <Text style={styles.headlines}>Warranty</Text>
               <View style={styles.specRow}>
@@ -648,10 +673,10 @@ const ProductGallery = ({navigation, iconType, icon, text}) => {
                   Manufacturer Warranty for In-Box Accessories
                 </Text>
               </View>
-              <View style={styles.specRow}>
+              {/* <View style={styles.specRow}>
                 <Text style={styles.specLabel}>Domestic Warranty</Text>
                 <Text style={styles.specValue}>1 Year</Text>
-              </View>
+              </View> */}
             </View>
           )}
 
@@ -686,11 +711,15 @@ const ProductGallery = ({navigation, iconType, icon, text}) => {
                   <Text style={{marginVertical: 10}}>Warranty</Text>
                 </View>
                 <View>
-                  <Text style={{marginVertical: 10}}>Yes</Text>
                   <Text style={{marginVertical: 10}}>
-                    Yes (Passcode/Pattern)
+                    {switchings || 'N/A'}
                   </Text>
-                  <Text style={{marginVertical: 10}}>Out of Warranty</Text>
+                  <Text style={{marginVertical: 10}}>
+                    {devicelocked || 'N/A'}
+                  </Text>
+                  <Text style={{marginVertical: 10}}>
+                    {getDeviceAgeLabel(deviceage) || 'N/A'}
+                  </Text>
                 </View>
               </View>
               <Text style={styles.headlines}>Accessories</Text>
@@ -700,15 +729,58 @@ const ProductGallery = ({navigation, iconType, icon, text}) => {
               <InfoItem label="Earphone" value="" />
 
               <Text style={styles.headlines}>Body Defects</Text>
-              <InfoItem label="Camera Lens" value="Minor Signs" />
+
+              {details
+                .filter(d => d.defect_type === 'Body Defects') // only Body Defects
+                .map((d, idx) => (
+                  <InfoItem
+                    key={idx}
+                    label={d.parameter?.parameter_name || 'N/A'}
+                    value={d.parameter_status?.parameter_status_name || 'N/A'}
+                    working={
+                      d.parameter_status?.parameter_status_name || 'N/A'
+                    }
+                  />
+                ))}
+
+              <Text style={styles.headlines}>Screen Defects</Text>
+
+              {details
+                .filter(d => d.defect_type === 'Screen Defects') // only Body Defects
+                .map((d, idx) => (
+                  <InfoItem
+                    key={idx}
+                    label={d.parameter?.parameter_name || 'N/A'}
+                    value={d.parameter_status?.parameter_status_name || 'N/A'}
+                    working={
+                      d.parameter_status?.parameter_status_name || 'N/A'
+                    }
+                  />
+                ))}
+
+              <Text style={styles.headlines}>Functional Defects</Text>
+              {details
+                .filter(d => d.defect_type === 'Functional Problems') // only Body Defects
+                .map((d, idx) => (
+                  <InfoItem
+                    key={idx}
+                    label={d.parameter?.parameter_name || 'N/A'}
+                    value={d.parameter_status?.parameter_status_name || 'N/A'}
+                    working={
+                      d.parameter_status?.parameter_status_name || 'N/A'
+                    }
+                  />
+                ))}
+
+              {/* <InfoItem label="Camera Lens" value="Minor Signs" />
               <InfoItem label="Back Panel" value="Minor Signs" />
               <InfoItem label="Screw" value="Available" />
               <InfoItem label="Frame" value="Excellent" />
               <InfoItem label="Device Bent" value="No Bent" />
               <InfoItem label="Chrome" value="Excellent" />
-              <InfoItem label="Sim Tray" value="Excellent" />
-
-              <Text style={styles.headlines}>Screen Defects</Text>
+              <InfoItem label="Sim Tray" value="Excellent" /> */}
+              {/* 
+              // <Text style={styles.headlines}>Screen Defects</Text>
               <InfoItem label="Display" value="Excellent" />
               <InfoItem label="Front Glass" value="Minor Signs" />
               <InfoItem label="Screen Quality" value="Original" />
@@ -739,29 +811,10 @@ const ProductGallery = ({navigation, iconType, icon, text}) => {
               <InfoItem label="True Tone" value="Working" />
               <InfoItem label="Error Message" value="Working" />
               <InfoItem label="Battery" value="Working" />
-              <InfoItem label="Battery Health" value="92%" />
+              <InfoItem label="Battery Health" value="92%" /> */}
             </>
           )}
         </View>
-
-        {/* Watch Product videos  */}
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginLeft: 10,
-          }}>
-          <MaterialIcons name="play-arrow" size={30} color="black" />
-          <Text style={styles.headlines}>Watch Product Videos</Text>
-        </View>
-        <FlatList
-          data={videoData}
-          renderItem={({item}) => <VideoPreviewCard item={item} />}
-          keyExtractor={item => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{paddingHorizontal: 16}}
-        />
 
         {/* Grade A1 to A9  */}
         <View
@@ -781,7 +834,9 @@ const ProductGallery = ({navigation, iconType, icon, text}) => {
               Grading ranges from A1 (like new) to A9 (heavily used).
             </Text>
 
-            <TouchableOpacity onPress={()=> navigation.navigate('Grade')} style={styles.button}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Grade')}
+              style={styles.button}>
               <Text style={styles.buttonText}>Learn More</Text>
             </TouchableOpacity>
           </View>
@@ -807,10 +862,10 @@ const ProductGallery = ({navigation, iconType, icon, text}) => {
           <Text style={{fontSize: 14, fontWeight: 'bold'}}>
             View Similar Products
           </Text>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => navigation.navigate('SimilarProducts')}>
             <Text>See all</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
         <FlatList
           data={similarProducts}
@@ -828,9 +883,9 @@ const ProductGallery = ({navigation, iconType, icon, text}) => {
             marginVertical: 10,
           }}>
           <Text style={{fontSize: 14, fontWeight: 'bold'}}>You Might Like</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('MightLike')}>
+          {/* <TouchableOpacity onPress={() => navigation.navigate('MightLike')}>
             <Text>See all</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
         <FlatList
           horizontal
@@ -884,7 +939,7 @@ const ProductGallery = ({navigation, iconType, icon, text}) => {
   );
 };
 
-export default ProductGallery;
+export default ProductDetail;
 
 const styles = StyleSheet.create({
   container: {
@@ -940,7 +995,7 @@ const styles = StyleSheet.create({
   },
   thumbnailStrip: {
     marginTop: 10,
-    alignSelf: 'center',
+    // alignSelf: 'center',
   },
   thumbnail: {
     width: 120,
@@ -949,7 +1004,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
 
-  headerP: {padding: 16},
+  headerP: {padding: 0, marginHorizontal: 16, marginVertical: 5},
   brandP: {color: '#007aff', fontSize: 16},
   titleP: {fontSize: 24, fontWeight: '700', marginVertical: 4},
   priceP: {fontSize: 22, color: '#1C9C48', fontWeight: '700'},
@@ -987,7 +1042,7 @@ const styles = StyleSheet.create({
   bullet: {marginBottom: 4, color: '#555'},
   viewMore: {color: '#007aff', marginTop: 10},
 
-  variantsSection: {padding: 16},
+  variantsSection: {padding: 0, marginHorizontal: 15},
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
@@ -1053,7 +1108,7 @@ const styles = StyleSheet.create({
   headlines: {
     fontSize: 18,
     fontWeight: '700',
-    marginVertical: 20,
+    marginVertical: 10,
     marginLeft: 10,
   },
 

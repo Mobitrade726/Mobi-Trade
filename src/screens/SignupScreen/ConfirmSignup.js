@@ -16,23 +16,22 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useNavigation} from '@react-navigation/native';
 import {useRoute} from '@react-navigation/native';
-import { scale } from 'react-native-size-matters';
-import { styles_confirmSignup } from './styles';
+import {scale} from 'react-native-size-matters';
+import {styles_confirmSignup} from './styles';
 
 const ConfirmSignup = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const {accountType} = route.params;
 
-
   return (
     <ScrollView contentContainerStyle={styles_confirmSignup.container}>
-      <StatusBar backgroundColor="#f9fdfb" barStyle="dark-content" />
+      <StatusBar barStyle="dark-content" backgroundColor="#f0fefa" />
 
       <TouchableOpacity
         style={{
           position: 'absolute',
-          top: responsiveHeight(6),
+          top: responsiveHeight(1),
           left: responsiveWidth(4),
           backgroundColor: '#e9f8f4',
           borderRadius: 20,
@@ -72,8 +71,12 @@ const ConfirmSignup = () => {
 
       <TouchableOpacity
         style={styles_confirmSignup.loginButton}
-        onPress={() => navigation.navigate('LoginScreen', { accountType: accountType })}>
-        <Text style={styles_confirmSignup.loginButtonText}>Continue to Login</Text>
+        onPress={() =>
+          navigation.navigate('LoginScreen', {accountType: accountType})
+        }>
+        <Text style={styles_confirmSignup.loginButtonText}>
+          Continue to Login
+        </Text>
       </TouchableOpacity>
     </ScrollView>
   );

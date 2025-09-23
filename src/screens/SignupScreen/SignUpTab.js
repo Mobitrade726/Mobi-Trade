@@ -98,7 +98,7 @@ const SignUpTab = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',

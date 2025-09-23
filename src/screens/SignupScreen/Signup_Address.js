@@ -136,7 +136,7 @@ const Signup_Address = ({navigation}) => {
               type: 'success',
               text2: res?.data?.message,
             });
-            navigation.navigate('LoginScreen');
+            navigation.navigate('ConfirmSignup', {accountType : regData?.accountType});
             // navigation.navigate('ConfirmSignup');
           } else {
             Toast.show({

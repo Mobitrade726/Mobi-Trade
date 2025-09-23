@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
   useColorScheme,
+  StatusBar,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {styles_forgetpassword} from './styles';
@@ -44,8 +45,6 @@ const ForgotPasswordScreen = ({navigation}) => {
     }
   }, [emailforget]);
 
-
-
   const handleSendCode = () => {
     setSubmitted(true);
     const isValid = validateInputs();
@@ -58,6 +57,7 @@ const ForgotPasswordScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles_forgetpassword.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#F1FFFA" />
       {/* Back Button */}
       <TouchableOpacity
         style={styles_forgetpassword.backButton}

@@ -14,10 +14,10 @@ const styles = StyleSheet.create({
     marginRight: 15,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: {width: 0, height: 2},
+    // shadowOpacity: 0.1,
+    // shadowOffset: {width: 0, height: 2},
     shadowRadius: 4,
-    elevation: 3,
+    // elevation: 3,
   },
   cardM: {
     width: 200,
@@ -26,10 +26,10 @@ const styles = StyleSheet.create({
     marginRight: 0,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: {width: 0, height: 2},
+    // shadowOpacity: 0.1,
+    // shadowOffset: {width: 0, height: 2},
     shadowRadius: 4,
-    elevation: 3,
+    // elevation: 3, 
   },
   imageContainerD: {
     position: 'relative',
@@ -186,15 +186,11 @@ const styles = StyleSheet.create({
   titleT: {
     fontSize: 12,
     color: '#fff',
-    marginTop: 5,
-    width: '50%',
   },
   subtitleT: {
     fontSize: 14,
     color: '#fff',
     fontWeight: '600',
-    marginBottom: 5,
-    width: '40%',
   },
 
   dot: {

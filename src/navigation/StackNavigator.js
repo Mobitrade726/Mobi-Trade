@@ -69,9 +69,9 @@ import WalletAddMoney from './TabNavigator/Cart/Wallet/WalletAddMoney';
 import Withdraw from './TabNavigator/Cart/Wallet/Withdraw';
 import Grade from '../screens/Home/Grade/Grade';
 import Android from '../screens/Home/Categories/Android/Android';
-import iOS from '../screens/Home/Categories/iOS';
-import WindowsOS from '../screens/Home/Categories/WindowsOS';
-import MacOS from '../screens/Home/Categories/MacOS';
+import iOS from '../screens/Home/Categories/iOS/iOS';
+import WindowsOS from '../screens/Home/Categories/WindowsOS/WindowsOS';
+import MacOS from '../screens/Home/Categories/MacOS/MacOS';
 import TopWindowLaptop from '../screens/Home/Categories/TopWindowLaptop';
 import TopMacbooks from '../screens/Home/Categories/TopMacbooks';
 import Accessories from '../screens/Home/Categories/Accessories';
@@ -83,6 +83,11 @@ import YourOrderIsGettingPacked from './TabNavigator/Account/MyOrder/YourOrderIs
 import UpgradeNow from './TabNavigator/Cart/UpgradeNow/UpgradeNow';
 import Home from '../screens/Home/Home';
 import Header from '../screens/Home/Header';
+import FAQsScreen from './TabNavigator/Account/HelpSupport/FAQsScreen';
+import ReturnRefundPolicy from './TabNavigator/Account/HelpSupport/Return&RefundPolicy';
+import ShippingDeliveryInfo from './TabNavigator/Account/HelpSupport/Shipping&DeliveryInfo';
+import TermsConditions from './TabNavigator/Account/HelpSupport/Terms&Conditions';
+import ContactUs from './TabNavigator/Account/HelpSupport/ContactUs';
 
 const Stack = createNativeStackNavigator();
 
@@ -196,8 +201,16 @@ const StackNavigator = () => (
       <Stack.Screen name="carousel1" component={carousel1} />
       <Stack.Screen name="carousel2" component={carousel2} />
       <Stack.Screen name="carousel3" component={carousel3} />
-      <Stack.Screen name="YourOrderIsGettingPacked" component={YourOrderIsGettingPacked} />
+      <Stack.Screen
+        name="YourOrderIsGettingPacked"
+        component={YourOrderIsGettingPacked}
+      />
       <Stack.Screen name="UpgradeNow" component={UpgradeNow} />
+      <Stack.Screen name="FAQsScreen" component={FAQsScreen} />
+      <Stack.Screen name="ReturnRefundPolicy" component={ReturnRefundPolicy} />
+      <Stack.Screen name="ShippingDeliveryInfo" component={ShippingDeliveryInfo} />
+      <Stack.Screen name="TermsConditions" component={TermsConditions} />
+      <Stack.Screen name="ContactUs" component={ContactUs} />
     </Stack.Navigator>
   </>
 );
