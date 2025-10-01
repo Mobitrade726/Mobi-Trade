@@ -1,76 +1,76 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   TouchableOpacity,
   Image,
   SafeAreaView,
-  ImageBackground,
-  ScrollView,
   Dimensions,
+  ScrollView,
+  StyleSheet,
 } from 'react-native';
 import {useSelector, useDispatch} from 'react-redux';
-import {removeFromCart, clearCart} from './slices/cartSlice';
+import {
+  removeFromCartAPI,
+  fetchCartAPI,
+  clearCartAPI,
+} from './slices/cartSlice';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
+import {checkoutAPI} from '../redux/slices/cartSlice';
+import Toast from 'react-native-toast-message';
 
-const CartScreen = () => {
-  const navigation = useNavigation(); // <-- Add this
-  const cartItems = useSelector(state => state.cart.items);
+const Cart = () => {
   const dispatch = useDispatch();
+  const navigation = useNavigation();
+  const {items: cartItems, loading} = useSelector(state => state.cart);
 
-  const getTotalPrice = () => {
-    return cartItems.reduce((sum, item) => sum + item.price, 0);
+  console.log(
+    'cartItems|||||||||||||||||||||||||||||||||||||||||||||||||||',
+    cartItems,
+  );
+
+  const handleCartCheckout = () => {
+    cartItems.forEach((elements, index) => {
+      dispatch(
+        checkoutAPI({
+          type: 'cart_product',
+          barcode_id: elements?.barcode_id,
+          single_product_price: elements?.price,
+          cart_id: elements?.cart_id,
+          navigation,
+        }),
+      );
+    });
   };
 
-  // const gst = getTotalPrice() * 0.18;
-  // const total = getTotalPrice() + gst;
+  // Safe filtering (if productData is undefined, use [])
+  useEffect(() => {
+    dispatch(fetchCartAPI()); // fetch cart from API on mount
+  }, [navigation]);
+
+  const getTotalPrice = () =>
+    cartItems.reduce((sum, item) => sum + item.price, 0);
 
   const subtotal = getTotalPrice();
-  const gst = subtotal * 0.18;
-  const discount = subtotal * 0.1; // 10% discount
-  const total = subtotal + gst - discount;
+  const gst = subtotal * 0.18; //gst 18%
+  const total = subtotal + gst;
 
   const renderItem = ({item}) => (
     <View style={styles.cartItem}>
       <View style={styles.details}>
-        <Text style={styles.name}>{item.name}</Text>
-        <Text style={styles.name}>{item.storage}</Text>
-
-        <Text style={styles.price}>
-          ₹{item.price.toFixed(2)} |{' '}
-          <Text
-            style={{
-              textDecorationLine: 'line-through',
-              fontSize: 16,
-              color: '#999',
-            }}>
-            ₹{item.price.toFixed(2)}
-          </Text>
+        <Text style={styles.name}>{item.model}</Text>
+        <Text style={styles.name}>
+          {item.ram || '-'}/{item.rom || '-'}
         </Text>
-        <TouchableOpacity
-          style={{
-            backgroundColor: '#EAE6E5',
-            borderRadius: 10,
-            width: '40%',
-            marginTop: 5,
-          }}>
-          <Text
-            style={{
-              padding: 5,
-              fontSize: 12,
-              marginHorizontal: 5,
-              marginVertical: 2,
-            }}>
-            Save for Later
-          </Text>
-        </TouchableOpacity>
+        <Text style={styles.price}>₹{item.price.toFixed(2)}</Text>
       </View>
-      <Image source={{uri: item.image}} style={styles.image} />
-      <TouchableOpacity onPress={() => dispatch(removeFromCart(item.id))}>
+      <Image source={{uri: item.feature_image}} style={styles.image} />
+      <TouchableOpacity
+        onPress={() => dispatch(removeFromCartAPI(item.barcode_id))}>
         <Ionicons name="close" size={22} color="#555" />
+        <Text style={styles.price}>+{item.quantity}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -173,86 +173,41 @@ const CartScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}>
-          <Ionicons name="chevron-back" size={22} color="#000" />
-        </TouchableOpacity>
-        <View>
-          <Text style={styles.headerTitle}>Cart</Text>
-        </View>
-        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-          <Ionicons name="search" size={24} color="#333" />
-        </TouchableOpacity>
-      </View>
-      {/* {cartItems.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>🛒 Your cart is empty</Text>
-        </View>
-      ) : ( */}
       <ScrollView>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}>
+            <Ionicons name="chevron-back" size={22} color="#000" />
+          </TouchableOpacity>
+          <View>
+            <Text style={styles.headerTitle}>Cart</Text>
+          </View>
+          <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+            <Ionicons name="search" size={24} color="#333" />
+          </TouchableOpacity>
+        </View>
         <View style={{marginHorizontal: 10}}>
-          {/* Business Banner */}
-          <ImageBackground
-            source={{
-              uri: 'https://i.postimg.cc/d0Hky5p1/Depth-3-Frame-0.png',
-            }} // Replace with your real URL
-            style={styles.banner}
-            imageStyle={{borderRadius: 12}}>
-            <View style={{flex: 1, justifyContent: 'center'}}>
-              <Text style={styles.bannerTitle}>
-                Upgrade to{'\n'}Business Account
-              </Text>
-              <View
-                style={{
-                  flexDirection: 'row',
-                }}>
-                <View>
-                  <Text style={styles.bannerSubtitle}>
-                    Unlock exclusive dealer pricing and
-                  </Text>
-                  <Text style={styles.bannerSubtitle}>bulk order options.</Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() => navigation.navigate('UpgradeNow')}  
-                  style={styles.upgradeBtn}>
-                  <Text style={styles.upgradeText}>Upgrade Now</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </ImageBackground>
-
           {cartItems.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>🛒 Your cart is empty</Text>
             </View>
           ) : (
             <>
-              <Text
-                style={{
-                  marginVertical: 10,
-                  marginBottom: 15,
-                  fontWeight: '600',
-                }}>
-                Review your Order
-              </Text>
               <FlatList
                 data={cartItems}
                 renderItem={renderItem}
-                keyExtractor={item => item.id.toString()}
+                keyExtractor={item => item.id}
                 contentContainerStyle={styles.list}
               />
               <TouchableOpacity
                 style={styles.clearBtn}
-                onPress={() => dispatch(clearCart())}>
+                onPress={() => dispatch(clearCartAPI())}>
                 <Text style={styles.clearText}>🗑️ Clear Cart</Text>
               </TouchableOpacity>
 
               <View style={styles.summary}>
                 <Text style={styles.summaryTitle}>Price Summary</Text>
-
                 <View style={styles.row}>
                   <Text style={styles.label}>Subtotal:</Text>
                   <Text style={styles.value}>
@@ -271,19 +226,13 @@ const CartScreen = () => {
                 </View>
 
                 <View style={styles.row}>
-                  <Text style={styles.label}>Discount:</Text>
-                  <Text style={styles.value}>-₹{discount.toFixed(2)}</Text>
-                </View>
-
-                <View style={styles.row}>
                   <Text style={styles.labelTotal}>Total:</Text>
                   <Text style={styles.valueTotal}>₹{total.toFixed(2)}</Text>
                 </View>
               </View>
             </>
           )}
-
-          <View
+          {/* <View
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
@@ -298,7 +247,6 @@ const CartScreen = () => {
               <Ionicons name="chevron-forward" size={20} color="#333" />
             </TouchableOpacity>
           </View>
-
           <FlatList
             horizontal
             data={recentlyView}
@@ -306,8 +254,7 @@ const CartScreen = () => {
             keyExtractor={item => item.id}
             contentContainerStyle={styles.listContainerD}
             showsHorizontalScrollIndicator={false}
-          />
-
+          /> */}
           <ScrollView contentContainerStyle={styles.container}>
             <ScrollView
               horizontal
@@ -363,7 +310,7 @@ const CartScreen = () => {
                 <Text style={styles.footerBtnText}>Continue Shopping</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => navigation.navigate('Checkout')}
+                onPress={() => handleCartCheckout()}
                 style={[styles.footerBtn, {backgroundColor: '#666666'}]}>
                 <Text style={styles.footerBtnText}>Proceed to Checkout</Text>
               </TouchableOpacity>
@@ -371,7 +318,6 @@ const CartScreen = () => {
           </ScrollView>
         </View>
       </ScrollView>
-      {/* )} */}
     </SafeAreaView>
   );
 };
@@ -444,7 +390,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   clearText: {color: '#cc0000', fontWeight: '600'},
-  emptyContainer: {flex: 1, justifyContent: 'center', alignItems: 'center', height:200},
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 200,
+  },
   emptyText: {fontSize: 18, color: '#666'},
   list: {paddingBottom: 0},
 
@@ -621,4 +572,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CartScreen;
+export default Cart;

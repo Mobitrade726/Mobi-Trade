@@ -1,3 +1,201 @@
+// import React, {useState} from 'react';
+// import {
+//   View,
+//   Text,
+//   TextInput,
+//   TouchableOpacity,
+//   SafeAreaView,
+//   StyleSheet,
+// } from 'react-native';
+// import Ionicons from 'react-native-vector-icons/Ionicons';
+
+// const ChangePassword = ({navigation}) => {
+//   const [currentPassword, setCurrentPassword] = useState('');
+//   const [newPassword, setNewPassword] = useState('');
+//   const [confirmPassword, setConfirmPassword] = useState('');
+//   const [showCurrent, setShowCurrent] = useState(false);
+//   const [showNew, setShowNew] = useState(false);
+//   const [showConfirm, setShowConfirm] = useState(false);
+
+//   const toggleCurrent = () => setShowCurrent(!showCurrent);
+//   const toggleNew = () => setShowNew(!showNew);
+//   const toggleConfirm = () => setShowConfirm(!showConfirm);
+
+//   return (
+//     <SafeAreaView style={styles.container}>
+//       {/* Header */}
+//       <View style={styles.header}>
+//         <TouchableOpacity
+//           onPress={() => navigation.goBack()}
+//           style={styles.backButton}>
+//           <Ionicons name="chevron-back" size={22} color="#000" />
+//         </TouchableOpacity>
+//         <View>
+//           <Text style={styles.headerTitle}>Change Password</Text>
+//         </View>
+//         <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+//           <Ionicons name="search" size={24} color="#333" />
+//         </TouchableOpacity>
+//       </View>
+
+//       <View style={{marginHorizontal: 20, flex: 1}}>
+//         {/* Title */}
+//         <Text style={styles.subtitle}>
+//           Please type something you’ll remember
+//         </Text>
+
+//         {/* Input Fields */}
+//         <View style={styles.inputContainer}>
+//           <Text style={styles.label}>Current Password</Text>
+//           <View style={styles.inputWrapper}>
+//             <TextInput
+//               style={styles.input}
+//               placeholder="must be 8 characters"
+//               placeholderTextColor="#999"
+//               secureTextEntry={!showCurrent}
+//               value={currentPassword}
+//               onChangeText={setCurrentPassword}
+//             />
+//             <TouchableOpacity onPress={toggleCurrent}>
+//               <Ionicons
+//                 name={showCurrent ? 'eye-off-outline' : 'eye-outline'}
+//                 size={20}
+//                 color="#999"
+//               />
+//             </TouchableOpacity>
+//           </View>
+
+//           <Text style={styles.label}>New password</Text>
+//           <View style={styles.inputWrapper}>
+//             <TextInput
+//               style={styles.input}
+//               placeholder="must be 8 characters"
+//               placeholderTextColor="#999"
+//               secureTextEntry={!showNew}
+//               value={newPassword}
+//               onChangeText={setNewPassword}
+//             />
+//             <TouchableOpacity onPress={toggleNew}>
+//               <Ionicons
+//                 name={showNew ? 'eye-off-outline' : 'eye-outline'}
+//                 size={20}
+//                 color="#999"
+//               />
+//             </TouchableOpacity>
+//           </View>
+
+//           <Text style={styles.label}>Confirm new password</Text>
+//           <View style={styles.inputWrapper}>
+//             <TextInput
+//               style={styles.input}
+//               placeholder="repeat password"
+//               placeholderTextColor="#999"
+//               secureTextEntry={!showConfirm}
+//               value={confirmPassword}
+//               onChangeText={setConfirmPassword}
+//             />
+//             <TouchableOpacity onPress={toggleConfirm}>
+//               <Ionicons
+//                 name={showConfirm ? 'eye-off-outline' : 'eye-outline'}
+//                 size={20}
+//                 color="#999"
+//               />
+//             </TouchableOpacity>
+//           </View>
+//         </View>
+//       </View>
+
+//       {/* Save Password Button */}
+//       <TouchableOpacity style={styles.saveButton}>
+//         <Text style={styles.saveText}>Save Password</Text>
+//       </TouchableOpacity>
+//     </SafeAreaView>
+//   );
+// };
+
+// export default ChangePassword;
+
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     padding: 20,
+//     backgroundColor: '#fff',
+//   },
+//  header: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     paddingVertical: 10,
+//     justifyContent: 'space-between',
+//     marginHorizontal: 10,
+//   },
+//   backButton: {
+//     backgroundColor: '#f5f5f5',
+//     borderRadius: 20,
+//     padding: 6,
+//     left: 0,
+//   },
+//   headerTitle: {
+//     fontSize: 16,
+//     fontWeight: '500',
+//     color: '#000',
+//     textAlign: 'center',
+//   },
+//   title: {
+//     fontSize: 22,
+//     fontWeight: '700',
+//     color: '#000',
+//     marginTop: 10,
+//   },
+//   subtitle: {
+//     fontSize: 16,
+//     color: '#888',
+//     marginBottom: 20,
+//     fontWeight: 'regular',
+//     fontFamily: 'Source Serif 4',
+//   },
+//   inputContainer: {
+//     marginBottom: 30,
+//   },
+//   label: {
+//     fontSize: 14,
+//     color: '#000',
+//     marginBottom: 6,
+//     fontWeight: 'regular',
+//   },
+//   inputWrapper: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     borderWidth: 1,
+//     borderColor: '#333333',
+//     borderRadius: 10,
+//     paddingHorizontal: 12,
+//     paddingVertical: 10,
+//     marginBottom: 16,
+//     justifyContent: 'space-between',
+//     marginBottom: 25,
+//   },
+//   input: {
+//     flex: 1,
+//     fontSize: 16,
+//     color: '#000',
+//     fontWeight: 'regular',
+//     fontFamily: 'Source Serif 4',
+//   },
+//   saveButton: {
+//     backgroundColor: '#28a745',
+//     paddingVertical: 16,
+//     borderRadius: 12,
+//     alignItems: 'center',
+//     marginHorizontal: 20,
+//     marginBottom: 5,
+//   },
+//   saveText: {
+//     color: '#fff',
+//     fontSize: 16,
+//     fontWeight: 'bold',
+//   },
+// });
+
 import React, {useState} from 'react';
 import {
   View,
@@ -6,13 +204,18 @@ import {
   TouchableOpacity,
   SafeAreaView,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ChangePassword = ({navigation}) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -20,6 +223,54 @@ const ChangePassword = ({navigation}) => {
   const toggleCurrent = () => setShowCurrent(!showCurrent);
   const toggleNew = () => setShowNew(!showNew);
   const toggleConfirm = () => setShowConfirm(!showConfirm);
+
+  // 👉 API CALL FUNCTION
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      Alert.alert('Error', 'Please fill all fields');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Error', 'New password and confirm password do not match');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem('TOKEN');
+      const userId = await AsyncStorage.getItem('USERID');
+
+      const response = await axios.post(
+        'https://api.mobitrade.in/api/change-password',
+        {
+          user_id: userId,
+          old_password: currentPassword,
+          new_password: newPassword,
+          new_password_confirmation: confirmPassword,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      console.log('API Response:', response.data);
+
+      if (response.data.status) {
+        Alert.alert('Success', 'Password changed successfully');
+        navigation.goBack();
+      } else {
+        Alert.alert('Error', response.data.message);
+      }
+    } catch (error) {
+      console.error(error?.response?.data?.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -39,7 +290,6 @@ const ChangePassword = ({navigation}) => {
       </View>
 
       <View style={{marginHorizontal: 20, flex: 1}}>
-        {/* Title */}
         <Text style={styles.subtitle}>
           Please type something you’ll remember
         </Text>
@@ -106,8 +356,13 @@ const ChangePassword = ({navigation}) => {
       </View>
 
       {/* Save Password Button */}
-      <TouchableOpacity style={styles.saveButton}>
-        <Text style={styles.saveText}>Save Password</Text>
+      <TouchableOpacity
+        style={[styles.saveButton, loading && {opacity: 0.6}]}
+        onPress={handleChangePassword}
+        disabled={loading}>
+        <Text style={styles.saveText}>
+          {loading ? 'Saving...' : 'Save Password'}
+        </Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -116,12 +371,8 @@ const ChangePassword = ({navigation}) => {
 export default ChangePassword;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
- header: {
+  container: {flex: 1, padding: 20, backgroundColor: '#fff'},
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
@@ -132,36 +383,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     borderRadius: 20,
     padding: 6,
-    left: 0,
   },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#000',
-    textAlign: 'center',
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#000',
-    marginTop: 10,
-  },
+  headerTitle: {fontSize: 16, fontWeight: '500', color: '#000'},
   subtitle: {
     fontSize: 16,
     color: '#888',
     marginBottom: 20,
-    fontWeight: 'regular',
     fontFamily: 'Source Serif 4',
   },
-  inputContainer: {
-    marginBottom: 30,
-  },
-  label: {
-    fontSize: 14,
-    color: '#000',
-    marginBottom: 6,
-    fontWeight: 'regular',
-  },
+  inputContainer: {marginBottom: 30},
+  label: {fontSize: 14, color: '#000', marginBottom: 6},
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -170,17 +401,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    marginBottom: 16,
-    justifyContent: 'space-between',
     marginBottom: 25,
+    justifyContent: 'space-between',
   },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: '#000',
-    fontWeight: 'regular',
-    fontFamily: 'Source Serif 4',
-  },
+  input: {flex: 1, fontSize: 16, color: '#000'},
   saveButton: {
     backgroundColor: '#28a745',
     paddingVertical: 16,
@@ -189,9 +413,5 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 5,
   },
-  saveText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  saveText: {color: '#fff', fontSize: 16, fontWeight: 'bold'},
 });

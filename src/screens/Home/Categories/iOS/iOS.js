@@ -29,7 +29,10 @@ const {width} = Dimensions.get('window');
 const iOS = ({navigation, item}) => {
   const {uri} = useSelector(state => state.cat);
   const [productData, setProductData] = useState();
+  const [filterdata, setFilterData] = useState();
   const dispatch = useDispatch();
+
+  const brands = filterdata?.brands;
 
   useEffect(() => {
     dispatch(fetchWishlist());
@@ -45,12 +48,24 @@ const iOS = ({navigation, item}) => {
 
   useEffect(() => {
     fetchPostalDetails();
+    fetchFilter();
   }, []);
 
   const fetchPostalDetails = async zip => {
     try {
       const res = await axios.get(`https://api.mobitrade.in/api/product/list`);
       setProductData(res?.data?.data);
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text2: JSON.stringify(error?.response?.data?.message),
+      });
+    }
+  };
+  const fetchFilter = async zip => {
+    try {
+      const res = await axios.get(`https://api.mobitrade.in/api/filterapi`);
+      setFilterData(res?.data?.filters);
     } catch (error) {
       Toast.show({
         type: 'error',
@@ -373,7 +388,7 @@ const iOS = ({navigation, item}) => {
             </View>
             <FlatList
               key={`cat-brands`}
-              data={brandsName}
+              data={brands}
               keyExtractor={item => item.name}
               renderItem={({item}) => {
                 const selected = selectedBrands.includes(item.name);

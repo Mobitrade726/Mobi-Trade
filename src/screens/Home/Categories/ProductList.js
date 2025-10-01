@@ -21,6 +21,8 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Swiper from 'react-native-swiper';
 import {useNavigation} from '@react-navigation/native';
 import axios from 'axios';
+import {addToCartAPI, checkoutAPI} from '../../../redux/slices/cartSlice';
+import {useDispatch, useSelector} from 'react-redux';
 
 const {width} = Dimensions.get('window');
 
@@ -38,11 +40,11 @@ const InfoItem = ({label, value, working = true}) => (
 
 const ProductCard = ({item}) => (
   <View style={styles.productCard}>
-    <Image source={{uri: item.image}} style={styles.productImage} />
-    <Text style={styles.productTitle}>{item.title}</Text>
-    <Text style={styles.productTitle}>{item.color}</Text>
-    <Text style={styles.productTitle}>{item.storage}</Text>
-    <Text style={styles.productTitle}>{item.grade}</Text>
+    <Image source={{uri: item.feature_image}} style={styles.productImage} />
+    <Text style={styles.productTitle}>{item.model_name}</Text>
+    <Text style={styles.productTitle}>{item.color_name}</Text>
+    <Text style={styles.productTitle}>{item.storage}8GB | 256GB</Text>
+    <Text style={styles.productTitle}>{item.grade_number}</Text>
     <Text style={styles.productPrice}>{item.price}</Text>
   </View>
 );
@@ -136,11 +138,11 @@ const InfoCard = ({iconType, icon, text}) => {
 
 const ProductCardD = ({item}) => (
   <View style={styles.productCard}>
-    <Image source={{uri: item.image}} style={styles.productImage} />
-    <Text style={styles.productTitle}>{item.title}</Text>
-    <Text style={styles.productTitle}>{item.color}</Text>
-    <Text style={styles.productTitle}>{item.storage}</Text>
-    <Text style={styles.productTitle}>{item.grade}</Text>
+    <Image source={{uri: item.feature_image}} style={styles.productImage} />
+    <Text style={styles.productTitle}>{item.model_name}</Text>
+    <Text style={styles.productTitle}>{item.color_name}</Text>
+    <Text style={styles.productTitle}>{item.storage}8GB | 256GB</Text>
+    <Text style={styles.productTitle}>{item.grade_number}</Text>
     <Text style={styles.productPrice}>{item.price}</Text>
   </View>
 );
@@ -151,19 +153,31 @@ const ProductDetail = ({route, iconType, icon, text}) => {
   const [showSpecs, setShowSpecs] = useState(false); // Toggle state
   const [showSpecs1, setShowSpecs1] = useState(false); // Toggle state
   const {product_barcode_id} = route.params; // 👈 get product
-
-  console.log('product_barcode_id--------->', product_barcode_id);
-
-  const [loading, setLoading] = useState(true);
+  const [productData, setProductData] = useState();
+  const [loading1, setLoading] = useState(true);
+  const [error1, setError] = useState(null);
+  const dispatch = useDispatch();
+  const {loading, error} = useSelector(state => state.cart);
   const [product, setProduct] = useState('');
-  const [error, setError] = useState(null);
+  const handleAddToCart = () => {
+    dispatch(addToCartAPI({product, navigation})); // ✅ pass an object
+  };
+  const handleBuyNow = ()  => {
+    dispatch(
+      checkoutAPI({
+        type: 'single_product',
+        barcode_id: product?.barcode?.barcode_id,
+        single_product_price: product?.barcode?.purchase_price,
+        navigation,
+      }),
+    );
+  };
 
   let featureImage = product?.feature_images || [];
   let barcodeDetails = product?.barcode || [];
   let modelSpecification = product?.model_specification || [];
-
+  console.log("product--------------->",product?.barcode?.purchase_price);
   let device_qc_reports = product?.device_qc_reports || [];
-  console.log('barcodeDetails-------------->', device_qc_reports);
 
   // 🔹 Utility function to safely extract values
   const extractValues = (reports, pathFn) =>
@@ -252,6 +266,37 @@ const ProductDetail = ({route, iconType, icon, text}) => {
     fetchProduct();
   }, [product_barcode_id]);
 
+  useEffect(() => {
+    fetchPostalDetails();
+  }, []);
+
+  const fetchPostalDetails = async zip => {
+    try {
+      const res = await axios.get(`https://api.mobitrade.in/api/product/list`);
+      setProductData(res?.data?.data);
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text2: JSON.stringify(error?.response?.data?.message),
+      });
+    }
+  };
+
+  const iosProductsSimilarProducts = (productData || []).filter(
+    item => item.operating_systems && item.operating_systems === 'iOS',
+  );
+  const iosProductsYouMightLike = (productData || []).filter(
+    item =>
+      item.operating_systems === 'iOS' &&
+      ['A1', 'A2', 'A3'].includes(item.grade_number),
+  );
+
+  console.log(
+    'iosProductsSimilarProducts--------->',
+    iosProductsSimilarProducts,
+  );
+  console.log('iosProductsYouMightLike--------->', iosProductsYouMightLike);
+
   // Suppose you already have `product` data from API
   const productSpecs = [
     ['IMEI Number', barcodeDetails?.imei_number],
@@ -262,33 +307,6 @@ const ProductDetail = ({route, iconType, icon, text}) => {
     ['Touchscreen', modelSpecification?.touchscreen],
     // ['Quick Charging', product?.quick_charging ? 'Yes' : 'No'],
     // ['Sound Enhancements', product?.sound_enhancements],
-  ];
-
-  const similarProducts = [
-    {
-      image: 'https://i.postimg.cc/NfcGsSft/productlist1.png',
-      title: 'iPhone 13 Pro',
-      color: 'Midnight Black',
-      storage: '8GB | 256GB',
-      grade: 'Grade A1',
-      price: '₹59,999',
-    },
-    {
-      image: 'https://i.postimg.cc/NfcGsSft/productlist1.png',
-      title: 'iPhone 13 Pro',
-      color: 'White',
-      storage: '6GB | 128GB',
-      grade: 'Grade A2',
-      price: '₹49,999',
-    },
-    {
-      image: 'https://i.postimg.cc/NfcGsSft/productlist1.png',
-      title: 'iPhone 13 Pro',
-      color: 'Silver Grey',
-      storage: '6GB | 128GB',
-      grade: 'Grade A3',
-      price: '₹59,999',
-    },
   ];
 
   return (
@@ -427,12 +445,16 @@ const ProductDetail = ({route, iconType, icon, text}) => {
           <View style={{borderWidth: 0.5, marginTop: 10}}></View>
           <View style={styles.buttonRow}>
             <TouchableOpacity
-              onPress={() => navigation.navigate('Cart')}
+              // onPress={() =>
+              //   navigation.navigate('Cart', {productData: barcodeDetails})
+              // }
+              onPress={handleAddToCart}
+              disabled={loading}
               style={styles.addToCart}>
               <Text style={styles.btnText}>Add to Cart</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => navigation.navigate('Checkout')}
+              onPress={() => handleBuyNow()}
               style={styles.buyNow}>
               <Text style={styles.btnTextWhite}>Buy Now</Text>
             </TouchableOpacity>
@@ -737,9 +759,7 @@ const ProductDetail = ({route, iconType, icon, text}) => {
                     key={idx}
                     label={d.parameter?.parameter_name || 'N/A'}
                     value={d.parameter_status?.parameter_status_name || 'N/A'}
-                    working={
-                      d.parameter_status?.parameter_status_name || 'N/A'
-                    }
+                    working={d.parameter_status?.parameter_status_name || 'N/A'}
                   />
                 ))}
 
@@ -752,9 +772,7 @@ const ProductDetail = ({route, iconType, icon, text}) => {
                     key={idx}
                     label={d.parameter?.parameter_name || 'N/A'}
                     value={d.parameter_status?.parameter_status_name || 'N/A'}
-                    working={
-                      d.parameter_status?.parameter_status_name || 'N/A'
-                    }
+                    working={d.parameter_status?.parameter_status_name || 'N/A'}
                   />
                 ))}
 
@@ -766,9 +784,7 @@ const ProductDetail = ({route, iconType, icon, text}) => {
                     key={idx}
                     label={d.parameter?.parameter_name || 'N/A'}
                     value={d.parameter_status?.parameter_status_name || 'N/A'}
-                    working={
-                      d.parameter_status?.parameter_status_name || 'N/A'
-                    }
+                    working={d.parameter_status?.parameter_status_name || 'N/A'}
                   />
                 ))}
 
@@ -868,7 +884,7 @@ const ProductDetail = ({route, iconType, icon, text}) => {
           </TouchableOpacity> */}
         </View>
         <FlatList
-          data={similarProducts}
+          data={iosProductsSimilarProducts}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({item}) => <ProductCard item={item} />}
           horizontal
@@ -889,7 +905,7 @@ const ProductDetail = ({route, iconType, icon, text}) => {
         </View>
         <FlatList
           horizontal
-          data={suggestions}
+          data={iosProductsYouMightLike}
           renderItem={({item}) => <ProductCardD item={item} />}
           keyExtractor={item => item.id}
           showsHorizontalScrollIndicator={false}

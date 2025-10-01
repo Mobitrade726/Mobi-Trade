@@ -35,12 +35,13 @@ const WishlistCard = ({data, onRemove}) => {
           <Text style={styles.specs}>
             {data?.os_name === 'iOS' || data?.os_name === 'Android' ? (
               <>
-                {data?.variant_name ? data.variant_name : 'N/A'}  ●
+                {data?.variant_name ? data.variant_name : 'N/A'} ●
                 {data?.color_name ? data?.color_name : 'N/A'}
               </>
             ) : (
               <>
-                {data?.ram ? data.ram : 'N/A'}/{data?.storage ? data.storage : 'N/A' }
+                {data?.ram ? data.ram : 'N/A'}/
+                {data?.storage ? data.storage : 'N/A'}
               </>
             )}
           </Text>
@@ -52,17 +53,17 @@ const WishlistCard = ({data, onRemove}) => {
 
           {/* Compare Button */}
           <TouchableOpacity style={styles.compareBtn}>
-            <Ionicons name="swap-horizontal" size={14} color="#333" />
-            <Text style={styles.compareText}>Compare</Text>
+            <Ionicons name="cart-outline" size={14} color="#333" />
+            <Text style={styles.compareText}>Move to Cart</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Move to Cart */}
-      <TouchableOpacity style={styles.cartBtn}>
+      {/* <TouchableOpacity style={styles.cartBtn}>
         <Ionicons name="cart-outline" size={16} color="#fff" />
         <Text style={styles.cartText}>Move to Cart</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };
@@ -78,6 +79,7 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 8,
+    borderWidth: 0.5,
   },
   row: {flexDirection: 'row'},
   imageContainer: {
@@ -110,11 +112,11 @@ const styles = StyleSheet.create({
   heartBtn: {
     position: 'absolute',
     top: -4,
-    right: -10,
+    right: -0,
     backgroundColor: '#fff',
     padding: 6,
     borderRadius: 20,
-    elevation: 3,
+    elevation: 15,
   },
   subtitle: {fontSize: 12, color: '#777', marginTop: 2},
   specs: {fontSize: 12, marginTop: 6},
@@ -141,6 +143,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     gap: 6,
     justifyContent: 'center',
+    width: '70%',
   },
   compareText: {fontSize: 12, color: '#333'},
   cartBtn: {

@@ -8,30 +8,21 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 15,
-    borderColor: '#ccc',
-    position: 'relative',
+    paddingVertical: 10,
+    justifyContent: 'space-between',
+    marginHorizontal: 10,
   },
-
   backButton: {
-    left: 15,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
     borderRadius: 20,
     padding: 6,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: {width: 0, height: 2},
-    shadowRadius: 2,
+    left: 0,
   },
-
   headerTitle: {
     fontSize: 16,
     fontWeight: '500',
     color: '#000',
     textAlign: 'center',
-    flex: 1,
   },
   tabs: {
     flexDirection: 'row',
@@ -60,7 +51,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2F2F2',
     borderRadius: 12,
     padding: 15,
-    marginBottom: 15,
+    marginBottom: 30,
+    marginTop:-20,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -77,6 +69,7 @@ const styles = StyleSheet.create({
   edit: {
     color: '#11A5D7',
     fontWeight: '600',
+    marginLeft:50,
   },
   address: {
     marginVertical: 5,

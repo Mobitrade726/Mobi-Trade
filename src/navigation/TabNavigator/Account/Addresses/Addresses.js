@@ -7,7 +7,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {styles } from './styles';
+import {styles} from './styles';
 
 const Addresses = ({navigation}) => {
   const [activeTab, setActiveTab] = useState('Billing');
@@ -17,18 +17,21 @@ const Addresses = ({navigation}) => {
     {
       id: '1',
       type: 'Home',
+      label: 'default',
       address: '123 Elm Street, Springfield, IL 62701',
       icon: 'home-outline',
     },
     {
       id: '2',
       type: 'Warehouse',
+      label: 'work',
       address: '123 Elm Street, Springfield, IL 62701',
       icon: 'business-outline',
     },
     {
       id: '3',
       type: 'Office',
+      label: 'office',
       address: '123 Elm Street, Springfield, IL 62701',
       icon: 'storefront-outline',
     },
@@ -37,14 +40,14 @@ const Addresses = ({navigation}) => {
   const renderAddress = ({item}) => (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <View style={{justifyContent:"center"}}>
+        <View style={{justifyContent: 'center'}}>
           <Ionicons name={item.icon} size={24} color="#11A5D7" />
         </View>
         <View style={styles.iconText}>
           <Text style={styles.title}>{item.type}</Text>
           <Text style={styles.address}>{item.address}</Text>
         </View>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={()=> navigation.navigate('AddNewAddress')}>
           <Text style={styles.edit}>Edit</Text>
         </TouchableOpacity>
       </View>
@@ -60,7 +63,7 @@ const Addresses = ({navigation}) => {
           size={20}
           color="#11A5D7"
         />
-        <Text style={styles.defaultLabel}>Set as default</Text>
+        <Text style={styles.defaultLabel}>{item.label}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -74,32 +77,11 @@ const Addresses = ({navigation}) => {
           style={styles.backButton}>
           <Ionicons name="chevron-back" size={22} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Saved Address</Text>
-      </View>
-
-      {/* Tab Toggle */}
-      <View style={styles.tabs}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'Billing' && styles.activeTab]}
-          onPress={() => setActiveTab('Billing')}>
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === 'Billing' && styles.activeTabText,
-            ]}>
-            Billing
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'Shipping' && styles.activeTab]}
-          onPress={() => setActiveTab('Shipping')}>
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === 'Shipping' && styles.activeTabText,
-            ]}>
-            Shipping
-          </Text>
+        <View>
+          <Text style={styles.headerTitle}>Saved Address</Text>
+        </View>
+        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+          <Ionicons name="search" size={24} color="#333" />
         </TouchableOpacity>
       </View>
 
@@ -112,7 +94,9 @@ const Addresses = ({navigation}) => {
       />
 
       {/* Add Address Button */}
-      <TouchableOpacity onPress={()=> navigation.navigate('AddNewAddress')} style={styles.addButton}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('AddNewAddress')}
+        style={styles.addButton}>
         <Ionicons name="add-circle-outline" size={22} color="#fff" />
         <Text style={styles.addButtonText}>Add New Address</Text>
       </TouchableOpacity>

@@ -128,15 +128,14 @@ const Home = ({navigation}) => {
           <HeroCarousel data={carouselData} navigation={navigation} />
           <FlatList
             horizontal
-            data={osList}
-            keyExtractor={item => item.id}
+            data={[...osList].reverse()} // clone and reverse
+            keyExtractor={item => item.id.toString()}
             showsHorizontalScrollIndicator={false}
             renderItem={({item}) => (
               <TouchableOpacity
                 onPress={() => {
                   let tabName = '';
 
-                  // Map os_name to Tab.Screen names
                   switch (item.os_name.toLowerCase()) {
                     case 'android':
                       tabName = 'Android';
@@ -151,7 +150,7 @@ const Home = ({navigation}) => {
                       tabName = 'MacOS';
                       break;
                     default:
-                      tabName = 'Android'; // fallback
+                      tabName = 'Android';
                   }
 
                   navigation.navigate('CategoriesSmartphones', {

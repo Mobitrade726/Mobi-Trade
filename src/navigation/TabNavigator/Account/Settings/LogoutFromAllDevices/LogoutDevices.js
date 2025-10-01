@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -8,35 +8,179 @@ import {
   SafeAreaView,
   StyleSheet,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
-
-const devices = [
-  {
-    id: '1',
-    name: 'Android1342',
-    location: 'Los Angeles, USA',
-    lastActive: '30 minutes ago',
-    image: require('../../../../../../assets/images/logouticon.png'), // Replace with your image
-  },
-  {
-    id: '2',
-    name: 'iPhone',
-    location: 'Los Angeles, USA',
-    lastActive: '30 minutes ago',
-    image: require('../../../../../../assets/images/logouticon.png'),
-  },
-  {
-    id: '3',
-    name: 'Android1345',
-    location: 'Los Angeles, USA',
-    lastActive: '30 minutes ago',
-    image: require('../../../../../../assets/images/logouticon.png'),
-  },
-];
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LogoutDevices = ({navigation}) => {
+  const [devices, setDevices] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch devices from API
+  const fetchDevices = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem('TOKEN');
+      const userId = await AsyncStorage.getItem('USERID');
+
+      const response = await axios.get(
+        `https://api.mobitrade.in/api/buyerLoginHistory/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+        },
+      );
+
+      if (response.data.status) {
+        const mappedDevices = response.data.data.map((item, index) => ({
+          id: item.id.toString(),
+          name: item.device_type || `Device ${index + 1}`,
+          location: `${item.city}, ${item.state}`,
+          lastActive: item.login_time,
+          image: require('../../../../../../assets/images/logouticon.png'), // Replace with your image
+          device_id: item?.device_id,
+        }));
+        setDevices(mappedDevices);
+      }
+    } catch (error) {
+      console.log('Error fetching devices:', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDevices();
+  }, []);
+
+  // Logout single device
+  const handleLogoutDevice = async device_id => {
+    try {
+      const token = await AsyncStorage.getItem('TOKEN');
+      const userId = await AsyncStorage.getItem('USERID');
+
+      if (!token) {
+        Alert.alert('Error', 'No token found. Please login again.');
+        return;
+      }
+
+      if (!device_id) {
+        Alert.alert('Error', 'Invalid device ID.');
+        return;
+      }
+
+      Alert.alert(
+        'Confirm Logout',
+        'Do you want to log out from this device?',
+        [
+          {text: 'Cancel', style: 'cancel'},
+          {
+            text: 'Yes',
+            onPress: async () => {
+              try {
+                // Make POST request with proper body
+                const response = await axios.post(
+                  'https://api.mobitrade.in/api/logout',
+                  {
+                    user_id:userId,
+                    device_id: device_id,
+                  },
+                  {
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                      Accept: 'application/json',
+                      'Content-Type': 'application/json',
+                    },
+                  },
+                );
+
+                console.log('Logout Response:', response.data);
+
+                if (response.data.status) {
+                  // Clear storage after logout
+                  await AsyncStorage.removeItem('TOKEN');
+                  await AsyncStorage.removeItem('USERID');
+                  Alert.alert('Success', 'Device logged out successfully!');
+                  fetchDevices(); // Refresh devices list
+                } else {
+                  Alert.alert(
+                    'Failed',
+                    response.data.message || 'Logout failed',
+                  );
+                }
+              } catch (err) {
+                console.log('Logout Error Response:', err.response?.data);
+                Alert.alert(
+                  'Error',
+                  err.response?.data?.message || 'Logout failed.',
+                );
+              }
+            },
+          },
+        ],
+        {cancelable: true},
+      );
+    } catch (error) {
+      console.log('Token/Device Error:', error);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    }
+  };
+
+  // Logout all devices
+  const handleLogoutAllDevices = async () => {
+    const userId = await AsyncStorage.getItem('USERID');
+
+    Alert.alert(
+      'Confirm Logout All',
+      'You will be logged out of all devices. Continue?',
+      [
+        {text: 'No', style: 'cancel'},
+        {
+          text: 'Yes',
+          onPress: async () => {
+            try {
+              const token = await AsyncStorage.getItem('TOKEN');
+
+              const response = await axios.post(
+                'https://api.mobitrade.in/api/logout',
+                {user_id: userId},
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'application/json',
+                  },
+                },
+              );
+
+              if (response.data.status) {
+                // Clear storage after logout
+                await AsyncStorage.removeItem('TOKEN');
+                await AsyncStorage.removeItem('USERID');
+
+                // Navigate to login
+                navigation.reset({
+                  index: 0,
+                  routes: [{name: 'LoginScreen'}],
+                });
+              } else {
+                Alert.alert('Failed', response.data.message || 'Logout failed');
+              }
+            } catch (error) {
+              console.log('Logout All Error:', error.message);
+              Alert.alert('Error', 'Something went wrong. Please try again.');
+            }
+          },
+        },
+      ],
+      {cancelable: false},
+    );
+  };
+
   const renderItem = ({item}) => (
     <View style={styles.card}>
       <Image
@@ -48,14 +192,19 @@ const LogoutDevices = ({navigation}) => {
         <View style={styles.row}>
           <Ionicons name="phone-portrait-outline" size={14} color="#555" />
           <Text style={styles.lastActiveText}>
-            {' '}
-            · Last active: {item.lastActive}
+            Last active: {item.lastActive}
           </Text>
         </View>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
           <Text style={styles.deviceName}>{item.name}</Text>
-          <TouchableOpacity>
-            <SimpleLineIcons name="logout" size={20} color="#000" />
+          {/* Logout button for this device */}
+          <TouchableOpacity onPress={() => handleLogoutDevice(item.device_id)}>
+            <SimpleLineIcons name="logout" size={20} color="#C84040" />
           </TouchableOpacity>
         </View>
         <Text style={styles.deviceLocation}>Location: {item.location}</Text>
@@ -72,42 +221,34 @@ const LogoutDevices = ({navigation}) => {
           style={styles.backButton}>
           <Ionicons name="chevron-back" size={22} color="#000" />
         </TouchableOpacity>
-        <View>
-          <Text style={styles.headerTitle}>Logged-in Devices</Text>
-        </View>
-        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-          <Ionicons name="search" size={24} color="#333" />
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Logged-in Devices</Text>
+        <View style={{width: 24}} /> {/* placeholder */}
       </View>
 
-      {/* Device List */}
-      <FlatList
-        data={devices}
-        keyExtractor={item => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={{padding: 16}}
-      />
+      {/* Loader */}
+      {loading ? (
+        <ActivityIndicator
+          size="large"
+          color="#4AB1E8"
+          style={{marginTop: 30}}
+        />
+      ) : (
+        <FlatList
+          data={devices}
+          keyExtractor={item => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={{padding: 16}}
+          ListEmptyComponent={
+            <Text style={{textAlign: 'center', marginTop: 20}}>
+              No logged-in devices found.
+            </Text>
+          }
+        />
+      )}
 
-      {/* Log Out Button */}
+      {/* Logout All Devices Button */}
       <TouchableOpacity
-        onPress={() => {
-          Alert.alert(
-            'Are you sure?',
-            'You will be logged out of all devices.',
-            [
-              {
-                text: 'No',
-                onPress: () => {},
-                style: 'cancel',
-              },
-              {
-                text: 'Yes',
-                onPress: () => navigation.navigate('LoginScreen'), // make sure 'Login' is in your navigator
-              },
-            ],
-            {cancelable: false},
-          );
-        }}
+        onPress={handleLogoutAllDevices}
         style={styles.logoutAllButton}>
         <SimpleLineIcons name="logout" size={18} color="#fff" />
         <Text style={styles.logoutAllText}> Log out of all devices</Text>
@@ -134,7 +275,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     borderRadius: 20,
     padding: 6,
-    left: 0,
   },
   headerTitle: {
     fontSize: 16,
@@ -143,7 +283,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   card: {
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: '#4AB1E8',
     borderRadius: 12,
     padding: 12,
@@ -164,23 +304,21 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   lastActiveText: {
-    fontSize: 15,
+    fontSize: 10,
     color: '#666',
-    fontWeight: 'semibold',
-    fontFamily: 'Source Serif 4',
+    fontWeight: '500',
+    marginLeft: 6,
   },
   deviceName: {
     fontSize: 17,
-    fontWeight: 'semibold',
+    fontWeight: '600',
     color: '#000',
     marginBottom: 4,
-    fontFamily: 'Source Serif 4',
   },
   deviceLocation: {
     fontSize: 15,
     color: '#444',
-    fontWeight: 'regular',
-    fontFamily: 'Source Serif 4',
+    fontWeight: '400',
   },
   logoutAllButton: {
     flexDirection: 'row',
@@ -194,8 +332,7 @@ const styles = StyleSheet.create({
   logoutAllText: {
     color: '#fff',
     fontSize: 17,
-    fontWeight: 'medium',
-    fontFamily: 'Source Serif 4',
+    fontWeight: '500',
     marginHorizontal: 8,
   },
 });

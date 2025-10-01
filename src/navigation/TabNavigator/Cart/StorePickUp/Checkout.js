@@ -9,7 +9,7 @@ import {
   Image,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 
 const storeData = [
   {
@@ -41,6 +41,14 @@ const CheckoutScreen = () => {
   const [selectedStore, setSelectedStore] = useState(2);
   const [paymentMethod, setPaymentMethod] = useState('pickup');
   const [selected, setSelected] = useState('UPI');
+
+  const route = useRoute();
+
+  // Access params safely
+  const {type_product} = route.params || {};
+
+  console.log('Route param type:', type_product);
+
   const paymentMethods = [
     {
       id: 'UPI',
@@ -190,7 +198,9 @@ const CheckoutScreen = () => {
         {/* Address & Instructions */}
 
         <View style={{marginTop: 10}}>
-          <TouchableOpacity onPress={()=> navigation.navigate('SelectAddress')} style={styles.infoBox}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('SelectAddress')}
+            style={styles.infoBox}>
             <View style={{borderWidth: 1, padding: 5, borderRadius: 50}}>
               <Ionicons name="location-outline" size={20} />
             </View>

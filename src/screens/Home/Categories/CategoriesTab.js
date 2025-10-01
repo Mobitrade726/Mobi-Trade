@@ -24,7 +24,7 @@ const CategoriesSmartphones = ({navigation, route}) => {
           <Ionicons name="chevron-back" size={22} color="#000" />
         </TouchableOpacity>
         <View>
-          <Text style={styles.headerTitle}>Smartphones</Text>
+          <Text style={styles.headerTitle}></Text>
         </View>
         <TouchableOpacity onPress={() => navigation.navigate('Search')}>
           <Ionicons name="search" size={24} color="#333" />
