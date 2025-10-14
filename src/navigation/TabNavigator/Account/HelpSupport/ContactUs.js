@@ -130,8 +130,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
-
-const API_URL = 'https://api.mobitrade.in/api/contact_details';
+import { API_BASE_URL } from '../../../../utils/utils';
 
 const ContactUs = ({navigation}) => {
   const [contactData, setContactData] = useState(null);
@@ -140,7 +139,7 @@ const ContactUs = ({navigation}) => {
   useEffect(() => {
     const fetchContactDetails = async () => {
       try {
-        const response = await axios.get(API_URL);
+        const response = await axios.get(`${API_BASE_URL}/contact_details`);
         if (response.data?.success) {
           setContactData(response.data.data);
         }

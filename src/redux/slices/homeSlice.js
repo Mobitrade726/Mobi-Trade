@@ -1,12 +1,13 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '../../utils/utils';
 
 export const fetchBanners = createAsyncThunk('home/fetchBanners', async () => {
   try {
     const token = await AsyncStorage.getItem('TOKEN'); // get token from storage
     const response = await axios.get(
-      'https://api.mobitrade.in/api/bannerlist',
+      `${API_BASE_URL}/bannerlist`,
       {
         headers: {
           Authorization: `Bearer ${token}`, // 👈 pass token here
@@ -26,7 +27,7 @@ export const fetchBanners = createAsyncThunk('home/fetchBanners', async () => {
 export const fetchOsList = createAsyncThunk('home/fetchOsList', async () => {
   try {
     const token = await AsyncStorage.getItem('TOKEN'); // get token from storage
-    const response = await axios.get('https://api.mobitrade.in/api/oslist', {
+    const response = await axios.get(`${API_BASE_URL}/oslist`, {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -44,7 +45,7 @@ export const fetchOsList = createAsyncThunk('home/fetchOsList', async () => {
 
 export const fetchBrands = createAsyncThunk('home/fetchBrands', async () => {
   try {
-    const response = await axios.get('https://api.mobitrade.in/api/brand');
+    const response = await axios.get(`${API_BASE_URL}/brand`);
     return response.data.data; // return only the OS list array
   } catch (error) {
     console.error(
@@ -92,21 +93,28 @@ const initialState = {
       id: '1',
       image:
         'https://i.postimg.cc/B6HGCYW5/A-sleek-smartphone-with-a-modern-design-resting-on-a-wooden-table-surrounded-by-small-decorative-pla.png',
-      name: 'Under ₹10,000',
+      label: 'Under ₹10,000',
       subname: 'Great for budget buyers',
     },
     {
       id: '2',
       image:
         'https://i.postimg.cc/B6HGCYW5/A-sleek-smartphone-with-a-modern-design-resting-on-a-wooden-table-surrounded-by-small-decorative-pla.png',
-      name: '₹20,000 – ₹30,000',
+      label: '₹10,000 - ₹20,000',
       subname: 'Ideal for beginners ',
     },
     {
       id: '3',
       image:
         'https://i.postimg.cc/B6HGCYW5/A-sleek-smartphone-with-a-modern-design-resting-on-a-wooden-table-surrounded-by-small-decorative-pla.png',
-      name: '₹30,000 – ₹40,000',
+      label: '₹20,000 - ₹30,000',
+      subname: 'Premium selections ',
+    },
+    {
+      id: '4',
+      image:
+        'https://i.postimg.cc/B6HGCYW5/A-sleek-smartphone-with-a-modern-design-resting-on-a-wooden-table-surrounded-by-small-decorative-pla.png',
+      label: 'Above ₹30,000',
       subname: 'Premium selections ',
     },
   ],

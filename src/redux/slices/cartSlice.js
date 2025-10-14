@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import axios from 'axios';
 import Toast from 'react-native-toast-message';
+import { API_BASE_URL } from '../../utils/utils';
 
 // Fetch cart items from API
 export const fetchCartAPI = createAsyncThunk(
@@ -12,7 +13,7 @@ export const fetchCartAPI = createAsyncThunk(
 
     try {
       const response = await axios.get(
-        `https://api.mobitrade.in/api/cart/${userId}`,
+        `${API_BASE_URL}/cart/${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -59,7 +60,7 @@ export const addToCartAPI = createAsyncThunk(
 
     try {
       const response = await axios.post(
-        'https://api.mobitrade.in/api/cart/add',
+        `${API_BASE_URL}/cart/add`,
         {
           barcode_id: product?.barcode?.barcode_id,
           user_id: userId,
@@ -106,7 +107,7 @@ export const removeFromCartAPI = createAsyncThunk(
       const userId = await AsyncStorage.getItem('USERID');
 
       const response = await axios.delete(
-        `https://api.mobitrade.in/api/cart/remove/${userId}/${barcode_id}`,
+        `${API_BASE_URL}/cart/remove/${userId}/${barcode_id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -138,7 +139,7 @@ export const clearCartAPI = createAsyncThunk(
 
     try {
       const response = await axios.delete(
-        `https://api.mobitrade.in/api/cart/clear${userId}`,
+        `${API_BASE_URL}/cart/clear${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -169,7 +170,7 @@ export const checkoutAPI = createAsyncThunk(
       const userId = await AsyncStorage.getItem('USERID');
 
       const response = await axios.post(
-        'https://api.mobitrade.in/api/checkout',
+        `${API_BASE_URL}/checkout`,
         {
           type,
           user_id: userId,

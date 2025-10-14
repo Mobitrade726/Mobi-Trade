@@ -10,6 +10,7 @@ import {
   ScrollView,
   BackHandler,
   StatusBar,
+  Alert,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useSelector, useDispatch} from 'react-redux';
@@ -24,6 +25,10 @@ import {
   fetchOsList,
   fetchBrands,
 } from '../../redux/slices/homeSlice';
+import {
+  fetchRecentlyViewed,
+  fetchProductList,
+} from '../../redux/slices/productSlice';
 
 const Home = ({navigation}) => {
   const dispatch = useDispatch();
@@ -34,20 +39,22 @@ const Home = ({navigation}) => {
     uri,
     mobileBudget,
     LaptopBudget,
-    recentlyView,
     SUPPORT_CARDS,
   } = useSelector(state => state.home);
+  const {recentlyview} = useSelector(state => state.product);
 
   useEffect(() => {
     dispatch(fetchOsList());
     dispatch(fetchBrands());
     dispatch(fetchBanners());
+    dispatch(fetchRecentlyViewed());
+    dispatch(fetchProductList());
   }, [dispatch]);
 
   const ProductMobile = ({item}) => (
     <View style={styles.cardM}>
       <Image source={{uri: item.image}} style={styles.imageM} />
-      <Text style={styles.productNameD}>{item.name}</Text>
+      <Text style={styles.productNameD}>{item.label}</Text>
       <Text style={styles.colorTextD}>{item.subname}</Text>
     </View>
   );
@@ -61,13 +68,15 @@ const Home = ({navigation}) => {
 
   const RecentlyView = ({item}) => (
     <TouchableOpacity
-      onPress={() => navigation.navigate('ProductList')}
+      onPress={() =>
+        navigation.navigate('ProductList', {
+          product_barcode_id: item?.barcode_id,
+        })
+      }
       style={styles.cardD}>
       <View style={styles.imageContainerD}>
-        <Image source={{uri: item.image}} style={styles.imageD} />
-        {item.refurbished && (
-          <Text style={styles.refurbishedLabelD}>(Refurbished)</Text>
-        )}
+        <Image source={{uri: item.feature_image}} style={styles.imageD} />
+        {item && <Text style={styles.refurbishedLabelD}>(Refurbished)</Text>}
         <TouchableOpacity
           style={styles.heartIconD}
           onPress={() => dispatch(toggleWishlist(item.id))}>
@@ -79,13 +88,13 @@ const Home = ({navigation}) => {
         </TouchableOpacity>
       </View>
       <View style={styles.gradeBoxD}>
-        <Text style={styles.gradeTextD}>Grade {item.grade}</Text>
+        <Text style={styles.gradeTextD}>Grade {item.grade_number}</Text>
       </View>
-      <Text style={styles.productNameD}>{item.name}</Text>
-      <Text style={styles.colorTextD}>● {item.color}</Text>
+      <Text style={styles.productNameD}>{item.model_name}</Text>
+      <Text style={styles.colorTextD}>● {item.color_name}</Text>
       <View style={styles.priceRowD}>
         <Text style={styles.priceD}>{item.price}</Text>
-        <Text style={styles.originalPriceD}>{item.originalPrice}</Text>
+        {/* <Text style={styles.originalPriceD}>{item.originalPrice}</Text> */}
       </View>
     </TouchableOpacity>
   );
@@ -117,6 +126,17 @@ const Home = ({navigation}) => {
     return () => backHandler.remove();
   }, []);
 
+  const renderItem = ({item}) => (
+    <TouchableOpacity
+      onPress={() =>
+        navigation.navigate('CategoriesTab', {initialTab: item.os_name})
+      }
+      style={styles.categoryCard}>
+      <Image source={{uri: item.image_url}} style={styles.categoryImage} />
+      <Text style={styles.categoryText}>{item.os_name}</Text>
+    </TouchableOpacity>
+  );
+
   return (
     <>
       <SafeAreaView style={styles.container}>
@@ -128,52 +148,17 @@ const Home = ({navigation}) => {
           <HeroCarousel data={carouselData} navigation={navigation} />
           <FlatList
             horizontal
-            data={[...osList].reverse()} // clone and reverse
+            data={osList} // clone and reverse
             keyExtractor={item => item.id.toString()}
             showsHorizontalScrollIndicator={false}
-            renderItem={({item}) => (
-              <TouchableOpacity
-                onPress={() => {
-                  let tabName = '';
-
-                  switch (item.os_name.toLowerCase()) {
-                    case 'android':
-                      tabName = 'Android';
-                      break;
-                    case 'ios':
-                      tabName = 'iOS';
-                      break;
-                    case 'windows':
-                      tabName = 'WindowsOS';
-                      break;
-                    case 'macos':
-                      tabName = 'MacOS';
-                      break;
-                    default:
-                      tabName = 'Android';
-                  }
-
-                  navigation.navigate('CategoriesSmartphones', {
-                    initialTab: tabName,
-                  });
-                }}
-                style={styles.categoryCard}>
-                <Image
-                  source={{uri: item.image_url}}
-                  style={styles.categoryImage}
-                />
-                <Text style={styles.categoryText}>{item.os_name}</Text>
-              </TouchableOpacity>
-            )}
+            renderItem={renderItem}
           />
 
           <TouchableOpacity
-            onPress={() => navigation.navigate('Recentlyadd')}
+            onPress={() => navigation.navigate('RecentlyAddedTab')}
             style={{flex: 1, backgroundColor: '#fff', marginHorizontal: 10}}>
             {/* Recently Added Banner */}
-            <TouchableOpacity
-              style={{marginTop: 16}}
-              onPress={() => navigation.navigate('Recentlyadd')}>
+            <View style={{marginTop: 16}}>
               <ImageBackground
                 source={{
                   uri: uri?.url,
@@ -185,7 +170,7 @@ const Home = ({navigation}) => {
                   <Ionicons name="chevron-forward" size={20} color="#fff" />
                 </View>
               </ImageBackground>
-            </TouchableOpacity>
+            </View>
           </TouchableOpacity>
           {/* Offers */}
           <Section
@@ -215,14 +200,29 @@ const Home = ({navigation}) => {
               style={{flexDirection: 'row', justifyContent: 'space-between'}}>
               <Text>Get Smartphones</Text>
               <TouchableOpacity
-                onPress={() => navigation.navigate('shopbybudgetSmartphones')}>
+                onPress={() =>
+                  navigation.navigate('ShopByBudget', {
+                    priceId: mobileBudget[0]?.id,
+                    arrayosname: ['iOS', 'Android'], // shows both iOS & Android
+                  })
+                }>
                 <Ionicons name="chevron-forward" size={20} color="#333" />
               </TouchableOpacity>
             </View>
             <FlatList
               horizontal
               data={mobileBudget}
-              renderItem={({item}) => <ProductMobile item={item} />}
+              renderItem={({item}) => (
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate('ShopByBudget', {
+                      priceId: item.id,
+                      arrayosname: ['iOS', 'Android'], // shows both iOS & Android
+                    })
+                  }>
+                  <ProductMobile item={item} />
+                </TouchableOpacity>
+              )}
               keyExtractor={item => item.id}
               contentContainerStyle={styles.listContainerD}
               showsHorizontalScrollIndicator={false}
@@ -232,7 +232,10 @@ const Home = ({navigation}) => {
               <Text>Get Macbooks & Windows PC</Text>
               <TouchableOpacity
                 onPress={() =>
-                  navigation.navigate('shopbybudgetWindowsMacbook')
+                  navigation.navigate('ShopByBudget', {
+                    priceId: mobileBudget[0]?.id,
+                    arrayosname: ['macOS', 'windows'], // shows both iOS & Android
+                  })
                 }>
                 <Ionicons name="chevron-forward" size={20} color="#333" />
               </TouchableOpacity>
@@ -240,26 +243,21 @@ const Home = ({navigation}) => {
             <FlatList
               horizontal
               data={LaptopBudget}
-              renderItem={({item}) => <ProductLaptop item={item} />}
+              renderItem={({item}) => (
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate('ShopByBudget', {
+                      priceId: item.id,
+                      arrayosname: ['macOS', 'windows'], // shows both iOS & Android
+                    })
+                  }>
+                  <ProductLaptop item={item} />
+                </TouchableOpacity>
+              )}
               keyExtractor={item => item.id}
               contentContainerStyle={styles.listContainerD}
               showsHorizontalScrollIndicator={false}
             />
-            {/* <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-                    <Text>Get Accessories</Text>
-                    <TouchableOpacity
-                      onPress={() => navigation.navigate('shopbybudgetAccessories')}>
-                      <Ionicons name="chevron-forward" size={20} color="#333" />
-                    </TouchableOpacity>
-                  </View>
-                  <FlatList
-                    horizontal
-                    data={AccessoriesBudget}
-                    renderItem={({item}) => <ProductLaptop item={item} />}
-                    keyExtractor={item => item.id}
-                    contentContainerStyle={styles.listContainerD}
-                    showsHorizontalScrollIndicator={false}
-                  /> */}
           </Section>
 
           {/* Recently Viewed */}
@@ -268,9 +266,9 @@ const Home = ({navigation}) => {
             onPress={() => navigation.navigate('RecentlyView')}>
             <FlatList
               horizontal
-              data={recentlyView}
+              data={recentlyview}
               renderItem={({item}) => <RecentlyView item={item} />}
-              keyExtractor={item => item.id.toString()}
+              keyExtractor={item => item.id}
               showsHorizontalScrollIndicator={false}
             />
           </Section>

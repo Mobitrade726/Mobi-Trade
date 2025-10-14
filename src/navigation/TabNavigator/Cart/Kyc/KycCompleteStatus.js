@@ -1,3 +1,293 @@
+// import React, {useState} from 'react';
+// import {
+//   View,
+//   Text,
+//   SafeAreaView,
+//   TouchableOpacity,
+//   TextInput,
+//   StyleSheet,
+//   ScrollView,
+//   Alert,
+// } from 'react-native';
+// import Ionicons from 'react-native-vector-icons/Ionicons';
+// import {launchImageLibrary} from 'react-native-image-picker';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
+// import axios from 'axios';
+// import {API_BASE_URL} from '../../../../utils/utils';
+
+// const KycScreen = ({navigation}) => {
+//   const [aadhaarNo, setAadhaarNo] = useState('');
+//   const [selectedDocType, setSelectedDocType] = useState('Aadhar Card');
+//   const [showDropdown, setShowDropdown] = useState(false);
+//   const [confirmInfo, setConfirmInfo] = useState(false);
+//   const [agreeTerms, setAgreeTerms] = useState(false);
+//   const [aadhaarFront, setAadhaarFront] = useState(null);
+//   const [aadhaarBack, setAadhaarBack] = useState(null);
+//   const [loading, setLoading] = useState(false);
+
+//   const documentTypes = [
+//     'Aadhar Card',
+//     'Driver’s Licence',
+//     'Voter Id',
+//     'Passport',
+//     'Pan Card',
+//   ];
+
+//   const handleBrowseFile = async type => {
+//     const options = {mediaType: 'photo', selectionLimit: 1};
+//     launchImageLibrary(options, response => {
+//       if (response.didCancel) return;
+//       if (response.errorMessage)
+//         return Alert.alert('Error', response.errorMessage);
+//       const file = response.assets[0];
+//       if (type === 'front') setAadhaarFront(file);
+//       else setAadhaarBack(file);
+//     });
+//   };
+
+//   const handleSubmit = async () => {
+//     if (
+//       !aadhaarNo ||
+//       !aadhaarFront ||
+//       !aadhaarBack ||
+//       !confirmInfo ||
+//       !agreeTerms
+//     ) {
+//       return Alert.alert('Error', 'Please complete all fields and checkboxes.');
+//     }
+
+//     try {
+//       setLoading(true);
+//       const token = await AsyncStorage.getItem('TOKEN');
+//       const user_id = await AsyncStorage.getItem('USERID'); // fetch logged-in user ID
+//       if (!user_id) {
+//         setLoading(false);
+//         return Alert.alert('Error', 'User ID not found.');
+//       }
+
+//       const formData = new FormData();
+//       formData.append('user_id', user_id);
+//       formData.append('proof_of_identity', selectedDocType);
+//       formData.append('aadhaar_no', aadhaarNo);
+//       formData.append('aadhaar_front', {
+//         uri: aadhaarFront.uri,
+//         type: aadhaarFront.type,
+//         name: aadhaarFront.fileName || 'aadhaar_front.jpg',
+//       });
+//       formData.append('aadhaar_back', {
+//         uri: aadhaarBack.uri,
+//         type: aadhaarBack.type,
+//         name: aadhaarBack.fileName || 'aadhaar_back.jpg',
+//       });
+
+//       const response = await axios.post(
+//         `${API_BASE_URL}/buyer/documents/store`,
+//         formData,
+//        {headers: {Authorization: `Bearer ${token}`}},
+//       );
+
+//       setLoading(false);
+//       if (response.data?.status) {
+//         Alert.alert('Success', 'KYC submitted successfully!');
+//         navigation.navigate('KycConfirmation');
+//       } else {
+//         Alert.alert('Error', response.data?.message || 'Submission failed');
+//       }
+//     } catch (error) {
+//       setLoading(false);
+//       console.log("error-------------------->", error);
+//       Alert.alert('Error', 'Something went wrong. Please try again.');
+//     }
+//   };
+
+//   return (
+//     <SafeAreaView style={styles.container}>
+//       <ScrollView contentContainerStyle={{paddingBottom: 40}}>
+//         {/* Header */}
+//         <View style={styles.header}>
+//           <TouchableOpacity onPress={() => navigation.goBack()}>
+//             <Ionicons name="chevron-back" size={24} color="#000" />
+//           </TouchableOpacity>
+//           <Text style={styles.headerTitle}>Complete KYC</Text>
+//           <Ionicons name="search" size={20} marginRight={10} color="#000" />
+//         </View>
+
+//         {/* Document Details */}
+//         <View style={styles.cardContainer}>
+//           <Text style={styles.sectionTitle}>Aadhaar Details</Text>
+
+//           <TextInput
+//             style={styles.textInput}
+//             placeholder="Enter Aadhaar Number"
+//             value={aadhaarNo}
+//             keyboardType="numeric"
+//             maxLength={12}
+//             onChangeText={setAadhaarNo}
+//           />
+
+//           {/* Dropdown */}
+//           <TouchableOpacity
+//             style={styles.dropdownHeader}
+//             onPress={() => setShowDropdown(!showDropdown)}>
+//             <Text style={styles.selectedText}>{selectedDocType}</Text>
+//             <Ionicons
+//               name={showDropdown ? 'chevron-up' : 'chevron-down'}
+//               size={20}
+//             />
+//           </TouchableOpacity>
+//           {showDropdown &&
+//             documentTypes.map((item, index) => (
+//               <TouchableOpacity
+//                 key={index}
+//                 style={styles.dropdownItem}
+//                 onPress={() => {
+//                   setSelectedDocType(item);
+//                   setShowDropdown(false);
+//                 }}>
+//                 <Text>{item}</Text>
+//               </TouchableOpacity>
+//             ))}
+
+//           {/* Aadhaar Front */}
+//           <TouchableOpacity
+//             style={styles.uploadBox}
+//             onPress={() => handleBrowseFile('front')}>
+//             <Ionicons name="cloud-upload-outline" size={30} color="#999" />
+//             <Text style={styles.uploadText}>
+//               {aadhaarFront ? aadhaarFront.fileName : 'Upload Aadhaar Front'}
+//             </Text>
+//           </TouchableOpacity>
+
+//           {/* Aadhaar Back */}
+//           <TouchableOpacity
+//             style={styles.uploadBox}
+//             onPress={() => handleBrowseFile('back')}>
+//             <Ionicons name="cloud-upload-outline" size={30} color="#999" />
+//             <Text style={styles.uploadText}>
+//               {aadhaarBack ? aadhaarBack.fileName : 'Upload Aadhaar Back'}
+//             </Text>
+//           </TouchableOpacity>
+
+//           {/* Checkboxes */}
+//           <TouchableOpacity
+//             style={styles.checkboxRow}
+//             onPress={() => setConfirmInfo(!confirmInfo)}>
+//             <Ionicons
+//               name={confirmInfo ? 'checkbox-outline' : 'square-outline'}
+//               size={24}
+//               color="#333"
+//             />
+//             <Text style={styles.checkboxText}>
+//               I confirm that the information provided is accurate and complete.
+//             </Text>
+//           </TouchableOpacity>
+
+//           <TouchableOpacity
+//             style={styles.checkboxRow}
+//             onPress={() => setAgreeTerms(!agreeTerms)}>
+//             <Ionicons
+//               name={agreeTerms ? 'checkbox-outline' : 'square-outline'}
+//               size={24}
+//               color="#333"
+//             />
+//             <Text style={styles.checkboxText}>
+//               I agree to the terms and conditions of the KYC process.
+//             </Text>
+//           </TouchableOpacity>
+
+//           {/* Submit Button */}
+//           <TouchableOpacity
+//             style={styles.submitBtn}
+//             onPress={handleSubmit}
+//             disabled={loading}>
+//             <Text style={styles.submitText}>
+//               {loading ? 'Submitting...' : 'Submit'}
+//             </Text>
+//           </TouchableOpacity>
+//         </View>
+//       </ScrollView>
+//     </SafeAreaView>
+//   );
+// };
+
+// export default KycScreen;
+
+// const styles = StyleSheet.create({
+//   container: {flex: 1, backgroundColor: '#FFF'},
+//   header: {
+//     padding: 15,
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     alignItems: 'center',
+//   },
+//   headerTitle: {fontSize: 16, fontWeight: '600', color: '#000'},
+//   cardContainer: {
+//     backgroundColor: '#fff',
+//     borderRadius: 16,
+//     padding: 16,
+//     marginHorizontal: 10,
+//     marginBottom: 20,
+//     borderWidth: 1,
+//     borderColor: '#e0e0e0',
+//     elevation: 4,
+//   },
+//   sectionTitle: {fontWeight: '700', fontSize: 16, marginBottom: 12},
+//   textInput: {
+//     borderWidth: 1,
+//     borderColor: '#ccc',
+//     borderRadius: 12,
+//     padding: 12,
+//     marginBottom: 16,
+//     fontSize: 14,
+//     color: '#333',
+//   },
+//   dropdownHeader: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     paddingVertical: 12,
+//     borderWidth: 1,
+//     borderColor: '#ccc',
+//     borderRadius: 12,
+//     paddingHorizontal: 12,
+//     marginBottom: 10,
+//   },
+//   selectedText: {fontSize: 14, fontWeight: '500', color: '#000'},
+//   dropdownItem: {
+//     paddingVertical: 10,
+//     paddingHorizontal: 12,
+//     borderBottomWidth: 1,
+//     borderBottomColor: '#DDD',
+//   },
+//   uploadBox: {
+//     height: 60,
+//     borderRadius: 12,
+//     backgroundColor: '#F0F0F0',
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//     marginVertical: 8,
+//     flexDirection: 'row',
+//     paddingHorizontal: 12,
+//   },
+//   uploadText: {marginLeft: 8, fontSize: 14, color: '#333'},
+//   checkboxRow: {
+//     flexDirection: 'row',
+//     alignItems: 'flex-start',
+//     marginBottom: 14,
+//     marginTop: 12,
+//   },
+//   checkboxText: {marginLeft: 12, fontSize: 14, color: '#333', flex: 1},
+//   submitBtn: {
+//     marginTop: 20,
+//     backgroundColor: '#333333',
+//     paddingVertical: 14,
+//     borderRadius: 12,
+//     alignItems: 'center',
+//   },
+//   submitText: {color: '#fff', fontSize: 16, fontWeight: '600'},
+// });
+
+
+
 import React, {useState} from 'react';
 import {
   View,
@@ -7,46 +297,104 @@ import {
   TextInput,
   StyleSheet,
   ScrollView,
-  Platform,
-  PermissionsAndroid,
   Alert,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {launchImageLibrary} from 'react-native-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {API_BASE_URL} from '../../../../utils/utils';
 
 const KycScreen = ({navigation}) => {
-  const [documentName, setDocumentName] = useState('');
-  const [selectedDocType, setSelectedDocType] = useState('Aadhar Card');
+  const [aadhaarNo, setAadhaarNo] = useState('');
+  const [selectedDocType, setSelectedDocType] = useState('aadhaar');
   const [showDropdown, setShowDropdown] = useState(false);
   const [confirmInfo, setConfirmInfo] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [aadhaarFront, setAadhaarFront] = useState(null);
+  const [aadhaarBack, setAadhaarBack] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  console.log("selectedDocType----------->", selectedDocType);
 
   const documentTypes = [
-    'Aadhar Card',
-    'Driver’s Licence',
-    'Voter Id',
-    'Passport',
-    'Pan Card',
+    'aadhaar',
+    'driving_licence',
+    'voter_id',
+    'passport',
+    'pan_number',
   ];
 
-  const handleBrowseFile = () => {
-      const options = {
-        mediaType: 'mixed', // photo | video | mixed
-        selectionLimit: 1,  // allow only one file
-      };
-      launchImageLibrary(options, (response) => {
-        if (response.didCancel) {
-          console.log('User cancelled picker');
-        } else if (response.errorMessage) {
-          Alert.alert('Error', response.errorMessage);
-        } else {
-          const file = response.assets[0];
-          console.log('Selected File:', file);
-          setSelectedFile(file);
-        }
+  const handleBrowseFile = async type => {
+    const options = {mediaType: 'photo', selectionLimit: 1};
+    launchImageLibrary(options, response => {
+      if (response.didCancel) return;
+      if (response.errorMessage)
+        return Alert.alert('Error', response.errorMessage);
+      const file = response.assets[0];
+      if (type === 'front') setAadhaarFront(file);
+      else setAadhaarBack(file);
+    });
+  };
+
+  const handleSubmit = async () => {
+    if (
+      !aadhaarNo ||
+      !aadhaarFront ||
+      !aadhaarBack ||
+      !confirmInfo ||
+      !agreeTerms
+    ) {
+      return Alert.alert('Error', 'Please complete all fields and checkboxes.');
+    }
+
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem('TOKEN');
+      const user_id = await AsyncStorage.getItem('USERID');
+      if (!user_id) {
+        setLoading(false);
+        return Alert.alert('Error', 'User ID not found.');
+      }
+
+      const formData = new FormData();
+      formData.append('user_id', user_id);
+      formData.append('proof_of_identity', selectedDocType);
+      formData.append('aadhaar_no', aadhaarNo);
+      formData.append('aadhaar_front', {
+        uri: aadhaarFront.uri,
+        type: aadhaarFront.type,
+        name: aadhaarFront.fileName || 'aadhaar_front.jpg',
       });
-    };
+      formData.append('aadhaar_back', {
+        uri: aadhaarBack.uri,
+        type: aadhaarBack.type,
+        name: aadhaarBack.fileName || 'aadhaar_back.jpg',
+      });
+      const response = await fetch(`${API_BASE_URL}/buyer/documents/store`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          // ⚠️ DO NOT manually set 'Content-Type' for FormData — let fetch handle it
+        },
+        body: formData,
+      });
+      console.log("response++++++++++++++++++++++++++", response);
+      const result = await response.json();
+      setLoading(false);
+
+      if (result?.status) {
+        Alert.alert('Success', 'KYC submitted successfully!');
+        navigation.navigate('KycConfirmation');
+      } else {
+        console.log("res++++++++++++", result);
+        // Alert.alert('Error', result?.message || 'Submission failed');
+      }
+    } catch (error) {
+      setLoading(false);
+      console.log('error-------------------->', error);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -59,90 +407,63 @@ const KycScreen = ({navigation}) => {
           <Text style={styles.headerTitle}>Complete KYC</Text>
           <Ionicons name="search" size={20} marginRight={10} color="#000" />
         </View>
+
+        {/* Document Details */}
         <View style={styles.cardContainer}>
-          {/* Upload Box */}
-          <TouchableOpacity style={styles.uploadBox} onPress={handleBrowseFile}>
+          <Text style={styles.sectionTitle}>Aadhaar Details</Text>
+
+          <TextInput
+            style={styles.textInput}
+            placeholder="Enter Aadhaar Number"
+            value={aadhaarNo}
+            keyboardType="numeric"
+            maxLength={12}
+            onChangeText={setAadhaarNo}
+          />
+
+          {/* Dropdown */}
+          <TouchableOpacity
+            style={styles.dropdownHeader}
+            onPress={() => setShowDropdown(!showDropdown)}>
+            <Text style={styles.selectedText}>{selectedDocType}</Text>
+            <Ionicons
+              name={showDropdown ? 'chevron-up' : 'chevron-down'}
+              size={20}
+            />
+          </TouchableOpacity>
+          {showDropdown &&
+            documentTypes.map((item, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setSelectedDocType(item);
+                  setShowDropdown(false);
+                }}>
+                <Text>{item}</Text>
+              </TouchableOpacity>
+            ))}
+
+          {/* Aadhaar Front */}
+          <TouchableOpacity
+            style={styles.uploadBox}
+            onPress={() => handleBrowseFile('front')}>
             <Ionicons name="cloud-upload-outline" size={30} color="#999" />
-            <Text style={styles.uploadText}>Browse document</Text>
-            <Text style={styles.uploadSubText}>
-              upload in pdf, jpg, jpeg format
+            <Text style={styles.uploadText}>
+              {aadhaarFront ? aadhaarFront.fileName : 'Upload Aadhaar Front'}
             </Text>
-            {selectedFile && (
-              <Text style={styles.fileName}>{selectedFile.name}</Text>
-            )}
           </TouchableOpacity>
 
-          {/* Document Details */}
-          <View style={styles.formSection}>
-            <Text style={styles.sectionTitle}>Document Details</Text>
-
-            <View style={styles.inputWrapper}>
-              <Ionicons name="document-outline" size={18} color="#888" />
-              <TextInput
-                style={styles.textInput}
-                placeholder="Document Name"
-                placeholderTextColor="#888"
-                value={documentName}
-                onChangeText={setDocumentName}
-              />
-            </View>
-
-            {/* Dropdown */}
-            <TouchableOpacity
-              style={styles.dropdownHeader}
-              onPress={() => setShowDropdown(!showDropdown)}>
-              <Text style={styles.selectedText}>{selectedDocType}</Text>
-              <Ionicons
-                name={showDropdown ? 'chevron-up' : 'chevron-down'}
-                size={20}
-              />
-            </TouchableOpacity>
-
-            {/* Dropdown Options */}
-            {showDropdown &&
-              documentTypes.map((item, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.dropdownItem}
-                  onPress={() => {
-                    setSelectedDocType(item);
-                    setShowDropdown(false);
-                  }}>
-                  <Text>{item}</Text>
-                </TouchableOpacity>
-              ))}
-
-            <Text style={styles.uploadNote}>Upload Selected Document</Text>
-          </View>
-        </View>
-        <View style={styles.cardContainer}>
-          {/* Upload Box */}
-          <TouchableOpacity style={styles.uploadBox1} onPress={handleBrowseFile}>
+          {/* Aadhaar Back */}
+          <TouchableOpacity
+            style={styles.uploadBox}
+            onPress={() => handleBrowseFile('back')}>
             <Ionicons name="cloud-upload-outline" size={30} color="#999" />
-            <Text style={styles.uploadText}>Browse document</Text>
-            <Text style={styles.uploadSubText}>
-              upload in pdf, jpg, jpeg format
+            <Text style={styles.uploadText}>
+              {aadhaarBack ? aadhaarBack.fileName : 'Upload Aadhaar Back'}
             </Text>
-            {selectedFile && (
-              <Text style={styles.fileName}>{selectedFile.name}</Text>
-            )}
           </TouchableOpacity>
 
-          {/* Document Details */}
-          <View style={styles.formSection}>
-            {/* Dropdown */}
-            <TouchableOpacity style={{}}>
-              <Text style={{fontSize: 16, fontWeight: '600', color: '#000'}}>
-                GST Certificate
-              </Text>
-              <Text style={{marginTop: 6, fontSize: 14, color: '#555'}}>
-                Upload Selected Document
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={{marginHorizontal: 12}}>
           {/* Checkboxes */}
           <TouchableOpacity
             style={styles.checkboxRow}
@@ -169,23 +490,18 @@ const KycScreen = ({navigation}) => {
               I agree to the terms and conditions of the KYC process.
             </Text>
           </TouchableOpacity>
+
+          {/* Submit Button */}
+          <TouchableOpacity
+            style={styles.submitBtn}
+            onPress={handleSubmit}
+            disabled={loading}>
+            <Text style={styles.submitText}>
+              {loading ? 'Submitting...' : 'Submit'}
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
-      {/* Submit Button */}
-      <TouchableOpacity
-        style={styles.submitBtn}
-        onPress={() => navigation.navigate('KycConfirmation')
-        //   {
-        //   if (!selectedFile || !documentName || !confirmInfo || !agreeTerms) {
-        //     alert('Please complete all fields and checkboxes.');
-        //   } else {
-        //     alert('KYC Submitted Successfully');
-        //     // You can handle API submission here
-        //   }
-        // }
-        }>
-        <Text style={styles.submitText}>Submit</Text>
-      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -193,92 +509,31 @@ const KycScreen = ({navigation}) => {
 export default KycScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFF',
-  },
+  container: {flex: 1, backgroundColor: '#FFF'},
   header: {
     padding: 15,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-  },
+  headerTitle: {fontSize: 16, fontWeight: '600', color: '#000'},
   cardContainer: {
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
-    marginBottom: 20,
     marginHorizontal: 10,
+    marginBottom: 20,
     borderWidth: 1,
     borderColor: '#e0e0e0',
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4, // for Android shadow
+    elevation: 4,
   },
-  uploadBox: {
-    height: 160,
-    borderRadius: 16,
-    backgroundColor: '#F0F0F0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  uploadBox1: {
-    height: 160,
-    borderRadius: 16,
-    backgroundColor: '#F0F0F0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 0,
-  },
-  uploadText: {
-    marginTop: 10,
-    fontSize: 14,
-    color: '#333',
-  },
-  uploadSubText: {
-    fontSize: 12,
-    color: '#777',
-  },
-  fileName: {
-    fontSize: 12,
-    marginTop: 8,
-    color: '#444',
-  },
-  formSection: {
-    backgroundColor: '#FAFAFA',
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowOffset: {width: 0, height: 1},
-    shadowRadius: 5,
-    elevation: 2,
-    marginBottom: 0,
-  },
-  sectionTitle: {
-    fontWeight: '700',
-    fontSize: 16,
-    marginBottom: 12,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#AAA',
-    marginBottom: 12,
-    paddingVertical: 4,
-  },
+  sectionTitle: {fontWeight: '700', fontSize: 16, marginBottom: 12},
   textInput: {
-    flex: 1,
-    marginLeft: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
     fontSize: 14,
     color: '#333',
   },
@@ -286,48 +541,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    marginBottom: 10,
   },
-  selectedText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-  },
+  selectedText: {fontSize: 14, fontWeight: '500', color: '#000'},
   dropdownItem: {
     paddingVertical: 10,
+    paddingHorizontal: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#DDD',
   },
-  uploadNote: {
-    marginTop: 16,
-    fontSize: 14,
-    color: '#555',
+  uploadBox: {
+    height: 60,
+    borderRadius: 12,
+    backgroundColor: '#F0F0F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 8,
+    flexDirection: 'row',
+    paddingHorizontal: 12,
   },
+  uploadText: {marginLeft: 8, fontSize: 14, color: '#333'},
   checkboxRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginBottom: 14,
+    marginTop: 12,
   },
-  checkboxText: {
-    marginLeft: 12,
-    fontSize: 14,
-    color: '#333',
-    flex: 1,
-    flexWrap: 'wrap',
-  },
+  checkboxText: {marginLeft: 12, fontSize: 14, color: '#333', flex: 1},
   submitBtn: {
-    marginTop: 10,
+    marginTop: 20,
     backgroundColor: '#333333',
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
-    marginHorizontal: 10,
-    marginBottom: 5,
   },
-  submitText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  submitText: {color: '#fff', fontSize: 16, fontWeight: '600'},
 });
-
-

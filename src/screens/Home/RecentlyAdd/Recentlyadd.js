@@ -1,268 +1,182 @@
-import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
-  SafeAreaView,
   Image,
-  TouchableOpacity,
-  StyleSheet,
   ScrollView,
+  StyleSheet,
+  TouchableOpacity,
   FlatList,
-  Dimensions,
-  ImageBackground,
+  SafeAreaView,
   Modal,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {Dimensions} from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import RangeSlider from 'rn-range-slider';
 import {useDispatch, useSelector} from 'react-redux';
+import {useEffect, useState} from 'react';
+import {useNavigation} from '@react-navigation/native';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import {
-  toggleWishlist,
   addToWishlistAPI,
   removeFromWishlistAPI,
 } from '../../../redux/slices/wishlistSlice';
-import {fetchOsList} from '../../../redux/slices/homeSlice';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import {
+  fetchProductList,
+  fetchFilterData, addRecentlyViewed, fetchProductLatestStock
+} from '../../../redux/slices/productSlice';
 
 const {width} = Dimensions.get('window');
 
-const FILTER_TABS = [
-  {key: 'category', label: 'Category', icon: 'apps-outline'},
-  {key: 'brands', label: 'Brands', icon: 'pricetags-outline'},
-  {key: 'price', label: 'Price', icon: 'cash-outline'},
-  {key: 'color', label: 'Color', icon: 'color-palette-outline'},
-  {key: 'grade', label: 'Grade', icon: 'shield-checkmark-outline'},
-  {key: 'discount', label: 'Discount', icon: 'ticket-outline'},
-  {key: 'specs', label: 'Specific', icon: 'document-text-outline'},
-];
-
-const BRANDS = [
-  {name: 'Apple', count: 128},
-  {name: 'Samsung', count: 40},
-  {name: 'Xiomi', count: 36},
-  {name: 'Motorola', count: 36},
-  {name: 'Oppo', count: 36},
-  {name: 'Vivo', count: 12},
-  {name: 'Lava', count: 9},
-];
-
-const CATEGORIESFILTER = [
-  {key: 'windows', label: 'Windows pc', icon: 'laptop-outline'},
-  {key: 'macbook', label: 'Macbook', icon: 'laptop-outline'},
-  {key: 'smartphones', label: 'Smartphones', icon: 'phone-portrait-outline'},
-  {key: 'accessories', label: 'Accessories', icon: 'watch-outline'},
-];
-
-const COLORS = [
-  {name: 'Red', hex: '#E74C3C'},
-  {name: 'Orange', hex: '#D35400'},
-  {name: 'Black', hex: '#1C1C1C'},
-  {name: 'Grey', hex: '#566573'},
-  {name: 'Light Grey', hex: '#B2BABB'},
-  {name: 'Maroon', hex: '#784212'},
-  {name: 'Pink', hex: '#F5B7B1'},
-  {name: 'Deep Blue', hex: '#004D61'},
-];
-
-const grades = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9'];
-const discount = [
-  '50% off',
-  '40% off',
-  '30% off',
-  '20% off',
-  'Upto 20% off',
-  'Flat ₹500 off',
-  'Buy more, save more',
-];
-
-const ramOptions = ['4GB', '6GB', '8GB', '12GB', '16GB', '32GB'];
-const storageOptions = ['64GB', '128GB', '256GB', '512GB', '1TB'];
-
-const Recentlyadd = ({navigation, visible, onClose, item}) => {
-  const [recentlyAdded, setRecentlyAdded] = useState('');
+const Recentlyadd = ({osName}) => {
+  const navigation = useNavigation(); // ✅ make sure navigation is available
   const dispatch = useDispatch();
-  const {osList} = useSelector(state => state.home);
+  const {lateststock, filterdata} = useSelector(
+    state => state.product,
+  );
 
-  useEffect(() => {
-    dispatch(fetchOsList());
-  }, [dispatch]);
+  console.log("lateststock----------->", lateststock);
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      const token = await AsyncStorage.getItem('TOKEN');
-      const response = await axios.get(
-        `https://api.mobitrade.in/api/lateststocklist`,
-        {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-      setRecentlyAdded(response?.data?.data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
+  // state
+  // const [lateststock, setProductData] = useState();
+  const [applyselectedfilters, ApplyselectedFilters] = useState();
+  const [filteredProduct, setFilteredProducts] = useState([]);
+  // const [filterdata, setFilterData] = useState();
   const [showSortModal, setShowSortModal] = useState(false);
   const [selectedOption, setSelectedOption] = useState('lowToHigh');
   const [showFilterModal, setFilterSortModal] = useState(false);
-  const [selectedOptionFilter, setSelectedOptionFilter] = useState('lowToHigh');
+  const [selectedRam, setSelectedRam] = useState(null);
+  const [selectedStorage, setSelectedStorage] = useState(null);
+  const [selectedTab, setSelectedTab] = useState('brands');
+  const [selectedBrands, setSelectedBrands] = useState([]);
+  const [selectedColors, setSelectedColors] = useState([]);
+  const [selectedGrade, setSelectedGrade] = useState(null);
+
+  useEffect(() => {
+    dispatch(fetchProductList());
+    dispatch(fetchProductLatestStock());
+    dispatch(fetchFilterData());
+    dispatch(addRecentlyViewed());
+  }, [dispatch]);
+
+  // Apply filters
+  useEffect(() => {
+    if (!lateststock) return;
+
+    if (!applyselectedfilters) {
+      setFilteredProducts(
+        lateststock.filter(item => item.operating_systems === osName),
+      );
+      return;
+    }
+
+    const filtered = lateststock.filter(item => {
+      // OS filter
+      if (item.operating_systems !== osName) return false;
+
+      // Brand filter
+      if (
+        applyselectedfilters.brands &&
+        applyselectedfilters.brands.length > 0 &&
+        !applyselectedfilters.brands.includes(item.brand_name)
+      )
+        return false;
+
+      // Color filter
+      if (
+        applyselectedfilters.colors &&
+        applyselectedfilters.colors.length > 0 &&
+        !applyselectedfilters.colors.includes(item.color_name)
+      )
+        return false;
+
+      // Grade filter
+      if (
+        applyselectedfilters.grade &&
+        item.grade_number !== applyselectedfilters.grade.grade
+      )
+        return false;
+
+      // RAM filter
+      if (
+        applyselectedfilters.ram &&
+        item.ram_id !== applyselectedfilters.ram.id
+      )
+        return false;
+
+      // Storage filter
+      if (
+        applyselectedfilters.storage &&
+        item.rom_id !== applyselectedfilters.storage.id
+      )
+        return false;
+
+      return true;
+    });
+    // Apply sorting
+    if (selectedOption === 'lowToHigh') {
+      filtered.sort((a, b) => a.price - b.price);
+    } else if (selectedOption === 'highToLow') {
+      filtered.sort((a, b) => b.price - a.price);
+    } else if (selectedOption === 'grade') {
+      filtered.sort((a, b) => a.grade_number.localeCompare(b.grade_number));
+    }
+    setFilteredProducts(filtered);
+  }, [applyselectedfilters, lateststock, osName]);
+
+  // Filter products based on osName
+  const filteredProducts = (lateststock || []).filter(
+    item => item.operating_systems && item.operating_systems === osName,
+  );
+
+  const budgetOptions = [
+    {
+      id: 1,
+      label: 'Under ₹10,000',
+      image: 'https://i.postimg.cc/Pf3MBSK6/Category-Card-01-1.png',
+    },
+    {
+      id: 2,
+      label: '₹10,000 - ₹20,000',
+      image: 'https://i.postimg.cc/0NRJJB0y/Category-Card-02.png',
+    },
+    {
+      id: 3,
+      label: '₹20,000 - ₹30,000',
+      image:
+        'https://i.postimg.cc/zvBLrZ80/create-an-image-with-multiple-smartphones-that-are-under-10000-20000-rupees.png',
+    },
+    {
+      id: 4,
+      label: 'Above ₹30,000',
+      image: 'https://i.postimg.cc/Ls3hg6sx/Category-Card-4.png',
+    },
+  ];
+
+  // Filter & Wishlist
+  let BRANDS = filterdata?.brands;
+  let grades = filterdata?.grades;
+  let COLORS = filterdata?.colors;
+  let ramOptions = filterdata?.rams;
+  let storageOptions = filterdata?.roms;
 
   const sortOptions = [
     {key: 'lowToHigh', label: 'Price (Low to High)'},
     {key: 'highToLow', label: 'Price (High to Low)'},
     {key: 'grade', label: 'Grade (A1–A9)'},
   ];
-  const sortFilter = [
-    {key: 'lowToHigh', label: 'Price (Low to High)'},
-    {key: 'highToLow', label: 'Price (High to Low)'},
-    {key: 'grade', label: 'Grade (A1–A9)'},
+
+  const FILTER_TABS = [
+    {key: 'brands', label: 'Brands', icon: 'pricetags-outline'},
+    {key: 'color', label: 'Color', icon: 'color-palette-outline'},
+    {key: 'grade', label: 'Grade', icon: 'shield-checkmark-outline'},
+    {key: 'specs', label: 'Specific', icon: 'document-text-outline'},
   ];
-
-  const handleApply = () => {
-    setShowSortModal(false);
-    setFilterSortModal(false);
-    // Perform sorting logic here if needed
-  };
-
-  const data = [
-    {
-      id: '1',
-      title: 'Just In: iPhone 12',
-      specs: '6GB | 128GB (A1 Grade)',
-      image:
-        'https://i.postimg.cc/sXpvhz95/A-sleek-i-Phone-12-with-a-glossy-finish-and-vibrant-display-resting-on-a-minimalist-surface.png',
-    },
-    {
-      id: '2',
-      title: 'New Arrival: Samsung Galaxy S20',
-      specs: '8GB | 256GB (A1 Grade)',
-      image:
-        'https://i.postimg.cc/7hKP3ZCJ/A-Samsung-Galaxy-S20-smartphone-with-a-sleek-design-and-vibrant-display-resting-on-a-simple-white-su.png',
-    },
-    {
-      id: '3',
-      title: 'New Arrival: Samsung Galaxy S20',
-      specs: '8GB | 256GB (A1 Grade)',
-      image:
-        'https://i.postimg.cc/7hKP3ZCJ/A-Samsung-Galaxy-S20-smartphone-with-a-sleek-design-and-vibrant-display-resting-on-a-simple-white-su.png',
-    },
-    // Add more items if needed
-  ];
-  const RecentlyAdds = ({item}) => (
-    <ImageBackground
-      source={{uri: item.image}}
-      style={styles.cardr}
-      imageStyle={styles.imager}>
-      <View style={styles.overlayr}>
-        <Text style={styles.titler}>{item.title}</Text>
-        <Text style={styles.specsr}>{item.specs}</Text>
-      </View>
-    </ImageBackground>
-  );
-  const CATEGORIES = ['Android', 'iOS', 'Windows', 'Macbook'];
-
-  const [activeTab, setActiveTab] = useState('Android');
-
-  // Tabs
-  const renderTabs = () => (
-    <View style={styles.tabContainer}>
-      {osList.map(item => (
-        <TouchableOpacity
-          key={item.id}
-          style={[
-            styles.tabItem,
-            activeTab === item.os_name && styles.activeTab,
-          ]}
-          onPress={() => setActiveTab(item.os_name)}>
-          <Image
-            source={{uri: item.image_url}}
-            style={styles.tabIcon}
-            resizeMode="contain"
-          />
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === item.os_name && styles.activeTabText,
-            ]}>
-            {item.os_name}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
-
-  const ProductCard = ({item}) => {
-    const dispatch = useDispatch();
-
-    // ✅ Get wishlist items from Redux
-    const wishlistItems = useSelector(state => state.wishlist.items);
-
-    // ✅ Check if this product is in wishlist
-    const isInWishlist = wishlistItems.some(w => w.barcode_id === item.id);
-
-    const handleWishlistToggle = () => {
-      if (isInWishlist) {
-        // ❌ no need to pass userId
-        dispatch(removeFromWishlistAPI(item.id));
-      } else {
-        // ❌ no need to pass userId
-        dispatch(addToWishlistAPI(item));
-      }
-    };
-
-    if (!item) return null;
-
-    return (
-      <TouchableOpacity
-        onPress={() => navigation.navigate('ProductList')}
-        style={styles.cardD}>
-        <View style={styles.imageContainerD}>
-          <Image source={{uri: item.image}} style={styles.imageD} />
-          {item.refurbished && (
-            <Text style={styles.refurbishedLabelD}>(Refurbished)</Text>
-          )}
-
-          {/* ❤️ Wishlist Button */}
-          <TouchableOpacity
-            style={styles.heartIconD}
-            onPress={handleWishlistToggle}>
-            <Ionicons
-              name={isInWishlist ? 'heart' : 'heart-outline'}
-              size={20}
-              color={isInWishlist ? 'red' : '#333'}
-            />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.gradeBoxD}>
-          <Text style={styles.gradeTextD}>Grade {item.grade_number}</Text>
-        </View>
-        <Text style={styles.productNameD}>{item.model_name}</Text>
-        <Text style={styles.colorTextD}>● {item.color_name}</Text>
-
-        <View style={styles.priceRowD}>
-          <Text style={styles.priceD}>₹ {item.price}</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  const [selectedRam, setSelectedRam] = useState(null);
-  const [selectedStorage, setSelectedStorage] = useState(null);
 
   const getTotalSelected = () => {
     return [selectedRam, selectedStorage].filter(Boolean).length;
   };
 
-  const renderOption = (item, selectedItem, setSelectedItem) => (
+  const renderRamOption = (item, selectedItem, setSelectedItem) => (
     <TouchableOpacity
       key={item}
       style={[
@@ -275,42 +189,67 @@ const Recentlyadd = ({navigation, visible, onClose, item}) => {
           styles.optionText,
           selectedItem === item && styles.selectedText,
         ]}>
-        {item}
+        {item?.ram_name}
+      </Text>
+    </TouchableOpacity>
+  );
+  const renderStorageOption = (item, selectedItem, setSelectedItem) => (
+    <TouchableOpacity
+      key={item}
+      style={[
+        styles.optionButton,
+        selectedItem === item && styles.selectedButton,
+      ]}
+      onPress={() => setSelectedItem(item)}>
+      <Text
+        style={[
+          styles.optionText,
+          selectedItem === item && styles.selectedText,
+        ]}>
+        {item?.rom_name}
       </Text>
     </TouchableOpacity>
   );
 
-  const [numCols, setNumCols] = useState(2);
-  const toggleCols = () => setNumCols(prev => (prev === 2 ? 1 : 2));
-
-  const [low, setLow] = useState(4499);
-  const [high, setHigh] = useState(49999);
-
-  const renderThumb = () => <View style={styles.thumb} />;
-  const renderRail = () => <View style={styles.rail} />;
-  const renderRailSelected = () => <View style={styles.railSelected} />;
-  const renderLabel = value => (
-    <View style={styles.label}>
-      <Text style={styles.labelText}>₹ {value.toLocaleString()}</Text>
-    </View>
-  );
-
-  const [selectedColors, setSelectedColors] = useState([]);
-
-  const toggleColor = name => {
-    setSelectedColors(prev =>
-      prev.includes(name)
-        ? prev.filter(color => color !== name)
-        : [...prev, name],
+  const handleApply = () => {
+    setShowSortModal(false);
+    setFilterSortModal(false);
+    // Combine all selected filters into an object
+    const selectedFilters = {
+      brands: selectedBrands,
+      colors: selectedColors,
+      grade: selectedGrade,
+      ram: selectedRam,
+      storage: selectedStorage,
+    };
+    ApplyselectedFilters(selectedFilters);
+  };
+  const handleReset = () => {
+    setSelectedBrands([]);
+    setSelectedColors([]);
+    setSelectedGrade(null);
+    setSelectedRam(null);
+    setSelectedStorage(null);
+    ApplyselectedFilters(null);
+  };
+  const toggleBrand = brand => {
+    setSelectedBrands(prev =>
+      prev.includes(brand) ? prev.filter(b => b !== brand) : [...prev, brand],
     );
   };
-
+  const toggleColor = colorName => {
+    setSelectedColors(prev =>
+      prev.includes(colorName)
+        ? prev.filter(c => c !== colorName)
+        : [...prev, colorName],
+    );
+  };
   const renderItemColor = ({item}) => {
-    const isSelected = selectedColors.includes(item.name);
+    const isSelected = selectedColors.includes(item.color_name);
     return (
       <TouchableOpacity
-        style={[styles.colorItem_c, isSelected && styles.selectedWrapper_c]}
-        onPress={() => toggleColor(item.name)}>
+        onPress={() => toggleColor(item.color_name)}
+        style={[styles.colorItem_c, isSelected && styles.selectedWrapper_c]}>
         <View style={styles.colorCircleWrapper_c}>
           <View
             style={[
@@ -320,34 +259,9 @@ const Recentlyadd = ({navigation, visible, onClose, item}) => {
             ]}
           />
         </View>
-        <Text style={styles.colorLabel_c}>{item.name}</Text>
-      </TouchableOpacity>
-    );
-  };
-
-  const [selectedTab, setSelectedTab] = useState('brands');
-  const [selectedBrands, setSelectedBrands] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('windows');
-
-  const toggleBrand = brand => {
-    setSelectedBrands(prev =>
-      prev.includes(brand) ? prev.filter(b => b !== brand) : [...prev, brand],
-    );
-  };
-
-  const renderItem = ({item}) => {
-    const isSelected = selectedCategory === item.key;
-    return (
-      <TouchableOpacity
-        style={[styles.card_cat, isSelected && styles.cardSelected_cat]}
-        onPress={() => setSelectedCategory(item.key)}>
-        <Ionicons
-          name={item.icon}
-          size={28}
-          color={isSelected ? '#fff' : '#000'}
-        />
-        <Text style={[styles.label_cat, isSelected && {color: '#fff'}]}>
-          {item.label}
+        <Text
+          style={[styles.colorLabel_c, {color: isSelected ? '#000' : '#555'}]}>
+          {item.color_name}
         </Text>
       </TouchableOpacity>
     );
@@ -355,32 +269,6 @@ const Recentlyadd = ({navigation, visible, onClose, item}) => {
 
   const renderRightPane = () => {
     switch (selectedTab) {
-      case 'category':
-        return (
-          <View>
-            <View style={styles.rightHeader}>
-              <Text style={styles.rightTitle}>Categories</Text>
-              <TouchableOpacity onPress={toggleCols}>
-                <Ionicons
-                  name={numCols === 2 ? 'list-outline' : 'grid-outline'}
-                  size={20}
-                  color="#000"
-                />
-              </TouchableOpacity>
-            </View>
-
-            <FlatList
-              key={`cols-${numCols}`} // ✅ Force re-render on column count change
-              data={CATEGORIESFILTER}
-              numColumns={numCols}
-              keyExtractor={item => item.key}
-              renderItem={renderItem}
-              columnWrapperStyle={numCols > 1 ? styles.gridRow_cat : null}
-              contentContainerStyle={styles.grid_cat}
-            />
-          </View>
-        );
-
       case 'brands':
         return (
           <View style={styles.rightPane}>
@@ -395,59 +283,27 @@ const Recentlyadd = ({navigation, visible, onClose, item}) => {
               data={BRANDS}
               keyExtractor={item => item.name}
               renderItem={({item}) => {
-                const selected = selectedBrands.includes(item.name);
+                const selected = selectedBrands.includes(item.brand_name);
                 return (
                   <TouchableOpacity
-                    onPress={() => toggleBrand(item.name)}
+                    onPress={() => toggleBrand(item.brand_name)}
                     style={[
                       styles.brandItem,
                       selected && styles.brandItemSelected,
                     ]}>
                     <Text
                       style={[styles.brandText, selected && {color: '#fff'}]}>
-                      {item.name}
+                      {item.brand_name}
                     </Text>
-                    <Text
+                    {/* <Text
                       style={[styles.itemCount, selected && {color: '#fff'}]}>
                       {item.count} Items
-                    </Text>
+                    </Text> */}
                   </TouchableOpacity>
                 );
               }}
               ItemSeparatorComponent={() => <View style={styles.separator} />}
             />
-          </View>
-        );
-
-      case 'price':
-        return (
-          <View style={styles.rightPane}>
-            <Text style={styles.rightTitle}>Price</Text>
-            <RangeSlider
-              min={4499}
-              max={69999}
-              step={1}
-              low={low}
-              high={high}
-              floatingLabel
-              renderThumb={renderThumb}
-              renderRail={renderRail}
-              renderRailSelected={renderRailSelected}
-              renderLabel={renderLabel}
-              onValueChanged={(min, max) => {
-                setLow(min);
-                setHigh(max);
-              }}
-            />
-
-            <View style={styles.priceLabels}>
-              <Text style={styles.price}>₹ {'4499'.toLocaleString()}</Text>
-              <Text style={styles.price}>₹ {'69999'.toLocaleString()}</Text>
-            </View>
-
-            <Text style={styles.selectedRange}>
-              ₹ {low.toLocaleString()} - ₹ {high.toLocaleString()}
-            </Text>
           </View>
         );
 
@@ -492,25 +348,6 @@ const Recentlyadd = ({navigation, visible, onClose, item}) => {
           </View>
         );
 
-      case 'discount':
-        return (
-          <View style={styles.rightPane}>
-            <View style={styles.header_panel}>
-              <Text style={styles.title_c}>Discount</Text>
-              <Text style={styles.title_c}>
-                {selectedDiscount ? '1 selected' : 'None selected'}
-              </Text>
-            </View>
-            <FlatList
-              key={`cat-discount`}
-              data={discount}
-              keyExtractor={item => item}
-              renderItem={renderItemDiscount}
-              contentContainerStyle={styles.listContainer}
-            />
-          </View>
-        );
-
       case 'specs':
         return (
           <View style={styles.rightPane}>
@@ -522,14 +359,14 @@ const Recentlyadd = ({navigation, visible, onClose, item}) => {
             <Text style={styles.subHeading}>RAM</Text>
             <View style={styles.optionContainer}>
               {ramOptions.map(item =>
-                renderOption(item, selectedRam, setSelectedRam),
+                renderRamOption(item, selectedRam, setSelectedRam),
               )}
             </View>
 
             <Text style={styles.subHeading}>Storage</Text>
             <View style={styles.optionContainer}>
               {storageOptions.map(item =>
-                renderOption(item, selectedStorage, setSelectedStorage),
+                renderStorageOption(item, selectedStorage, setSelectedStorage),
               )}
             </View>
           </View>
@@ -544,31 +381,8 @@ const Recentlyadd = ({navigation, visible, onClose, item}) => {
     }
   };
 
-  const handleReset = () => {
-    setSelectedCategory([]);
-    setSelectedBrands([]);
-    setSelectedColors([]);
-    setSelectedGrade([]);
-    setSelectedDiscount([]);
-    setSelectedRam([]);
-    setSelectedStorage([]);
-  };
-
-  // const handleApply = () => {
-  //   console.log('Selected Brands:', selectedBrands);
-  //   onClose();
-  // };
-
-  const [selectedGrade, setSelectedGrade] = useState(null);
-
   const handleSelect = grade => {
     setSelectedGrade(grade === selectedGrade ? null : grade);
-  };
-
-  const [selectedDiscount, setSelectedDiscount] = useState(null);
-
-  const handleSelectDiscount = discount => {
-    setSelectedDiscount(discount === selectedDiscount ? null : discount);
   };
 
   const renderItemGrade = ({item}) => {
@@ -579,199 +393,213 @@ const Recentlyadd = ({navigation, visible, onClose, item}) => {
         style={[styles.gradeButton, isSelected && styles.gradeButtonSelected]}>
         <Text
           style={[styles.gradeText, isSelected && styles.gradeTextSelected]}>
-          {item}
+          {item?.grade}
         </Text>
       </TouchableOpacity>
     );
   };
-  const renderItemDiscount = ({item}) => {
-    const isSelected = selectedDiscount === item;
+
+  const ProductCard = ({item}) => {
+    const wishlistItems = useSelector(state => state.wishlist.items);
+    // ✅ check product already in wishlist
+    const isInWishlist = wishlistItems.some(
+      w => w.barcode_id == item.barcode_id,
+    );
+    console.log('wishlistItems--------->', isInWishlist);
+    const handleWishlistToggle = () => {
+      if (isInWishlist) {
+        dispatch(removeFromWishlistAPI(item));
+      } else {
+        dispatch(addToWishlistAPI(item));
+      }
+    };
+
     return (
       <TouchableOpacity
-        onPress={() => handleSelectDiscount(item)}
-        style={[
-          styles.discountButton,
-          isSelected && styles.discountButtonSelected,
-        ]}>
-        <Text
-          style={[
-            styles.discountTexts,
-            isSelected && styles.discountTextSelected,
-          ]}>
-          {item}
-        </Text>
+        onPress={() =>
+          navigation.navigate('ProductList', {
+            product_barcode_id: item?.barcode_id,
+          })
+        }
+        style={styles.cardD}>
+        {/* Image + Heart */}
+        <View style={styles.imageContainerD}>
+          <Image source={{uri: item.feature_image}} style={styles.imageD} />
+          {item && <Text style={styles.refurbishedLabelD}>(Refurbished)</Text>}
+
+          {/* ❤️ Wishlist Button */}
+          <TouchableOpacity
+            style={styles.heartIconD}
+            onPress={() => handleWishlistToggle()}>
+            <AntDesign
+              name={isInWishlist ? 'heart' : 'hearto'}
+              size={20}
+              color={isInWishlist ? '#E74C3C' : '#999'}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Grade Box */}
+        <View style={styles.gradeBoxD}>
+          <Text style={styles.gradeTextD}>Grade {item.grade_number}</Text>
+        </View>
+
+        {/* Product Info */}
+        <Text style={styles.productNameD}>{item.model_name}</Text>
+        <Text style={styles.colorTextD}>● {item.color_name}</Text>
+        <View style={styles.priceRowD}>
+          <Text style={styles.priceD}>₹ {item.price}</Text>
+        </View>
       </TouchableOpacity>
     );
   };
-
-  // Safe filtering (if productData is undefined, use [])
-  const tabmacos = (recentlyAdded || []).filter(
-    item => item.operating_systems && item.operating_systems,
-  );
-
-  console.log("tabdata---------------->", tabmacos)
-  console.log("activeTab---------------->", activeTab)
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Scrollable content starts here */}
       <ScrollView>
-        <View style={{margin: 10}}>
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              style={styles.backButton}>
-              <Ionicons name="chevron-back" size={22} color="#000" />
-            </TouchableOpacity>
-            <View>
-              <Text style={styles.headerTitle}>Recently Added</Text>
+
+        {/* Top android Devices */}
+        {filteredProducts?.length > 0 ? (
+          <>
+            <View style={styles.headerButtons}>
+              <TouchableOpacity
+                onPress={() => setShowSortModal(true)}
+                style={styles.sortButton}>
+                <Icon name="grid" size={16} color="#000" />
+                <Text style={styles.sortText}>Sort By</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setFilterSortModal(true)}
+                style={styles.filterButton}>
+                <Icon name="sliders" size={16} color="#000" />
+                <Text style={styles.sortText}>Filter</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-              <Ionicons name="search" size={24} color="#333" />
-            </TouchableOpacity>
-          </View>
-
-          {renderTabs()}
-          {activeTab && (
-            <>
-              <View style={styles.headerButtons}>
-                <TouchableOpacity
-                  onPress={() => setShowSortModal(true)}
-                  style={styles.sortButton}>
-                  <Icon name="grid" size={16} color="#000" />
-                  <Text style={styles.sortText}>Sort By</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => setFilterSortModal(true)}
-                  style={styles.filterButton}>
-                  <Icon name="sliders" size={16} color="#000" />
-                  <Text style={styles.sortText}>Filter</Text>
-                </TouchableOpacity>
-              </View>
-
+            <View
+              style={{
+                flex: 1,
+              }}>
               <FlatList
-                data={recentlyAdded}
-                keyExtractor={item => item.id}
+                data={filteredProduct}
                 renderItem={({item}) => <ProductCard item={item} />}
+                keyExtractor={item => item.id}
                 showsHorizontalScrollIndicator={false}
                 numColumns={2}
-                columnWrapperStyle={styles.row}
               />
-            </>
-          )}
+            </View>
+          </>
+        ) : null}
 
-          {/* Sort Modal */}
-          <Modal visible={showSortModal} transparent animationType="slide">
-            <SafeAreaView style={styles.modalContainer}>
-              <View style={{margin: 20, flex: 1}}>
-                {/* Modal Header */}
-                <View style={styles.modalHeader}>
-                  <TouchableOpacity onPress={() => setShowSortModal(false)}>
-                    <Ionicons name="close" size={24} color="#000" />
-                  </TouchableOpacity>
-                  <Text style={styles.modalTitle}>Sort by</Text>
-                  <Ionicons name="grid-outline" size={20} color="#000" />
-                </View>
-
-                {/* Sort Options */}
-                <View style={styles.optionList}>
-                  {sortOptions.map(option => (
-                    <TouchableOpacity
-                      key={option.key}
-                      style={styles.optionRow}
-                      onPress={() => setSelectedOption(option.key)}>
-                      <Text style={styles.optionText}>{option.label}</Text>
-                      <View
-                        style={[
-                          styles.radioOuter,
-                          selectedOption === option.key &&
-                            styles.radioOuterSelected,
-                        ]}>
-                        {selectedOption === option.key && (
-                          <View style={styles.radioInner} />
-                        )}
-                      </View>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-              {/* Apply Button */}
-              <View style={styles.applyWrapper}>
-                <TouchableOpacity
-                  style={styles.applyButton}
-                  onPress={handleApply}>
-                  <Text style={styles.applyText}>Apply</Text>
+        {/* Sort Modal */}
+        <Modal visible={showSortModal} transparent animationType="slide">
+          <SafeAreaView style={styles.modalContainer}>
+            <View style={{margin: 20, flex: 1}}>
+              {/* Modal Header */}
+              <View style={styles.modalHeader}>
+                <TouchableOpacity onPress={() => setShowSortModal(false)}>
+                  <Ionicons name="close" size={24} color="#000" />
                 </TouchableOpacity>
-              </View>
-            </SafeAreaView>
-          </Modal>
-
-          {/* Filter Modal */}
-          <Modal visible={showFilterModal} animationType="slide" transparent>
-            <SafeAreaView style={styles.modalContainer}>
-              {/* Header */}
-              <View style={styles.header}>
-                <TouchableOpacity onPress={() => setFilterSortModal(false)}>
-                  <Ionicons name="close" size={24} />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Filter</Text>
-                <Ionicons name="options-outline" size={20} />
+                <Text style={styles.modalTitle}>Sort by</Text>
+                <Ionicons name="grid-outline" size={20} color="#000" />
               </View>
 
-              <View style={styles.body}>
-                <View style={styles.leftPane}>
-                  {FILTER_TABS.map(tab => (
-                    <TouchableOpacity
-                      key={tab.key}
+              {/* Sort Options */}
+              <View style={styles.optionList}>
+                {sortOptions.map(option => (
+                  <TouchableOpacity
+                    key={option.key}
+                    style={styles.optionRow}
+                    onPress={() => setSelectedOption(option.key)}>
+                    <Text style={styles.optionText}>{option.label}</Text>
+                    <View
                       style={[
-                        styles.tabItem,
-                        selectedTab === tab.key && styles.tabItemSelected,
-                      ]}
-                      onPress={() => setSelectedTab(tab.key)}>
-                      <Ionicons
-                        name={tab.icon}
-                        size={18}
-                        color={selectedTab === tab.key ? '#000' : '#555'}
-                      />
-                      <Text
-                        style={[
-                          styles.tabLabel,
-                          selectedTab === tab.key && {fontWeight: '600'},
-                        ]}>
-                        {tab.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
+                        styles.radioOuter,
+                        selectedOption === option.key &&
+                          styles.radioOuterSelected,
+                      ]}>
+                      {selectedOption === option.key && (
+                        <View style={styles.radioInner} />
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+            {/* Apply Button */}
+            <View style={styles.applyWrapper}>
+              <TouchableOpacity
+                style={styles.applyButton}
+                onPress={handleApply}>
+                <Text style={styles.applyText}>Apply</Text>
+              </TouchableOpacity>
+            </View>
+          </SafeAreaView>
+        </Modal>
 
-                {/* Right Pane */}
-                {renderRightPane()}
+        {/* Filter Modal */}
+        <Modal visible={showFilterModal} animationType="slide" transparent>
+          <SafeAreaView style={styles.modalContainer}>
+            {/* Header */}
+            <View style={styles.header}>
+              <TouchableOpacity onPress={() => setFilterSortModal(false)}>
+                <Ionicons name="close" size={24} />
+              </TouchableOpacity>
+              <Text style={styles.headerTitle}>Filter</Text>
+              <Ionicons name="options-outline" size={20} />
+            </View>
+
+            <View style={styles.body}>
+              <View style={styles.leftPane}>
+                {FILTER_TABS.map(tab => (
+                  <TouchableOpacity
+                    key={tab.key}
+                    style={[
+                      styles.tabItem,
+                      selectedTab === tab.key && styles.tabItemSelected,
+                    ]}
+                    onPress={() => setSelectedTab(tab.key)}>
+                    <Ionicons
+                      name={tab.icon}
+                      size={18}
+                      color={selectedTab === tab.key ? '#000' : '#555'}
+                    />
+                    <Text
+                      style={[
+                        styles.tabLabel,
+                        selectedTab === tab.key && {fontWeight: '600'},
+                      ]}>
+                      {tab.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </View>
 
-              {/* Footer */}
-              <View style={styles.footer}>
-                <TouchableOpacity style={styles.resetBtn} onPress={handleReset}>
-                  <Text style={styles.resetText}>Reset</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.applyBtn} onPress={handleApply}>
-                  <Text style={styles.applyText}>Apply</Text>
-                </TouchableOpacity>
-              </View>
-            </SafeAreaView>
-          </Modal>
-        </View>
+              {/* Right Pane */}
+              {renderRightPane()}
+            </View>
+
+            {/* Footer */}
+            <View style={styles.footer}>
+              <TouchableOpacity style={styles.resetBtn} onPress={handleReset}>
+                <Text style={styles.resetText}>Reset</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.applyBtn} onPress={handleApply}>
+                <Text style={styles.applyText}>Apply</Text>
+              </TouchableOpacity>
+            </View>
+          </SafeAreaView>
+        </Modal>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: '#fff'},
+  container: {backgroundColor: '#fff', flex: 1},
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 15,
+    paddingVertical: 5,
     justifyContent: 'space-between',
     marginHorizontal: 10,
   },
@@ -787,90 +615,292 @@ const styles = StyleSheet.create({
     color: '#000',
     textAlign: 'center',
   },
-  cardContainer: {
-    width: (width - 36) / 2, // 2 cards per row with spacing
-    marginBottom: 6,
-    marginTop: 10,
+  bannerImage: {width: '100%', height: 240, resizeMode: 'stretch'},
+  bannerTextContainer: {
+    position: 'absolute',
+    bottom: 20,
+    left: 12,
   },
-
-  cardImage: {
-    width: '100%',
-    height: 120,
-    borderRadius: 12,
+  bannerTitle: {fontSize: 20, fontWeight: 'bold', color: '#fff'},
+  seeAllBtn: {
+    marginTop: 6,
+    backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    width: '60%',
   },
-
-  cardLabel: {
-    marginTop: 8,
+  seeAllText: {fontWeight: 'bold', textAlign: 'center'},
+  sectionTitle: {
     fontSize: 14,
+    fontWeight: '600',
+    marginTop: 20,
+    marginLeft: 12,
+    marginBottom: 10,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+    paddingHorizontal: 10,
+  },
+  budgetCard: {
+    width: width / 2.3,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  imageWrapper: {
+    position: 'relative',
+    width: '100%',
+    height: 100, // or whatever height you need
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+
+  budgetImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+
+  budgetLabel: {
+    position: 'absolute',
+    bottom: 8,
+    left: 10,
+    color: 'white',
+    fontSize: 12,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    // paddingHorizontal: 12,
+    alignItems: 'center',
+  },
+  card: {
+    backgroundColor: '#f9f9f9',
+    borderRadius: 12,
+    padding: 10,
+    margin: 10,
+    width: width / 2.2,
+    position: 'relative',
+  },
+  cardImage: {width: '100%', height: 120, resizeMode: 'contain'},
+  refurbished: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    fontSize: 11,
+    color: '#777',
+  },
+  heart: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    zIndex: 1,
+    padding: 5,
+  },
+  grade: {
+    fontSize: 12,
+    color: '#888',
+    marginVertical: 4,
+  },
+  name: {
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  color: {fontSize: 12, marginVertical: 2},
+  price: {fontWeight: 'bold'},
+  oldPrice: {
+    textDecorationLine: 'line-through',
+    color: '#888',
+    fontSize: 12,
+    marginLeft: 4,
+  },
+  gradeInfo: {
+    flexDirection: 'row',
+    padding: 12,
+    margin: 12,
+    backgroundColor: '#f2f2f2',
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  gradeBadge: {width: 60, height: 60, marginRight: 12},
+  gradeTitle: {fontWeight: 'bold', fontSize: 14},
+  gradeDesc: {fontSize: 12, color: '#444'},
+  learnMoreBtn: {
+    backgroundColor: '#fff',
+    padding: 6,
+    marginTop: 6,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
+  learnMoreText: {fontWeight: 'bold'},
+  rowBtns: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginVertical: 20,
+  },
+  actionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#eee',
+    padding: 10,
+    borderRadius: 20,
+  },
+  actionText: {marginLeft: 6},
+  badgeTextD: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  gradeBoxD: {
+    paddingVertical: 2,
+    position: 'absolute',
+    marginTop: 225,
+    alignSelf: 'center',
+    backgroundColor: '#fff',
+    width: '92%',
+    borderRadius: 10,
+    borderWidth: 0.2,
+  },
+  gradeTextD: {
+    fontSize: 12,
     fontWeight: '500',
+    color: '#555',
     textAlign: 'center',
   },
-
-  micIcon: {marginLeft: 'auto'},
-  imagePlaceholder: {
-    width: 100,
-    height: 100,
-    backgroundColor: '#eee',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#aaa',
-  },
-  imageIcon: {fontSize: 20},
-  tabContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    borderBottomWidth: 1,
-    paddingBottom: 10,
-    marginTop: 10,
-  },
-  tabText: {fontWeight: '600', color: 'gray', fontSize: 16},
-  activeTabText: {color: 'black', borderBottomWidth: 2, borderColor: 'black'},
-  productList: {padding: 10},
-  productCard: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    margin: 5,
-    padding: 10,
-    alignItems: 'center',
-    borderRadius: 10,
-  },
-  productName: {fontWeight: 'bold', fontSize: 14},
-  productPrice: {fontSize: 14, color: 'gray'},
-  timerWrapper: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+  productNameD: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginTop: 6,
     marginHorizontal: 10,
-    marginVertical: 10,
+    color: '#000',
   },
-  timeContainer: {
+  colorTextD: {
+    fontSize: 13,
+    color: '#000',
+    marginHorizontal: 10,
+    marginTop: 2,
+  },
+  priceRowD: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginHorizontal: 10,
+    marginTop: 4,
+    marginBottom: 10,
   },
-  timeBox: {
-    backgroundColor: '#E8F5E8',
-    paddingVertical: 20,
-    paddingHorizontal: 25,
-    borderRadius: 12,
-    marginBottom: 5,
-  },
-  timeValue: {
-    fontSize: 18,
+  priceD: {
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#000',
+    marginRight: 6,
   },
-  timeLabel: {
-    fontSize: 14,
+  originalPriceD: {
+    fontSize: 13,
+    color: '#888',
+    textDecorationLine: 'line-through',
+  },
+  refurbishedLabelD: {
+    position: 'absolute',
+    alignSelf: 'center',
+    fontSize: 12,
     color: '#000',
+    backgroundColor: '#EAE6E5',
+    width: '98%',
+    textAlign: 'center',
+    padding: 5,
+  },
+  heartIconD: {
+    position: 'absolute',
+    top: 30,
+    right: 6,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 5,
+    elevation: 2,
+  },
+  imageContainerD: {
+    position: 'relative',
+    backgroundColor: '#f4f4f4',
+  },
+  imageD: {
+    width: '100%',
+    height: 250,
+    resizeMode: 'stretch',
+  },
+  listContainerD: {
+    padding: 10,
+  },
+  cardD: {
+    width: 190,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowRadius: 4,
+    marginHorizontal: 5,
+  },
+
+  leftContainer: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  heading: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+    marginBottom: 6,
+  },
+  subheading: {
+    fontSize: 18,
     fontWeight: '500',
+    color: '#333',
+    marginBottom: 8,
+  },
+  description: {
+    fontSize: 16,
+    color: '#7E7E7E',
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: '#EAE8E8',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    alignSelf: 'flex-start',
+  },
+  buttonText: {
+    fontSize: 16,
+    color: '#000',
+    fontWeight: '600',
+  },
+  buttonL: {
+    backgroundColor: '#EAE8E8',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    marginHorizontal: 10,
+  },
+  buttonTextL: {
+    fontSize: 16,
+    color: '#000',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  imageG: {
+    width: width * 0.3,
+    height: width * 0.3,
   },
 
   headerButtons: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
     gap: 12,
-    marginVertical: 20,
+    marginLeft: 15,
+    marginVertical: 10,
   },
   sortButton: {
     borderWidth: 1,
@@ -963,153 +993,7 @@ const styles = StyleSheet.create({
   listContainerD: {
     padding: 10,
   },
-  cardD: {
-    width: 180,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginRight: 15,
-    overflow: 'hidden',
-    // shadowColor: '#000',
-    // shadowOpacity: 0.1,
-    // shadowOffset: {width: 0, height: 2},
-    shadowRadius: 4,
-    // elevation: 3,
-    marginVertical: 10,
-  },
-  cardM: {
-    width: 200,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginRight: 0,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: {width: 0, height: 2},
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  imageContainerD: {
-    position: 'relative',
-    backgroundColor: '#f4f4f4',
-  },
-  imageD: {
-    width: '100%',
-    height: 250,
-    resizeMode: 'stretch',
-  },
-  imageM: {
-    width: '90%',
-    height: 200,
-    resizeMode: 'stretch',
-  },
-  refurbishedLabelD: {
-    position: 'absolute',
-    alignSelf: 'center',
-    fontSize: 12,
-    color: '#000',
-    backgroundColor: '#EAE6E5',
-    width: '98%',
-    textAlign: 'center',
-    padding: 5,
-  },
-  heartIconD: {
-    position: 'absolute',
-    top: 25,
-    right: 6,
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 5,
-    elevation: 2,
-  },
-  badge: {
-    position: 'absolute',
-    left: -8,
-    top: 10,
-    backgroundColor: '#FF3C3C',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 10,
-  },
-  badgeTextD: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  gradeBoxD: {
-    paddingVertical: 2,
-    position: 'absolute',
-    marginTop: 225,
-    alignSelf: 'center',
-    backgroundColor: '#fff',
-    width: '92%',
-    borderRadius: 10,
-    borderWidth: 0.2,
-  },
-  gradeTextD: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#555',
-    textAlign: 'center',
-  },
-  productNameD: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginTop: 6,
-    marginHorizontal: 10,
-    color: '#000',
-  },
-  colorTextD: {
-    fontSize: 13,
-    color: '#000',
-    marginHorizontal: 10,
-    marginTop: 2,
-  },
-  priceRowD: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 10,
-    marginTop: 4,
-    marginBottom: 10,
-  },
-  priceD: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#000',
-    marginRight: 6,
-  },
-  originalPriceD: {
-    fontSize: 13,
-    color: '#888',
-    textDecorationLine: 'line-through',
-  },
 
-  cardr: {
-    width: width * 0.4,
-    height: 180,
-    marginRight: 16,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  imager: {
-    borderRadius: 16,
-  },
-  overlayr: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    padding: 10,
-    // backgroundColor: 'rgba(0,0,0,0.4)',
-  },
-  titler: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  specsr: {
-    color: '#ddd',
-    fontSize: 12,
-    marginTop: 2,
-  },
   modalContainer: {
     flex: 1,
     backgroundColor: '#fff',
@@ -1181,17 +1065,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  header_panel: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderColor: '#eee',
-    marginBottom: 10,
-    width: '90%',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '500',
-  },
+
   body: {
     flex: 1,
     flexDirection: 'row',
@@ -1371,7 +1245,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#333',
   },
-
   headerRow_C: {
     flexDirection: 'row',
     padding: 16,
@@ -1448,6 +1321,13 @@ const styles = StyleSheet.create({
   },
   gradeTextSelected: {
     color: '#fff',
+  },
+  header_panel: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderColor: '#eee',
+    marginBottom: 10,
+    width: '90%',
   },
   discountButton: {
     borderWidth: 1,

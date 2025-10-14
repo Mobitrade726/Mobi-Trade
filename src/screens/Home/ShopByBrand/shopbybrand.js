@@ -15,6 +15,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import axios from 'axios';
 import _ from 'lodash';
+import { API_BASE_URL } from '../../../utils/utils';
 
 const {width} = Dimensions.get('window');
 const LIMIT = 6;
@@ -43,7 +44,7 @@ const ShopByBrand = ({navigation}) => {
       try {
         const skip = (pageNo - 1) * LIMIT;
         const response = await axios.get(
-          `https://api.mobitrade.in/api/brand?skip=${skip}&limit=${LIMIT}&search=${query}`,
+          `${API_BASE_URL}/brand?skip=${skip}&limit=${LIMIT}&search=${query}`,
           {
             headers: {Accept: 'application/json'},
             cancelToken: cancelSource.current.token,

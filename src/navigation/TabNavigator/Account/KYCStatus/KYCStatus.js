@@ -19,7 +19,7 @@ const KycStatusScreen = ({navigation}) => {
     gstNo: 'N/A',
     submissionDate: '2024-01-15',
     documents: [
-      {name: 'Aadhaar Card', status: 'verified'},
+      {name: 'Aadhaar Card', status: 'Updated'},
       {name: 'GST Certificate', status: 'pending'},
     ],
   });
@@ -42,7 +42,7 @@ const KycStatusScreen = ({navigation}) => {
       case 'approved':
         return {
           title: 'KYC Approved',
-          sub: 'You can now enjoy all the benefits of a verified account.',
+          sub: 'You can now enjoy all the benefits of a Updated account.',
         };
       case 'pending':
         return {
@@ -61,7 +61,7 @@ const KycStatusScreen = ({navigation}) => {
     switch (status) {
       case 'pending':
         return {name: 'time-outline', color: '#03A9F4'};
-      case 'verified':
+      case 'Updated':
         return {name: 'checkmark-circle-outline', color: '#4CAF50'};
       case 'error':
         return {name: 'alert-circle-outline', color: '#F44336'};
@@ -133,9 +133,6 @@ const KycStatusScreen = ({navigation}) => {
           );
         })}
 
-        <TouchableOpacity style={styles.placeOrderBtn}>
-          <Text style={styles.placeOrderText}>Edit</Text>
-        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );

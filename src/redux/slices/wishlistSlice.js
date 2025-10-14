@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import axios from 'axios';
 import Toast from 'react-native-toast-message';
+import { API_BASE_URL } from '../../utils/utils';
 
 // ✅ Fetch wishlist from API
 export const fetchWishlist = createAsyncThunk(
@@ -13,7 +14,7 @@ export const fetchWishlist = createAsyncThunk(
       console.log('userId=------->', userId);
 
       const response = await axios.get(
-        `https://api.mobitrade.in/api/wishlist/${userId}`,
+        `${API_BASE_URL}/wishlist/${userId}`,
         {
           headers: {
             Accept: 'application/json',
@@ -21,7 +22,6 @@ export const fetchWishlist = createAsyncThunk(
           },
         },
       );
-
       return response.data.data; // returns wishlist array
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -47,7 +47,7 @@ export const addToWishlistAPI = createAsyncThunk(
       console.log('📤 Sending Payload Add:', payload);
 
       const response = await axios.post(
-        `https://api.mobitrade.in/api/wishlist/add`,
+        `${API_BASE_URL}/wishlist/add`,
         payload,
         {
           headers: {
@@ -86,7 +86,7 @@ export const removeFromWishlistAPI = createAsyncThunk(
       console.log('📤 Sending Payload Removed:', payload);
 
       const response = await axios.post(
-        `https://api.mobitrade.in/api/wishlist/remove`,
+        `${API_BASE_URL}/wishlist/remove`,
         payload,
         {
           headers: {
@@ -104,7 +104,7 @@ export const removeFromWishlistAPI = createAsyncThunk(
     } catch (error) {
       Toast.show({
         type: 'error',
-        text2: error.response?.data || error.message,
+        text2: error?.response?.data?.message || error.message,
       });
       return rejectWithValue(error.response?.data || error.message);
     }

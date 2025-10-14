@@ -10,41 +10,21 @@ import {
   StatusBar,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-
-const categories = [
-  {
-    id: '1',
-    title: 'Android',
-    image: 'https://i.postimg.cc/jSKpxm1r/Product-Image-4.png',
-  },
-  {
-    id: '2',
-    title: 'iOS',
-    image: 'https://i.postimg.cc/hGZ60jtS/Product-Image-5.png',
-  },
-  {
-    id: '3',
-    title: 'Windows OS',
-    image: 'https://i.postimg.cc/vZ3NQB9W/Product-Image-7.png',
-  },
-  {
-    id: '4',
-    title: 'MacOS',
-    image: 'https://i.postimg.cc/wxL41FLx/Product-Image-8.png',
-  },
-];
+import { useSelector } from 'react-redux';
 
 const Categories = ({navigation}) => {
+  const {osList} = useSelector(state => state.home);
+
   const renderItem = ({item}) => (
     <TouchableOpacity
-      onPress={() => navigation.navigate('CategoriesSmartphones')}
+      onPress={() => navigation.navigate('CategoriesTab',{ initialTab: item.os_name })}
       style={styles.card}>
       <Image
-        source={{uri: item.image}}
+        source={{uri: item.image_url}}
         style={styles.cardImage}
         resizeMode="contain"
       />
-      <Text style={styles.cardTitle}>{item.title}</Text>
+      <Text style={styles.cardTitle}>{item.os_name}</Text>
     </TouchableOpacity>
   );
 
@@ -69,7 +49,7 @@ const Categories = ({navigation}) => {
 
         {/* Category Grid */}
         <FlatList
-          data={categories}
+          data={osList}
           renderItem={renderItem}
           keyExtractor={item => item.id}
           numColumns={2}

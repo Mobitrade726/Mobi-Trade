@@ -264,7 +264,7 @@ const UpgradeAccountAddress = ({navigation}) => {
       try {
         setZipLoading(true);
         const res = await axios.get(
-          `https://api.mobitrade.in/api/get-postal/${zip}`,
+          `${API_BASE_URL}/get-postal/${zip}`,
         );
 
         if (

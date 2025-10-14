@@ -47,9 +47,6 @@ import Categories from '../screens/Home/Categories/Categories';
 import CategoriesSmartphones from '../screens/Home/Categories/CategoriesTab';
 import BestOfAndroid from '../screens/Home/Categories/BestOfAndroid';
 import TopIosDevices from '../screens/Home/Categories/TopIosDevices';
-import shopbybudgetSmartphones from '../screens/Home/ShopByBudget/shopbybudgetSmartphones';
-import shopbybudgetAccessories from '../screens/Home/ShopByBudget/shopbybudgetAccessories';
-import shopbybudgetWindowsMacbook from '../screens/Home/ShopByBudget/shopbybudgetWindowsMacbook';
 import Checkout from './TabNavigator/Cart/StorePickUp/Checkout';
 import KYCStatus from './TabNavigator/Account/KYCStatus/KYCStatus';
 import PaymentMethod from './TabNavigator/Cart/StorePickUp/PaymentMethod';
@@ -68,10 +65,6 @@ import WalletTransactions from './TabNavigator/Cart/Wallet/WalletTransactions';
 import WalletAddMoney from './TabNavigator/Cart/Wallet/WalletAddMoney';
 import Withdraw from './TabNavigator/Cart/Wallet/Withdraw';
 import Grade from '../screens/Home/Grade/Grade';
-import Android from '../screens/Home/Categories/Android/Android';
-import iOS from '../screens/Home/Categories/iOS/iOS';
-import WindowsOS from '../screens/Home/Categories/WindowsOS/WindowsOS';
-import MacOS from '../screens/Home/Categories/MacOS/MacOS';
 import TopWindowLaptop from '../screens/Home/Categories/TopWindowLaptop';
 import TopMacbooks from '../screens/Home/Categories/TopMacbooks';
 import Accessories from '../screens/Home/Categories/Accessories';
@@ -88,6 +81,10 @@ import ReturnRefundPolicy from './TabNavigator/Account/HelpSupport/Return&Refund
 import ShippingDeliveryInfo from './TabNavigator/Account/HelpSupport/Shipping&DeliveryInfo';
 import TermsConditions from './TabNavigator/Account/HelpSupport/Terms&Conditions';
 import ContactUs from './TabNavigator/Account/HelpSupport/ContactUs';
+import CatPage from '../screens/Home/Categories/CatPage';
+import CategoriesTab from '../screens/Home/Categories/CategoriesTab';
+import ShopByBudget from '../screens/Home/Categories/ShopByBudget';
+import RecentlyAddedTab from '../screens/Home/RecentlyAdd/RecentlyAddedTab';
 
 const Stack = createNativeStackNavigator();
 
@@ -151,18 +148,6 @@ const StackNavigator = () => (
       />
       <Stack.Screen name="BestOfAndroid" component={BestOfAndroid} />
       <Stack.Screen name="TopIosDevices" component={TopIosDevices} />
-      <Stack.Screen
-        name="shopbybudgetSmartphones"
-        component={shopbybudgetSmartphones}
-      />
-      <Stack.Screen
-        name="shopbybudgetWindowsMacbook"
-        component={shopbybudgetWindowsMacbook}
-      />
-      <Stack.Screen
-        name="shopbybudgetAccessories"
-        component={shopbybudgetAccessories}
-      />
       <Stack.Screen name="Checkout" component={Checkout} />
       <Stack.Screen name="KYCStatus" component={KYCStatus} />
       <Stack.Screen name="PaymentMethod" component={PaymentMethod} />
@@ -187,10 +172,6 @@ const StackNavigator = () => (
       <Stack.Screen name="WalletAddMoney" component={WalletAddMoney} />
       <Stack.Screen name="Withdraw" component={Withdraw} />
       <Stack.Screen name="Grade" component={Grade} />
-      <Stack.Screen name="Android" component={Android} />
-      <Stack.Screen name="iOS" component={iOS} />
-      <Stack.Screen name="WindowsOS" component={WindowsOS} />
-      <Stack.Screen name="MacOS" component={MacOS} />
       <Stack.Screen name="TopWindowLaptop" component={TopWindowLaptop} />
       <Stack.Screen name="TopMacbooks" component={TopMacbooks} />
       <Stack.Screen name="Accessories" component={Accessories} />
@@ -211,6 +192,10 @@ const StackNavigator = () => (
       <Stack.Screen name="ShippingDeliveryInfo" component={ShippingDeliveryInfo} />
       <Stack.Screen name="TermsConditions" component={TermsConditions} />
       <Stack.Screen name="ContactUs" component={ContactUs} />
+      <Stack.Screen name="CatPage" component={CatPage} />
+      <Stack.Screen name="CategoriesTab" component={CategoriesTab} />
+      <Stack.Screen name="ShopByBudget" component={ShopByBudget} />
+      <Stack.Screen name="RecentlyAddedTab" component={RecentlyAddedTab} />
     </Stack.Navigator>
   </>
 );

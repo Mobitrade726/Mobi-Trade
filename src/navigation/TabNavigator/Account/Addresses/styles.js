@@ -52,34 +52,35 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 15,
     marginBottom: 30,
-    marginTop:-20,
+    marginTop: -20,
   },
   cardHeader: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between', // ✅ space between iconText & Edit
   },
+
   iconText: {
-    gap: 0,
-    marginLeft: 5,
+    flex: 1, // ✅ allow it to take full width
+    marginLeft: 10,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#222',
-  },
+
   edit: {
     color: '#11A5D7',
     fontWeight: '600',
-    marginLeft:50,
+    fontSize: 14,
+    alignSelf: 'flex-start',
   },
   address: {
-    marginVertical: 5,
+    marginVertical: 0,
     fontSize: 14,
     color: '#444',
+    width: '90%',
   },
   radioRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 0,
   },
   defaultLabel: {
     marginLeft: 8,

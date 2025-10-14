@@ -21,6 +21,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {toggleWishlist} from '../../../redux/slices/wishlistSlice';
 import axios from 'axios';
 import Toast from 'react-native-toast-message';
+import { API_BASE_URL } from '../../../utils/utils';
 
 const {width} = Dimensions.get('window');
 
@@ -35,7 +36,7 @@ const shopbybrandfilter = ({navigation, route, visible, onClose, item}) => {
   const fetchBrandsDetails = async zip => {
     try {
       const res = await axios.get(
-        `https://api.mobitrade.in/api/productlistbrand/${brandname}`,
+        `${API_BASE_URL}/productlistbrand/${brandname}`,
       );
       setBrandsData(res?.data?.data);
     } catch (error) {

@@ -4,12 +4,13 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
 const WishlistCard = ({data, onRemove}) => {
+  console.log("data---------->", data);
   return (
     <View style={styles.card}>
       <View style={styles.row}>
         {/* Image & Grade */}
         <View style={styles.imageContainer}>
-          <Image source={{uri: data.image}} style={styles.image} />
+          <Image source={{uri: data.feature_image}} style={styles.image} />
           <View style={styles.gradeTag}>
             <Text style={styles.gradeText}>
               {data.grade_number ? data.grade_number : 'N/A'}

@@ -686,7 +686,7 @@ const LoginScreen = ({navigation}) => {
       console.log('deviceId-------->', deviceId?._j);
 
       // 5️⃣ Call login API
-      const response = await axios.post(API_BASE_URL + 'buyer/login', {
+      const response = await axios.post(`${API_BASE_URL}/buyer/login`, {
         email: emailOrPhone,
         password: password,
         device_type: deviceType,
@@ -696,6 +696,7 @@ const LoginScreen = ({navigation}) => {
       });
       if (response.data.status === true) {
         await AsyncStorage.setItem('TOKEN', response.data.data.token);
+        await AsyncStorage.setItem('DEVICEID', deviceId?._j);
         await AsyncStorage.setItem(
           'USERID',
           JSON.stringify(response.data.data.user_id),

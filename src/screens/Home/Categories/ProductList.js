@@ -23,6 +23,11 @@ import {useNavigation} from '@react-navigation/native';
 import axios from 'axios';
 import {addToCartAPI, checkoutAPI} from '../../../redux/slices/cartSlice';
 import {useDispatch, useSelector} from 'react-redux';
+import {API_BASE_URL} from '../../../utils/utils';
+import {
+  fetchProductList,
+  addRecentlyViewed,
+} from '../../../redux/slices/productSlice';
 
 const {width} = Dimensions.get('window');
 
@@ -153,16 +158,17 @@ const ProductDetail = ({route, iconType, icon, text}) => {
   const [showSpecs, setShowSpecs] = useState(false); // Toggle state
   const [showSpecs1, setShowSpecs1] = useState(false); // Toggle state
   const {product_barcode_id} = route.params; // 👈 get product
-  const [productData, setProductData] = useState();
+  // const [productData, setProductData] = useState();
   const [loading1, setLoading] = useState(true);
   const [error1, setError] = useState(null);
   const dispatch = useDispatch();
   const {loading, error} = useSelector(state => state.cart);
   const [product, setProduct] = useState('');
+  const {productData, addrecentlyview} = useSelector(state => state.product);
   const handleAddToCart = () => {
     dispatch(addToCartAPI({product, navigation})); // ✅ pass an object
   };
-  const handleBuyNow = ()  => {
+  const handleBuyNow = () => {
     dispatch(
       checkoutAPI({
         type: 'single_product',
@@ -172,11 +178,11 @@ const ProductDetail = ({route, iconType, icon, text}) => {
       }),
     );
   };
-
+  console.log('recentlyViewedAdded--------------------->', addrecentlyview);
   let featureImage = product?.feature_images || [];
   let barcodeDetails = product?.barcode || [];
   let modelSpecification = product?.model_specification || [];
-  console.log("product--------------->",product?.barcode?.purchase_price);
+  let barcode_id = barcodeDetails?.barcode_id;
   let device_qc_reports = product?.device_qc_reports || [];
 
   // 🔹 Utility function to safely extract values
@@ -248,7 +254,7 @@ const ProductDetail = ({route, iconType, icon, text}) => {
         setLoading(true);
 
         const response = await axios.get(
-          `https://api.mobitrade.in/api/product_detail/${product_barcode_id}`,
+          `${API_BASE_URL}/product_detail/${product_barcode_id}`,
         );
         if (response.data) {
           setProduct(response.data.data);
@@ -267,20 +273,9 @@ const ProductDetail = ({route, iconType, icon, text}) => {
   }, [product_barcode_id]);
 
   useEffect(() => {
-    fetchPostalDetails();
-  }, []);
-
-  const fetchPostalDetails = async zip => {
-    try {
-      const res = await axios.get(`https://api.mobitrade.in/api/product/list`);
-      setProductData(res?.data?.data);
-    } catch (error) {
-      Toast.show({
-        type: 'error',
-        text2: JSON.stringify(error?.response?.data?.message),
-      });
-    }
-  };
+    dispatch(addRecentlyViewed(product_barcode_id));
+    dispatch(fetchProductList());
+  }, [dispatch]);
 
   const iosProductsSimilarProducts = (productData || []).filter(
     item => item.operating_systems && item.operating_systems === 'iOS',

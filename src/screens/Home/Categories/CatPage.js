@@ -1,4 +1,3 @@
-import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -13,161 +12,170 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {Dimensions} from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import RangeSlider from 'rn-range-slider';
+import {useDispatch, useSelector} from 'react-redux';
+import {useEffect, useState} from 'react';
+import {useNavigation} from '@react-navigation/native';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import {
+  addToWishlistAPI,
+  removeFromWishlistAPI,
+} from '../../../redux/slices/wishlistSlice';
+import {
+  fetchProductList,
+  fetchFilterData,
+} from '../../../redux/slices/productSlice';
 
 const {width} = Dimensions.get('window');
 
-const shopbybudgetWindowsMacbook = ({navigation}) => {
-  const PRODUCTSFILTER = [
-    {
-      id: '1',
-      image:
-        'https://i.postimg.cc/T3CgwmF9/Whats-App-Image-2025-07-31-at-12-05-42-PM.jpg',
-      name: 'OnePlus 9',
-      color: 'Black',
-      price: '₹20,999',
-      originalPrice: '₹24,999',
-      grade: 'A1',
-      refurbished: true,
-    },
-    {
-      id: '2',
-      image:
-        'https://i.postimg.cc/T3CgwmF9/Whats-App-Image-2025-07-31-at-12-05-42-PM.jpg',
-      name: 'Apple iPhone 13',
-      color: 'Midnight',
-      price: '₹69,900',
-      originalPrice: '₹79,900',
-      grade: 'A1',
-      refurbished: true,
-    },
-    {
-      id: '3',
-      image:
-        'https://i.postimg.cc/T3CgwmF9/Whats-App-Image-2025-07-31-at-12-05-42-PM.jpg',
-      name: 'Apple iPhone 13',
-      color: 'Midnight',
-      price: '₹69,900',
-      originalPrice: '₹79,900',
-      grade: 'A1',
-      refurbished: true,
-    },
-    {
-      id: '4',
-      image:
-        'https://i.postimg.cc/T3CgwmF9/Whats-App-Image-2025-07-31-at-12-05-42-PM.jpg',
-      name: 'Apple iPhone 13',
-      color: 'Midnight',
-      price: '₹69,900',
-      originalPrice: '₹79,900',
-      grade: 'A1',
-      refurbished: true,
-    },
-  ];
-
-  const ProductCardFilter = ({item}) => (
-    <View style={styles.cardD}>
-      <View style={styles.imageContainerD}>
-        <Image source={{uri: item.image}} style={styles.imageD} />
-        {item.refurbished && (
-          <Text style={styles.refurbishedLabelD}>(Refurbished)</Text>
-        )}
-        <TouchableOpacity style={styles.heartIconD}>
-          <Ionicons name="heart-outline" size={20} color="#333" />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.gradeBoxD}>
-        <Text style={styles.gradeTextD}>Grade {item.grade}</Text>
-      </View>
-      <Text style={styles.productNameD}>{item.name}</Text>
-      <Text style={styles.colorTextD}>● {item.color}</Text>
-      <View style={styles.priceRowD}>
-        <Text style={styles.priceD}>{item.price}</Text>
-        <Text style={styles.originalPriceD}>{item.originalPrice}</Text>
-      </View>
-    </View>
+const CatPage = ({osName}) => {
+  const {uri} = useSelector(state => state.cat);
+  const navigation = useNavigation(); // ✅ make sure navigation is available
+  const dispatch = useDispatch();
+  const {productData, filterdata, loading} = useSelector(
+    state => state.product,
   );
 
+  console.log("osName----------->", osName);
+
+  // state
+  // const [productData, setProductData] = useState();
+  const [applyselectedfilters, ApplyselectedFilters] = useState();
+  const [filteredProduct, setFilteredProducts] = useState([]);
+  // const [filterdata, setFilterData] = useState();
   const [showSortModal, setShowSortModal] = useState(false);
   const [selectedOption, setSelectedOption] = useState('lowToHigh');
   const [showFilterModal, setFilterSortModal] = useState(false);
-  const [selectedOptionFilter, setSelectedOptionFilter] = useState('lowToHigh');
+  const [selectedRam, setSelectedRam] = useState(null);
+  const [selectedStorage, setSelectedStorage] = useState(null);
+  const [selectedTab, setSelectedTab] = useState('brands');
+  const [selectedBrands, setSelectedBrands] = useState([]);
+  const [selectedColors, setSelectedColors] = useState([]);
+  const [selectedGrade, setSelectedGrade] = useState(null);
+
+  useEffect(() => {
+    dispatch(fetchProductList());
+    dispatch(fetchFilterData());
+  }, [dispatch]);
+
+  // Apply filters
+  useEffect(() => {
+    if (!productData) return;
+
+    if (!applyselectedfilters) {
+      setFilteredProducts(
+        productData.filter(item => item.operating_systems === osName),
+      );
+      return;
+    }
+
+    const filtered = productData.filter(item => {
+      // OS filter
+      if (item.operating_systems !== osName) return false;
+
+      // Brand filter
+      if (
+        applyselectedfilters.brands &&
+        applyselectedfilters.brands.length > 0 &&
+        !applyselectedfilters.brands.includes(item.brand_name)
+      )
+        return false;
+
+      // Color filter
+      if (
+        applyselectedfilters.colors &&
+        applyselectedfilters.colors.length > 0 &&
+        !applyselectedfilters.colors.includes(item.color_name)
+      )
+        return false;
+
+      // Grade filter
+      if (
+        applyselectedfilters.grade &&
+        item.grade_number !== applyselectedfilters.grade.grade
+      )
+        return false;
+
+      // RAM filter
+      if (
+        applyselectedfilters.ram &&
+        item.ram_id !== applyselectedfilters.ram.id
+      )
+        return false;
+
+      // Storage filter
+      if (
+        applyselectedfilters.storage &&
+        item.rom_id !== applyselectedfilters.storage.id
+      )
+        return false;
+
+      return true;
+    });
+    // Apply sorting
+    if (selectedOption === 'lowToHigh') {
+      filtered.sort((a, b) => a.price - b.price);
+    } else if (selectedOption === 'highToLow') {
+      filtered.sort((a, b) => b.price - a.price);
+    } else if (selectedOption === 'grade') {
+      filtered.sort((a, b) => a.grade_number.localeCompare(b.grade_number));
+    }
+    setFilteredProducts(filtered);
+  }, [applyselectedfilters, productData, osName]);
+
+  // Filter products based on osName
+  const filteredProducts = (productData || []).filter(
+    item => item.operating_systems && item.operating_systems === osName,
+  );
+
+  const budgetOptions = [
+    {
+      id: 1,
+      label: 'Under ₹10,000',
+      image: 'https://i.postimg.cc/Pf3MBSK6/Category-Card-01-1.png',
+    },
+    {
+      id: 2,
+      label: '₹10,000 - ₹20,000',
+      image: 'https://i.postimg.cc/0NRJJB0y/Category-Card-02.png',
+    },
+    {
+      id: 3,
+      label: '₹20,000 - ₹30,000',
+      image:
+        'https://i.postimg.cc/zvBLrZ80/create-an-image-with-multiple-smartphones-that-are-under-10000-20000-rupees.png',
+    },
+    {
+      id: 4,
+      label: 'Above ₹30,000',
+      image: 'https://i.postimg.cc/Ls3hg6sx/Category-Card-4.png',
+    },
+  ];
+
+  // Filter & Wishlist
+  let BRANDS = filterdata?.brands;
+  let grades = filterdata?.grades;
+  let COLORS = filterdata?.colors;
+  let ramOptions = filterdata?.rams;
+  let storageOptions = filterdata?.roms;
 
   const sortOptions = [
     {key: 'lowToHigh', label: 'Price (Low to High)'},
     {key: 'highToLow', label: 'Price (High to Low)'},
     {key: 'grade', label: 'Grade (A1–A9)'},
   ];
-  const sortFilter = [
-    {key: 'lowToHigh', label: 'Price (Low to High)'},
-    {key: 'highToLow', label: 'Price (High to Low)'},
-    {key: 'grade', label: 'Grade (A1–A9)'},
-  ];
 
   const FILTER_TABS = [
-    {key: 'category', label: 'Category', icon: 'apps-outline'},
     {key: 'brands', label: 'Brands', icon: 'pricetags-outline'},
-    {key: 'price', label: 'Price', icon: 'cash-outline'},
     {key: 'color', label: 'Color', icon: 'color-palette-outline'},
     {key: 'grade', label: 'Grade', icon: 'shield-checkmark-outline'},
-    {key: 'discount', label: 'Discount', icon: 'ticket-outline'},
     {key: 'specs', label: 'Specific', icon: 'document-text-outline'},
   ];
-
-  const BRANDS = [
-    {name: 'Apple', count: 128},
-    {name: 'Samsung', count: 40},
-    {name: 'Xiomi', count: 36},
-    {name: 'Motorola', count: 36},
-    {name: 'Oppo', count: 36},
-    {name: 'Vivo', count: 12},
-    {name: 'Lava', count: 9},
-  ];
-
-  const CATEGORIESFILTER = [
-    {key: 'windows', label: 'Windows pc', icon: 'laptop-outline'},
-    {key: 'macbook', label: 'Macbook', icon: 'laptop-outline'},
-    {key: 'smartphones', label: 'Smartphones', icon: 'phone-portrait-outline'},
-    {key: 'accessories', label: 'Accessories', icon: 'watch-outline'},
-  ];
-
-  const COLORS = [
-    {name: 'Red', hex: '#E74C3C'},
-    {name: 'Orange', hex: '#D35400'},
-    {name: 'Black', hex: '#1C1C1C'},
-    {name: 'Grey', hex: '#566573'},
-    {name: 'Light Grey', hex: '#B2BABB'},
-    {name: 'Maroon', hex: '#784212'},
-    {name: 'Pink', hex: '#F5B7B1'},
-    {name: 'Deep Blue', hex: '#004D61'},
-  ];
-
-  const grades = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9'];
-  const discount = [
-    '50% off',
-    '40% off',
-    '30% off',
-    '20% off',
-    'Upto 20% off',
-    'Flat ₹500 off',
-    'Buy more, save more',
-  ];
-
-  const ramOptions = ['4GB', '6GB', '8GB', '12GB', '16GB', '32GB'];
-  const storageOptions = ['64GB', '128GB', '256GB', '512GB', '1TB'];
-
-  const [selectedRam, setSelectedRam] = useState(null);
-  const [selectedStorage, setSelectedStorage] = useState(null);
-  const [selectedTab, setSelectedTab] = useState('brands');
-  const [selectedBrands, setSelectedBrands] = useState([]);
-  const [selectedColors, setSelectedColors] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('windows');
 
   const getTotalSelected = () => {
     return [selectedRam, selectedStorage].filter(Boolean).length;
   };
 
-  const renderOption = (item, selectedItem, setSelectedItem) => (
+  const renderRamOption = (item, selectedItem, setSelectedItem) => (
     <TouchableOpacity
       key={item}
       style={[
@@ -180,49 +188,67 @@ const shopbybudgetWindowsMacbook = ({navigation}) => {
           styles.optionText,
           selectedItem === item && styles.selectedText,
         ]}>
-        {item}
+        {item?.ram_name}
       </Text>
     </TouchableOpacity>
   );
-
-  const [numCols, setNumCols] = useState(2);
-  const toggleCols = () => setNumCols(prev => (prev === 2 ? 1 : 2));
-
-  const [low, setLow] = useState(4499);
-  const [high, setHigh] = useState(49999);
-
-  const renderThumb = () => <View style={styles.thumb} />;
-  const renderRail = () => <View style={styles.rail} />;
-  const renderRailSelected = () => <View style={styles.railSelected} />;
-  const renderLabel = value => (
-    <View style={styles.label}>
-      <Text style={styles.labelText}>₹ {value.toLocaleString()}</Text>
-    </View>
+  const renderStorageOption = (item, selectedItem, setSelectedItem) => (
+    <TouchableOpacity
+      key={item}
+      style={[
+        styles.optionButton,
+        selectedItem === item && styles.selectedButton,
+      ]}
+      onPress={() => setSelectedItem(item)}>
+      <Text
+        style={[
+          styles.optionText,
+          selectedItem === item && styles.selectedText,
+        ]}>
+        {item?.rom_name}
+      </Text>
+    </TouchableOpacity>
   );
 
   const handleApply = () => {
     setShowSortModal(false);
     setFilterSortModal(false);
-    // Perform sorting logic here if needed
+    // Combine all selected filters into an object
+    const selectedFilters = {
+      brands: selectedBrands,
+      colors: selectedColors,
+      grade: selectedGrade,
+      ram: selectedRam,
+      storage: selectedStorage,
+    };
+    ApplyselectedFilters(selectedFilters);
+  };
+  const handleReset = () => {
+    setSelectedBrands([]);
+    setSelectedColors([]);
+    setSelectedGrade(null);
+    setSelectedRam(null);
+    setSelectedStorage(null);
+    ApplyselectedFilters(null);
   };
   const toggleBrand = brand => {
     setSelectedBrands(prev =>
       prev.includes(brand) ? prev.filter(b => b !== brand) : [...prev, brand],
     );
   };
-  const toggleColor = name => {
+  const toggleColor = colorName => {
     setSelectedColors(prev =>
-      prev.includes(name)
-        ? prev.filter(color => color !== name)
-        : [...prev, name],
+      prev.includes(colorName)
+        ? prev.filter(c => c !== colorName)
+        : [...prev, colorName],
     );
   };
   const renderItemColor = ({item}) => {
-    const isSelected = selectedColors.includes(item.name);
+    const isSelected = selectedColors.includes(item.color_name);
     return (
       <TouchableOpacity
-        style={[styles.colorItem_c, isSelected && styles.selectedWrapper_c]}
-        onPress={() => toggleColor(item.name)}>
+        onPress={() => toggleColor(item.color_name)}
+        style={[styles.colorItem_c, isSelected && styles.selectedWrapper_c]}>
         <View style={styles.colorCircleWrapper_c}>
           <View
             style={[
@@ -232,23 +258,9 @@ const shopbybudgetWindowsMacbook = ({navigation}) => {
             ]}
           />
         </View>
-        <Text style={styles.colorLabel_c}>{item.name}</Text>
-      </TouchableOpacity>
-    );
-  };
-  const renderItem = ({item}) => {
-    const isSelected = selectedCategory === item.key;
-    return (
-      <TouchableOpacity
-        style={[styles.card_cat, isSelected && styles.cardSelected_cat]}
-        onPress={() => setSelectedCategory(item.key)}>
-        <Ionicons
-          name={item.icon}
-          size={28}
-          color={isSelected ? '#fff' : '#000'}
-        />
-        <Text style={[styles.label_cat, isSelected && {color: '#fff'}]}>
-          {item.label}
+        <Text
+          style={[styles.colorLabel_c, {color: isSelected ? '#000' : '#555'}]}>
+          {item.color_name}
         </Text>
       </TouchableOpacity>
     );
@@ -256,32 +268,6 @@ const shopbybudgetWindowsMacbook = ({navigation}) => {
 
   const renderRightPane = () => {
     switch (selectedTab) {
-      case 'category':
-        return (
-          <View>
-            <View style={styles.rightHeader}>
-              <Text style={styles.rightTitle}>Categories</Text>
-              <TouchableOpacity onPress={toggleCols}>
-                <Ionicons
-                  name={numCols === 2 ? 'list-outline' : 'grid-outline'}
-                  size={20}
-                  color="#000"
-                />
-              </TouchableOpacity>
-            </View>
-
-            <FlatList
-              key={`cols-${numCols}`} // ✅ Force re-render on column count change
-              data={CATEGORIESFILTER}
-              numColumns={numCols}
-              keyExtractor={item => item.key}
-              renderItem={renderItem}
-              columnWrapperStyle={numCols > 1 ? styles.gridRow_cat : null}
-              contentContainerStyle={styles.grid_cat}
-            />
-          </View>
-        );
-
       case 'brands':
         return (
           <View style={styles.rightPane}>
@@ -296,59 +282,27 @@ const shopbybudgetWindowsMacbook = ({navigation}) => {
               data={BRANDS}
               keyExtractor={item => item.name}
               renderItem={({item}) => {
-                const selected = selectedBrands.includes(item.name);
+                const selected = selectedBrands.includes(item.brand_name);
                 return (
                   <TouchableOpacity
-                    onPress={() => toggleBrand(item.name)}
+                    onPress={() => toggleBrand(item.brand_name)}
                     style={[
                       styles.brandItem,
                       selected && styles.brandItemSelected,
                     ]}>
                     <Text
                       style={[styles.brandText, selected && {color: '#fff'}]}>
-                      {item.name}
+                      {item.brand_name}
                     </Text>
-                    <Text
+                    {/* <Text
                       style={[styles.itemCount, selected && {color: '#fff'}]}>
                       {item.count} Items
-                    </Text>
+                    </Text> */}
                   </TouchableOpacity>
                 );
               }}
               ItemSeparatorComponent={() => <View style={styles.separator} />}
             />
-          </View>
-        );
-
-      case 'price':
-        return (
-          <View style={styles.rightPane}>
-            <Text style={styles.rightTitle}>Price</Text>
-            <RangeSlider
-              min={4499}
-              max={69999}
-              step={1}
-              low={low}
-              high={high}
-              floatingLabel
-              renderThumb={renderThumb}
-              renderRail={renderRail}
-              renderRailSelected={renderRailSelected}
-              renderLabel={renderLabel}
-              onValueChanged={(min, max) => {
-                setLow(min);
-                setHigh(max);
-              }}
-            />
-
-            <View style={styles.priceLabels}>
-              <Text style={styles.price}>₹ {'4499'.toLocaleString()}</Text>
-              <Text style={styles.price}>₹ {'69999'.toLocaleString()}</Text>
-            </View>
-
-            <Text style={styles.selectedRange}>
-              ₹ {low.toLocaleString()} - ₹ {high.toLocaleString()}
-            </Text>
           </View>
         );
 
@@ -393,25 +347,6 @@ const shopbybudgetWindowsMacbook = ({navigation}) => {
           </View>
         );
 
-      case 'discount':
-        return (
-          <View style={styles.rightPane}>
-            <View style={styles.header_panel}>
-              <Text style={styles.title_c}>Discount</Text>
-              <Text style={styles.title_c}>
-                {selectedDiscount ? '1 selected' : 'None selected'}
-              </Text>
-            </View>
-            <FlatList
-              key={`cat-discount`}
-              data={discount}
-              keyExtractor={item => item}
-              renderItem={renderItemDiscount}
-              contentContainerStyle={styles.listContainer}
-            />
-          </View>
-        );
-
       case 'specs':
         return (
           <View style={styles.rightPane}>
@@ -423,14 +358,14 @@ const shopbybudgetWindowsMacbook = ({navigation}) => {
             <Text style={styles.subHeading}>RAM</Text>
             <View style={styles.optionContainer}>
               {ramOptions.map(item =>
-                renderOption(item, selectedRam, setSelectedRam),
+                renderRamOption(item, selectedRam, setSelectedRam),
               )}
             </View>
 
             <Text style={styles.subHeading}>Storage</Text>
             <View style={styles.optionContainer}>
               {storageOptions.map(item =>
-                renderOption(item, selectedStorage, setSelectedStorage),
+                renderStorageOption(item, selectedStorage, setSelectedStorage),
               )}
             </View>
           </View>
@@ -445,26 +380,8 @@ const shopbybudgetWindowsMacbook = ({navigation}) => {
     }
   };
 
-  const handleReset = () => {
-    setSelectedCategory([]);
-    setSelectedBrands([]);
-    setSelectedColors([]);
-    setSelectedGrade([]);
-    setSelectedDiscount([]);
-    setSelectedRam([]);
-    setSelectedStorage([]);
-  };
-
-  const [selectedGrade, setSelectedGrade] = useState(null);
-
   const handleSelect = grade => {
     setSelectedGrade(grade === selectedGrade ? null : grade);
-  };
-
-  const [selectedDiscount, setSelectedDiscount] = useState(null);
-
-  const handleSelectDiscount = discount => {
-    setSelectedDiscount(discount === selectedDiscount ? null : discount);
   };
 
   const renderItemGrade = ({item}) => {
@@ -475,101 +392,132 @@ const shopbybudgetWindowsMacbook = ({navigation}) => {
         style={[styles.gradeButton, isSelected && styles.gradeButtonSelected]}>
         <Text
           style={[styles.gradeText, isSelected && styles.gradeTextSelected]}>
-          {item}
-        </Text>
-      </TouchableOpacity>
-    );
-  };
-  const renderItemDiscount = ({item}) => {
-    const isSelected = selectedDiscount === item;
-    return (
-      <TouchableOpacity
-        onPress={() => handleSelectDiscount(item)}
-        style={[
-          styles.discountButton,
-          isSelected && styles.discountButtonSelected,
-        ]}>
-        <Text
-          style={[
-            styles.discountTexts,
-            isSelected && styles.discountTextSelected,
-          ]}>
-          {item}
+          {item?.grade}
         </Text>
       </TouchableOpacity>
     );
   };
 
-  const priceRanges = [
-    'Under ₹10,000',
-    '₹10,000 - ₹20,000',
-    '₹20,000 - ₹30,000',
-    'Above ₹30,000',
-  ];
-  const [selected, setSelected] = useState('Under ₹10,000');
+  const ProductCard = ({item}) => {
+    const wishlistItems = useSelector(state => state.wishlist.items);
+    // ✅ check product already in wishlist
+    const isInWishlist = wishlistItems.some(
+      w => w.barcode_id == item.barcode_id,
+    );
+    console.log('wishlistItems--------->', isInWishlist);
+    const handleWishlistToggle = () => {
+      if (isInWishlist) {
+        dispatch(removeFromWishlistAPI(item));
+      } else {
+        dispatch(addToWishlistAPI(item));
+      }
+    };
+
+    return (
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate('ProductList', {
+            product_barcode_id: item?.barcode_id,
+          })
+        }
+        style={styles.cardD}>
+        {/* Image + Heart */}
+        <View style={styles.imageContainerD}>
+          <Image source={{uri: item.feature_image}} style={styles.imageD} />
+          {item && <Text style={styles.refurbishedLabelD}>(Refurbished)</Text>}
+
+          {/* ❤️ Wishlist Button */}
+          <TouchableOpacity
+            style={styles.heartIconD}
+            onPress={() => handleWishlistToggle()}>
+            <AntDesign
+              name={isInWishlist ? 'heart' : 'hearto'}
+              size={20}
+              color={isInWishlist ? '#E74C3C' : '#999'}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Grade Box */}
+        <View style={styles.gradeBoxD}>
+          <Text style={styles.gradeTextD}>Grade {item.grade_number}</Text>
+        </View>
+
+        {/* Product Info */}
+        <Text style={styles.productNameD}>{item.model_name}</Text>
+        <Text style={styles.colorTextD}>● {item.color_name}</Text>
+        <View style={styles.priceRowD}>
+          <Text style={styles.priceD}>₹ {item.price}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}>
-            <Ionicons name="chevron-back" size={22} color="#000" />
-          </TouchableOpacity>
-          <View>
-            <Text style={styles.headerTitle}>Shop by Budget</Text>
-          </View>
-          <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-            <Ionicons name="search" size={24} color="#333" />
-          </TouchableOpacity>
-        </View>
-        <Text style={{fontWeight: 'bold', marginBottom: 10, marginLeft: 15}}>
-          Window’s Pc & Macbook
-        </Text>
+        {/* Banner */}
+        <Image
+          style={styles.bannerImage}
+          source={{
+            uri: uri?.urlandroid,
+          }}
+        />
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.container_shop}>
-          {priceRanges.map((range, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.pill_shop,
-                selected === range
-                  ? styles.pillSelected_shop
-                  : styles.pillUnselected_shop,
-              ]}
-              onPress={() => setSelected(range)}>
-              <Text
-                style={[
-                  styles.pillText_shop,
-                  selected === range
-                    ? styles.textSelected_shop
-                    : styles.textUnselected_shop,
-                ]}>
-                {range}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        <View style={styles.headerButtons}>
-          <TouchableOpacity
-            onPress={() => setShowSortModal(true)}
-            style={styles.sortButton}>
-            <Icon name="grid" size={16} color="#000" />
-            <Text style={styles.sortText}>Sort By</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setFilterSortModal(true)}
-            style={styles.filterButton}>
-            <Icon name="sliders" size={16} color="#000" />
-            <Text style={styles.sortText}>Filter</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Top android Devices */}
+        {filteredProducts?.length > 0 ? (
+          <>
+            {/* Shop by Budget */}
+            <Text style={styles.sectionTitle}>Shop by Budget</Text>
+            <View style={styles.grid}>
+              {budgetOptions.map((item, index) => (
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate('ShopByBudget', {
+                      osname: osName,
+                      priceId: item.id,
+                    })
+                  }
+                  key={index}
+                  style={styles.budgetCard}>
+                  <View style={styles.imageWrapper}>
+                    <Image
+                      source={{uri: item.image}}
+                      style={styles.budgetImage}
+                    />
+                    <Text style={styles.budgetLabel}>{item.label}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View style={styles.headerButtons}>
+              <TouchableOpacity
+                onPress={() => setShowSortModal(true)}
+                style={styles.sortButton}>
+                <Icon name="grid" size={16} color="#000" />
+                <Text style={styles.sortText}>Sort By</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setFilterSortModal(true)}
+                style={styles.filterButton}>
+                <Icon name="sliders" size={16} color="#000" />
+                <Text style={styles.sortText}>Filter</Text>
+              </TouchableOpacity>
+            </View>
+            <View
+              style={{
+                flex: 1,
+              }}>
+              <FlatList
+                data={filteredProduct}
+                renderItem={({item}) => <ProductCard item={item} />}
+                keyExtractor={item => item.id}
+                showsHorizontalScrollIndicator={false}
+                numColumns={2}
+              />
+            </View>
+          </>
+        ) : null}
 
         {/* Sort Modal */}
         <Modal visible={showSortModal} transparent animationType="slide">
@@ -671,21 +619,37 @@ const shopbybudgetWindowsMacbook = ({navigation}) => {
           </SafeAreaView>
         </Modal>
 
+        {/* Grade A1 to A9  */}
         <View
           style={{
+            alignItems: 'center',
+            alignItems: 'center',
             alignSelf: 'center',
-            flex: 1,
+            justifyContent: 'center',
+            marginLeft: 20,
+            marginVertical: 15,
+            flexDirection: 'row',
           }}>
-          <FlatList
-            data={PRODUCTSFILTER}
-            renderItem={({item}) => <ProductCardFilter item={item} />}
-            keyExtractor={item => item.id}
-            showsHorizontalScrollIndicator={false}
-            numColumns={2}
+          <View style={styles.leftContainer}>
+            <Text style={styles.heading}>What is A1 to A9?</Text>
+            <Text style={styles.subheading}>How Does Our Grading Work?</Text>
+            <Text style={styles.description}>
+              Grading ranges from A1 (like new) to A9 (heavily used).
+            </Text>
+
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Grade')}
+              style={styles.button}>
+              <Text style={styles.buttonText}>Learn More</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Right Image Section */}
+          <Image
+            source={require('../../../../assets/images/mini.png')} // Replace with your image path
+            style={styles.imageG}
+            resizeMode="contain"
           />
-          <TouchableOpacity style={styles.buttonL}>
-            <Text style={styles.buttonTextL}>Learn More</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -697,7 +661,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 5,
     justifyContent: 'space-between',
     marginHorizontal: 10,
   },
@@ -713,8 +677,7 @@ const styles = StyleSheet.create({
     color: '#000',
     textAlign: 'center',
   },
-  banner: {},
-  bannerImage: {width: width, height: 225},
+  bannerImage: {width: '100%', height: 240, resizeMode: 'stretch'},
   bannerTextContainer: {
     position: 'absolute',
     bottom: 20,
@@ -914,7 +877,7 @@ const styles = StyleSheet.create({
   },
   heartIconD: {
     position: 'absolute',
-    top: 25,
+    top: 30,
     right: 6,
     backgroundColor: '#fff',
     borderRadius: 20,
@@ -938,11 +901,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     overflow: 'hidden',
-    // shadowColor: '#000',
-    // shadowOpacity: 0.1,
-    // shadowOffset: {width: 0, height: 2},
+    shadowColor: '#000',
     shadowRadius: 4,
-    // elevation: 3,
+    marginHorizontal: 5,
   },
 
   leftContainer: {
@@ -1000,8 +961,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-start',
     gap: 12,
-    marginBottom: 15,
     marginLeft: 15,
+    marginBottom: 10,
   },
   sortButton: {
     borderWidth: 1,
@@ -1481,33 +1442,6 @@ const styles = StyleSheet.create({
   selectedText: {
     color: '#fff',
   },
-
-  container_shop: {
-    paddingHorizontal: 10,
-    marginBottom: 10,
-  },
-  pill_shop: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    marginRight: 10,
-  },
-  pillSelected_shop: {
-    backgroundColor: '#4B4B4B', // dark gray for selected
-  },
-  pillUnselected_shop: {
-    backgroundColor: '#EFECEC', // light gray for unselected
-  },
-  pillText_shop: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  textSelected_shop: {
-    color: 'white',
-  },
-  textUnselected_shop: {
-    color: '#222',
-  },
 });
 
-export default shopbybudgetWindowsMacbook;
+export default CatPage;

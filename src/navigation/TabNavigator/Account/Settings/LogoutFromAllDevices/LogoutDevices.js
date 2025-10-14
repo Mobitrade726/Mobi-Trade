@@ -14,6 +14,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '../../../../../utils/utils';
 
 const LogoutDevices = ({navigation}) => {
   const [devices, setDevices] = useState([]);
@@ -27,7 +28,7 @@ const LogoutDevices = ({navigation}) => {
       const userId = await AsyncStorage.getItem('USERID');
 
       const response = await axios.get(
-        `https://api.mobitrade.in/api/buyerLoginHistory/${userId}`,
+        `${API_BASE_URL}/buyerLoginHistory/${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -85,7 +86,7 @@ const LogoutDevices = ({navigation}) => {
               try {
                 // Make POST request with proper body
                 const response = await axios.post(
-                  'https://api.mobitrade.in/api/logout',
+                  `${API_BASE_URL}/logout`,
                   {
                     user_id:userId,
                     device_id: device_id,
@@ -147,7 +148,7 @@ const LogoutDevices = ({navigation}) => {
               const token = await AsyncStorage.getItem('TOKEN');
 
               const response = await axios.post(
-                'https://api.mobitrade.in/api/logout',
+                `${API_BASE_URL}/logout`,
                 {user_id: userId},
                 {
                   headers: {

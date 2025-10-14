@@ -70,6 +70,7 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
+import { API_BASE_URL } from '../../utils/utils';
 
 const Header = ({navigation}) => {
   const [logoUrl, setLogoUrl] = useState(null);
@@ -78,7 +79,7 @@ const Header = ({navigation}) => {
   useEffect(() => {
     const fetchLogo = async () => {
       try {
-        const response = await fetch('https://api.mobitrade.in/api/logo');
+        const response = await fetch(`${API_BASE_URL}/logo`);
         const json = await response.json();
         if (json.success && json.data.length > 0) {
           setLogoUrl(json.data[0].logo);
