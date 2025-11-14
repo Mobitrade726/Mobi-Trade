@@ -147,3 +147,4 @@ const wishlistSlice = createSlice({
 });
 
 export default wishlistSlice.reducer;
+

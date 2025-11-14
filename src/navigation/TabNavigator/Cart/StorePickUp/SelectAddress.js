@@ -10,6 +10,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {RadioButton} from 'react-native-paper';
+import Header from '../../../../constants/Header';
 
 export default function SelectAddress({navigation}) {
   const [selectedShipping, setSelectedShipping] = useState(1);
@@ -40,20 +41,7 @@ export default function SelectAddress({navigation}) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={{flex: 1}}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}>
-            <Ionicons name="chevron-back" size={22} color="#000" />
-          </TouchableOpacity>
-          <View>
-            <Text style={styles.headerTitle}>Checkout</Text>
-          </View>
-          <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-            <Ionicons name="search" size={24} color="#333" />
-          </TouchableOpacity>
-        </View>
+        <Header title="Checkout" navigation={navigation} showBack={true} />
 
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* Shipping Address */}
@@ -148,7 +136,8 @@ const styles = StyleSheet.create({
   billingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10, marginLeft:15,
+    paddingVertical: 10,
+    marginLeft: 15,
   },
   circle: {
     width: 18,

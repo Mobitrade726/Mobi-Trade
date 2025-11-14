@@ -1,3 +1,476 @@
+// // import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
+// // import axios from 'axios';
+// // import AsyncStorage from '@react-native-async-storage/async-storage';
+// // import Toast from 'react-native-toast-message';
+// // import {API_BASE_URL} from '../../utils/utils';
+
+// // // =====================================================
+// // // 🔹 Async Thunk: Fetch Product List
+// // // =====================================================
+// // export const fetchProductList = createAsyncThunk(
+// //   'product/fetchProductList',
+// //   async (_, {rejectWithValue}) => {
+// //     try {
+// //       const res = await axios.get(`${API_BASE_URL}/product/list`);
+// //       return res?.data?.data || [];
+// //     } catch (error) {
+// //       Toast.show({
+// //         type: 'error',
+// //         text2: error?.response?.data?.message || 'Failed to fetch products',
+// //       });
+// //       return rejectWithValue(error.response?.data);
+// //     }
+// //   },
+// // );
+// // // =====================================================
+// // // 🔹 Async Thunk: Fetch Product List
+// // // =====================================================
+// // export const fetchProductLatestStock = createAsyncThunk(
+// //   'product/fetchProductLatestStock',
+// //   async (_, {rejectWithValue}) => {
+// //     try {
+// //       const token = await AsyncStorage.getItem('TOKEN');
+// //       if (!token) {
+// //         return rejectWithValue('User not logged in');
+// //       }
+// //       const res = await axios.get(`${API_BASE_URL}/lateststocklist`, {
+// //         headers: {Authorization: `Bearer ${token}`},
+// //       });
+// //       return res?.data?.data || [];
+// //     } catch (error) {
+// //       Toast.show({
+// //         type: 'error',
+// //         text2: error?.response?.data?.message || 'Failed to fetch products',
+// //       });
+// //       return rejectWithValue(error.response?.data);
+// //     }
+// //   },
+// // );
+
+// // // =====================================================
+// // // 🔹 Async Thunk: Add Recently Viewed Product
+// // // =====================================================
+// // export const addRecentlyViewed = createAsyncThunk(
+// //   'product/addRecentlyViewed',
+// //   async (barcode_id, {rejectWithValue}) => {
+// //     try {
+// //       const token = await AsyncStorage.getItem('TOKEN');
+// //       const user_id = await AsyncStorage.getItem('USERID');
+
+// //       if (!token || !user_id) {
+// //         return rejectWithValue('User not logged in');
+// //       }
+
+// //       const res = await axios.post(
+// //         `${API_BASE_URL}/recently-viewed/add`,
+// //         {user_id, barcode_id},
+// //         {headers: {Authorization: `Bearer ${token}`}},
+// //       );
+// //       Toast.show({
+// //         type: 'success',
+// //         text1: res?.data?.message,
+// //       });
+// //       console.log('Recently viewed added:', res?.data?.data);
+// //       return res?.data?.data;
+// //     } catch (error) {
+// //       console.log('Error adding recently viewed:', error?.response?.data);
+// //       return rejectWithValue(error?.response?.data);
+// //     }
+// //   },
+// // );
+
+// // // =====================================================
+// // // 🔹 3️⃣ Fetch Filter API
+// // // =====================================================
+// // export const fetchFilterData = createAsyncThunk(
+// //   'product/fetchFilterData',
+// //   async (_, {rejectWithValue}) => {
+// //     try {
+// //       const res = await axios.get(`${API_BASE_URL}/filterapi`);
+// //       console.log(
+// //         'Filter API response slice------------------>:',
+// //         res?.data?.filters,
+// //       );
+// //       return res?.data?.filters || [];
+// //     } catch (error) {
+// //       console.log('Filter API error:', error?.response?.data);
+// //       Toast.show({
+// //         type: 'error',
+// //         text2: error?.response?.data?.message || 'Failed to fetch filters',
+// //       });
+// //       return rejectWithValue(error.response?.data);
+// //     }
+// //   },
+// // );
+
+// // // =====================================================
+// // // 🔹 3️⃣ Fetch recently viewed products
+// // // =====================================================
+// // export const fetchRecentlyViewed = createAsyncThunk(
+// //   'products/fetchRecentlyViewed',
+// //   async (_, {rejectWithValue}) => {
+// //     try {
+// //       const user_id = await AsyncStorage.getItem('USERID');
+// //       const token = await AsyncStorage.getItem('TOKEN');
+
+// //       const response = await axios.get(
+// //         `${API_BASE_URL}/recently-viewed/${user_id}`,
+// //         {
+// //           headers: {
+// //             Authorization: `Bearer ${token}`,
+// //             'Content-Type': 'application/json',
+// //           },
+// //         },
+// //       );
+
+// //       if (response.data.status && response.data.data) {
+// //         return response.data.data; // ✅ this will be payload
+// //       } else {
+// //         return rejectWithValue(
+// //           response.data.message || 'Failed to fetch recently viewed',
+// //         );
+// //       }
+// //     } catch (error) {
+// //       return rejectWithValue(error?.response?.data?.message || error.message);
+// //     }
+// //   },
+// // );
+
+// // // =====================================================
+// // // 🔹 Slice Definition
+// // // =====================================================
+// // const productSlice = createSlice({
+// //   name: 'product',
+// //   initialState: {
+// //     productData: [],
+// //     recentlyViewed: [],
+// //     addrecentlyview: [],
+// //     filterdata: [],
+// //     lateststock: [],
+// //     loading: false,
+// //     error: null,
+// //   },
+// //   reducers: {},
+// //   extraReducers: builder => {
+// //     builder
+// //       // ✅ Product List
+// //       .addCase(fetchProductList.pending, state => {
+// //         state.loading = true;
+// //       })
+// //       .addCase(fetchProductList.fulfilled, (state, action) => {
+// //         state.loading = false;
+// //         state.productData = action.payload;
+// //       })
+// //       .addCase(fetchProductList.rejected, (state, action) => {
+// //         state.loading = false;
+// //         state.error = action.payload;
+// //       })
+
+// //       // ✅ Recently Viewed Added
+// //       .addCase(addRecentlyViewed.pending, state => {
+// //         state.loading = true;
+// //       })
+// //       .addCase(addRecentlyViewed.fulfilled, (state, action) => {
+// //         state.loading = false;
+// //         state.addrecentlyview = action.payload;
+// //       })
+// //       .addCase(addRecentlyViewed.rejected, (state, action) => {
+// //         state.loading = false;
+// //         state.error = action.payload;
+// //       })
+
+// //       // ✅ Filter API
+// //       .addCase(fetchFilterData.pending, state => {
+// //         state.loading = true;
+// //       })
+// //       .addCase(fetchFilterData.fulfilled, (state, action) => {
+// //         state.loading = false;
+// //         state.filterdata = action.payload;
+// //       })
+// //       .addCase(fetchFilterData.rejected, (state, action) => {
+// //         state.loading = false;
+// //         state.error = action.payload;
+// //       })
+
+// //       // ✅ Recently Viewed
+// //       .addCase(fetchRecentlyViewed.pending, state => {
+// //         state.loading = true;
+// //       })
+// //       .addCase(fetchRecentlyViewed.fulfilled, (state, action) => {
+// //         state.loading = false;
+// //         state.recentlyview = action.payload;
+// //       })
+// //       .addCase(fetchRecentlyViewed.rejected, (state, action) => {
+// //         state.loading = false;
+// //         state.error = action.payload;
+// //       })
+// //       // ✅ Recently Viewed
+// //       .addCase(fetchProductLatestStock.pending, state => {
+// //         state.loading = true;
+// //       })
+// //       .addCase(fetchProductLatestStock.fulfilled, (state, action) => {
+// //         state.loading = false;
+// //         state.lateststock = action.payload;
+// //       })
+// //       .addCase(fetchProductLatestStock.rejected, (state, action) => {
+// //         state.loading = false;
+// //         state.error = action.payload;
+// //       });
+// //   },
+// // });
+
+// // export default productSlice.reducer;
+
+// import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
+// import axios from 'axios';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
+// import Toast from 'react-native-toast-message';
+// import {API_BASE_URL} from '../../utils/utils';
+
+// // =====================================================
+// // 🔹 Async Thunk: Fetch Product List
+// // =====================================================
+// export const fetchProductList = createAsyncThunk(
+//   'product/fetchProductList',
+//   async (_, {rejectWithValue}) => {
+//     try {
+//       const res = await axios.get(`${API_BASE_URL}/product/list`);
+//       return res?.data?.data || [];
+//     } catch (error) {
+//       Toast.show({
+//         type: 'error',
+//         text2: error?.response?.data?.message || 'Failed to fetch products',
+//       });
+//       return rejectWithValue(error.response?.data);
+//     }
+//   },
+// );
+
+// // =====================================================
+// // 🔹 Async Thunk: Fetch Latest Stock
+// // =====================================================
+// export const fetchProductLatestStock = createAsyncThunk(
+//   'product/fetchProductLatestStock',
+//   async (_, {rejectWithValue}) => {
+//     try {
+//       const token = await AsyncStorage.getItem('TOKEN');
+//       if (!token) {
+//         return rejectWithValue('User not logged in');
+//       }
+//       const res = await axios.get(`${API_BASE_URL}/lateststocklist`, {
+//         headers: {Authorization: `Bearer ${token}`},
+//       });
+//       return res?.data?.data || [];
+//     } catch (error) {
+//       Toast.show({
+//         type: 'error',
+//         text2: error?.response?.data?.message || 'Failed to fetch products',
+//       });
+//       return rejectWithValue(error.response?.data);
+//     }
+//   },
+// );
+
+// // =====================================================
+// // 🔹 Async Thunk: Add Recently Viewed Product
+// // =====================================================
+// export const addRecentlyViewed = createAsyncThunk(
+//   'product/addRecentlyViewed',
+//   async (barcode_id, {rejectWithValue}) => {
+//     try {
+//       const token = await AsyncStorage.getItem('TOKEN');
+//       const user_id = await AsyncStorage.getItem('USERID');
+//       if (!token || !user_id) {
+//         return rejectWithValue('User not logged in');
+//       }
+
+//       const res = await axios.post(
+//         `${API_BASE_URL}/recently-viewed/add`,
+//         {user_id, barcode_id},
+//         {headers: {Authorization: `Bearer ${token}`}},
+//       );
+//       Toast.show({
+//         type: 'success',
+//         text1: res?.data?.message,
+//       });
+//       console.log('Recently viewed added:', res?.data?.data);
+//       return res?.data?.data;
+//     } catch (error) {
+//       console.log('Error adding recently viewed:', error?.response?.data);
+//       return rejectWithValue(error?.response?.data);
+//     }
+//   },
+// );
+
+// // =====================================================
+// // 🔹 Async Thunk: Fetch Filter Data
+// // =====================================================
+// export const fetchFilterData = createAsyncThunk(
+//   'product/fetchFilterData',
+//   async (_, {rejectWithValue}) => {
+//     try {
+//       const res = await axios.get(`${API_BASE_URL}/filterapi`);
+//       console.log('Filter API response slice------------------>:', res?.data?.filters);
+//       return res?.data?.filters || [];
+//     } catch (error) {
+//       console.log('Filter API error:', error?.response?.data);
+//       Toast.show({
+//         type: 'error',
+//         text2: error?.response?.data?.message || 'Failed to fetch filters',
+//       });
+//       return rejectWithValue(error.response?.data);
+//     }
+//   },
+// );
+
+// // =====================================================
+// // 🔹 Async Thunk: Fetch Recently Viewed Products
+// // =====================================================
+// export const fetchRecentlyViewed = createAsyncThunk(
+//   'products/fetchRecentlyViewed',
+//   async (_, {rejectWithValue}) => {
+//     try {
+//       const user_id = await AsyncStorage.getItem('USERID');
+//       const token = await AsyncStorage.getItem('TOKEN');
+//       const response = await axios.get(`${API_BASE_URL}/recently-viewed/${user_id}`, {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//           'Content-Type': 'application/json',
+//         },
+//       });
+
+//       if (response.data.status && response.data.data) {
+//         return response.data.data;
+//       } else {
+//         return rejectWithValue(response.data.message || 'Failed to fetch recently viewed');
+//       }
+//     } catch (error) {
+//       return rejectWithValue(error?.response?.data?.message || error.message);
+//     }
+//   },
+// );
+
+// // =====================================================
+// // 🔹 NEW: Fetch Shop by Brands API
+// // =====================================================
+// export const fetchBrandList = createAsyncThunk(
+//   'product/fetchBrandList',
+//   async (_, {rejectWithValue}) => {
+//     try {
+//       const res = await axios.get(`${API_BASE_URL}/brand`);
+//       console.log('Brand list response --->', res?.data?.data);
+//       return res?.data?.data || [];
+//     } catch (error) {
+//       console.log('Brand API error:', error?.response?.data);
+//       Toast.show({
+//         type: 'error',
+//         text2: error?.response?.data?.message || 'Failed to fetch brands',
+//       });
+//       return rejectWithValue(error.response?.data);
+//     }
+//   },
+// );
+
+// // =====================================================
+// // 🔹 Slice Definition
+// // =====================================================
+// const productSlice = createSlice({
+//   name: 'product',
+//   initialState: {
+//     productData: [],
+//     recentlyViewed: [],
+//     addrecentlyview: [],
+//     filterdata: [],
+//     lateststock: [],
+//     brandList: [], // ✅ added for brands
+//     loading: false,
+//     error: null,
+//   },
+//   reducers: {},
+//   extraReducers: builder => {
+//     builder
+//       // ✅ Product List
+//       .addCase(fetchProductList.pending, state => {
+//         state.loading = true;
+//       })
+//       .addCase(fetchProductList.fulfilled, (state, action) => {
+//         state.loading = false;
+//         state.productData = action.payload;
+//       })
+//       .addCase(fetchProductList.rejected, (state, action) => {
+//         state.loading = false;
+//         state.error = action.payload;
+//       })
+
+//       // ✅ Recently Viewed Added
+//       .addCase(addRecentlyViewed.pending, state => {
+//         state.loading = true;
+//       })
+//       .addCase(addRecentlyViewed.fulfilled, (state, action) => {
+//         state.loading = false;
+//         state.addrecentlyview = action.payload;
+//       })
+//       .addCase(addRecentlyViewed.rejected, (state, action) => {
+//         state.loading = false;
+//         state.error = action.payload;
+//       })
+
+//       // ✅ Filter API
+//       .addCase(fetchFilterData.pending, state => {
+//         state.loading = true;
+//       })
+//       .addCase(fetchFilterData.fulfilled, (state, action) => {
+//         state.loading = false;
+//         state.filterdata = action.payload;
+//       })
+//       .addCase(fetchFilterData.rejected, (state, action) => {
+//         state.loading = false;
+//         state.error = action.payload;
+//       })
+
+//       // ✅ Recently Viewed
+//       .addCase(fetchRecentlyViewed.pending, state => {
+//         state.loading = true;
+//       })
+//       .addCase(fetchRecentlyViewed.fulfilled, (state, action) => {
+//         state.loading = false;
+//         state.recentlyViewed = action.payload;
+//       })
+//       .addCase(fetchRecentlyViewed.rejected, (state, action) => {
+//         state.loading = false;
+//         state.error = action.payload;
+//       })
+
+//       // ✅ Latest Stock
+//       .addCase(fetchProductLatestStock.pending, state => {
+//         state.loading = true;
+//       })
+//       .addCase(fetchProductLatestStock.fulfilled, (state, action) => {
+//         state.loading = false;
+//         state.lateststock = action.payload;
+//       })
+//       .addCase(fetchProductLatestStock.rejected, (state, action) => {
+//         state.loading = false;
+//         state.error = action.payload;
+//       })
+
+//       // ✅ NEW: Brand List
+//       .addCase(fetchBrandList.pending, state => {
+//         state.loading = true;
+//       })
+//       .addCase(fetchBrandList.fulfilled, (state, action) => {
+//         state.loading = false;
+//         state.brandList = action.payload;
+//       })
+//       .addCase(fetchBrandList.rejected, (state, action) => {
+//         state.loading = false;
+//         state.error = action.payload;
+//       });
+//   },
+// });
+
+// export default productSlice.reducer;
+
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -22,8 +495,9 @@ export const fetchProductList = createAsyncThunk(
     }
   },
 );
+
 // =====================================================
-// 🔹 Async Thunk: Fetch Product List
+// 🔹 Async Thunk: Fetch Latest Stock
 // =====================================================
 export const fetchProductLatestStock = createAsyncThunk(
   'product/fetchProductLatestStock',
@@ -56,7 +530,6 @@ export const addRecentlyViewed = createAsyncThunk(
     try {
       const token = await AsyncStorage.getItem('TOKEN');
       const user_id = await AsyncStorage.getItem('USERID');
-
       if (!token || !user_id) {
         return rejectWithValue('User not logged in');
       }
@@ -70,30 +543,23 @@ export const addRecentlyViewed = createAsyncThunk(
         type: 'success',
         text1: res?.data?.message,
       });
-      console.log('Recently viewed added:', res?.data?.data);
       return res?.data?.data;
     } catch (error) {
-      console.log('Error adding recently viewed:', error?.response?.data);
       return rejectWithValue(error?.response?.data);
     }
   },
 );
 
 // =====================================================
-// 🔹 3️⃣ Fetch Filter API
+// 🔹 Async Thunk: Fetch Filter Data
 // =====================================================
 export const fetchFilterData = createAsyncThunk(
   'product/fetchFilterData',
   async (_, {rejectWithValue}) => {
     try {
       const res = await axios.get(`${API_BASE_URL}/filterapi`);
-      console.log(
-        'Filter API response slice------------------>:',
-        res?.data?.filters,
-      );
       return res?.data?.filters || [];
     } catch (error) {
-      console.log('Filter API error:', error?.response?.data);
       Toast.show({
         type: 'error',
         text2: error?.response?.data?.message || 'Failed to fetch filters',
@@ -104,7 +570,7 @@ export const fetchFilterData = createAsyncThunk(
 );
 
 // =====================================================
-// 🔹 3️⃣ Fetch recently viewed products
+// 🔹 Async Thunk: Fetch Recently Viewed Products
 // =====================================================
 export const fetchRecentlyViewed = createAsyncThunk(
   'products/fetchRecentlyViewed',
@@ -112,7 +578,6 @@ export const fetchRecentlyViewed = createAsyncThunk(
     try {
       const user_id = await AsyncStorage.getItem('USERID');
       const token = await AsyncStorage.getItem('TOKEN');
-
       const response = await axios.get(
         `${API_BASE_URL}/recently-viewed/${user_id}`,
         {
@@ -122,9 +587,8 @@ export const fetchRecentlyViewed = createAsyncThunk(
           },
         },
       );
-
       if (response.data.status && response.data.data) {
-        return response.data.data; // ✅ this will be payload
+        return response.data.data;
       } else {
         return rejectWithValue(
           response.data.message || 'Failed to fetch recently viewed',
@@ -137,20 +601,57 @@ export const fetchRecentlyViewed = createAsyncThunk(
 );
 
 // =====================================================
+// 🔹 NEW: Fetch Shop by Brands API (with Pagination)
+// =====================================================
+export const fetchBrandList = createAsyncThunk(
+  'product/fetchBrandList',
+  async (url = `${API_BASE_URL}/brand`, {rejectWithValue}) => {
+    try {
+      const res = await axios.get(url);
+      return {
+        data: res?.data?.data || [],
+        next_page_url: res?.data?.next_page_url || null,
+        prev_page_url: res?.data?.prev_page_url || null,
+        total_pages: res?.data?.total_pages || 1,
+        current_page: res?.data?.current_page || 1,
+      };
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text2: error?.response?.data?.message || 'Failed to fetch brands',
+      });
+      return rejectWithValue(error.response?.data);
+    }
+  },
+);
+
+// =====================================================
 // 🔹 Slice Definition
 // =====================================================
 const productSlice = createSlice({
   name: 'product',
   initialState: {
     productData: [],
-    recentlyViewed: [],
+    recentlyview: [],
     addrecentlyview: [],
     filterdata: [],
     lateststock: [],
+    brandList: [],
+    nextPageUrl: null,
+    prevPageUrl: null,
+    totalPages: 1,
+    currentPage: 1,
     loading: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    clearBrands(state) {
+      state.brandList = [];
+      state.nextPageUrl = null;
+      state.prevPageUrl = null;
+      state.currentPage = 1;
+    },
+  },
   extraReducers: builder => {
     builder
       // ✅ Product List
@@ -204,7 +705,8 @@ const productSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // ✅ Recently Viewed
+
+      // ✅ Latest Stock
       .addCase(fetchProductLatestStock.pending, state => {
         state.loading = true;
       })
@@ -215,8 +717,38 @@ const productSlice = createSlice({
       .addCase(fetchProductLatestStock.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // ✅ NEW: Brand List with Pagination
+      .addCase(fetchBrandList.pending, state => {
+        state.loading = true;
+      })
+      .addCase(fetchBrandList.fulfilled, (state, action) => {
+        state.loading = false;
+
+        // Append data if next page, otherwise replace
+        if (state.currentPage > 1 && action.payload.current_page > 1) {
+          // Remove duplicates
+          const newBrands = action.payload.data.filter(
+            brand => !state.brandList.find(b => b.id === brand.id)
+          );
+          state.brandList = [...state.brandList, ...newBrands];
+        } else {
+          state.brandList = action.payload.data;
+        }
+
+        state.nextPageUrl = action.payload.next_page_url;
+        state.prevPageUrl = action.payload.prev_page_url;
+        state.totalPages = action.payload.total_pages;
+        state.currentPage = action.payload.current_page;
+      })
+      .addCase(fetchBrandList.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
+
   },
 });
 
+export const {clearBrands} = productSlice.actions;
 export default productSlice.reducer;

@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import axios from 'axios';
 import Toast from 'react-native-toast-message';
-import { API_BASE_URL } from '../../utils/utils';
+import {API_BASE_URL} from '../../utils/utils';
 
 // Fetch cart items from API
 export const fetchCartAPI = createAsyncThunk(
@@ -12,15 +12,12 @@ export const fetchCartAPI = createAsyncThunk(
     const userId = await AsyncStorage.getItem('USERID');
 
     try {
-      const response = await axios.get(
-        `${API_BASE_URL}/cart/${userId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-          },
+      const response = await axios.get(`${API_BASE_URL}/cart/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
         },
-      );
+      });
 
       if (response.data.success && response.data.data) {
         console.log(
@@ -57,7 +54,6 @@ export const addToCartAPI = createAsyncThunk(
   async ({product, navigation}, {rejectWithValue}) => {
     const token = await AsyncStorage.getItem('TOKEN');
     const userId = await AsyncStorage.getItem('USERID');
-
     try {
       const response = await axios.post(
         `${API_BASE_URL}/cart/add`,
@@ -85,14 +81,15 @@ export const addToCartAPI = createAsyncThunk(
           quantity: product.quantity || '',
         };
         Toast.show({type: 'success', text1: 'Added to cart'});
-        navigation.navigate('Cart', {getproduct : product});
+        navigation.navigate('Cart', {getproduct: product});
         return productForRedux;
       } else {
         Toast.show({type: 'success', text1: response?.data?.message});
-        navigation.navigate('Cart', {getproduct : product});
+        navigation.navigate('Cart', {getproduct: product});
         return rejectWithValue(response.data.message);
       }
     } catch (error) {
+      console.log('error---------->', error?.response?.data);
       return rejectWithValue(error.response?.data || error.message);
     }
   },
@@ -163,8 +160,10 @@ export const clearCartAPI = createAsyncThunk(
 
 export const checkoutAPI = createAsyncThunk(
   'checkout/checkoutAPI',
-  async ({ type, cart_id, barcode_id, single_product_price, navigation }, { rejectWithValue }) => {
-    console.log("data===============>", type, cart_id, barcode_id, single_product_price);
+  async (
+    {type, cart_id, barcode_id, single_product_price, navigation},
+    {rejectWithValue},
+  ) => {
     try {
       const token = await AsyncStorage.getItem('TOKEN');
       const userId = await AsyncStorage.getItem('USERID');
@@ -186,10 +185,8 @@ export const checkoutAPI = createAsyncThunk(
           },
         },
       );
-      console.log("response----------->", response?.data?.data);
       if (response.data.status) {
-        console.log('Checkout response:', response.data);
-        Toast.show({ type: 'success', text1: response.data.message });
+        Toast.show({type: 'success', text1: response.data.message});
 
         // navigate after checkout success
         navigation.navigate('Checkout', {
@@ -198,11 +195,40 @@ export const checkoutAPI = createAsyncThunk(
 
         return response.data.data;
       } else {
-        Toast.show({ type: 'error', text1: response.data.message });
+        Toast.show({type: 'error', text1: response.data.message});
         return rejectWithValue(response.data.message);
       }
     } catch (error) {
       console.log('Checkout error:', error.response?.data || error.message);
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  },
+);
+export const checkoutDetailsAPI = createAsyncThunk(
+  'checkout/checkoutDetailsAPI',
+  async (checkout_id, { rejectWithValue }) => {
+    try {
+      const token = await AsyncStorage.getItem('TOKEN');
+
+      const response = await axios.get(
+        `${API_BASE_URL}/checkoutDetails/${checkout_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      if (response.data) {
+        Toast.show({ type: 'success', text1: response.data.message });
+        return response.data;
+      } else {
+        Toast.show({ type: 'error', text1: response.data.message });
+        return rejectWithValue(response.data.message);
+      }
+    } catch (error) {
+      console.log('CheckoutDetails API error:', error.response?.data || error.message);
       return rejectWithValue(error.response?.data || error.message);
     }
   },
@@ -215,6 +241,8 @@ const cartSlice = createSlice({
     items: [],
     loading: false,
     error: null,
+    checkoutData: null,
+    checkoutDetailsData: null,
   },
   reducers: {
     removeFromCart: (state, action) => {
@@ -260,6 +288,31 @@ const cartSlice = createSlice({
         state.items = []; // 👈 empty cart in Redux
       })
       .addCase(clearCartAPI.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // ✅ NEW: checkoutAPI
+      .addCase(checkoutAPI.pending, state => {
+        state.loading = true;
+      })
+      .addCase(checkoutAPI.fulfilled, (state, action) => {
+        state.loading = false;
+        state.checkoutData = action.payload;
+      })
+      .addCase(checkoutAPI.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // ✅ NEW: checkoutDetilsAPI
+      .addCase(checkoutDetailsAPI.pending, state => {
+        state.loading = true;
+      })
+      .addCase(checkoutDetailsAPI.fulfilled, (state, action) => {
+        state.loading = false;
+        state.checkoutDetailsData = action.payload;
+      })
+      .addCase(checkoutDetailsAPI.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

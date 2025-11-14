@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -9,6 +8,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Header from '../../../../constants/Header';
 
 const steps = [
   {
@@ -43,16 +43,14 @@ const steps = [
   },
 ];
 
-const TrackOrder = ({ navigation }) => {
+const TrackOrder = ({navigation}) => {
   const [rating, setRating] = useState(0);
 
-  const renderStep = ({ item, index }) => (
+  const renderStep = ({item, index}) => (
     <View style={styles.stepContainer}>
       <View style={styles.iconColumn}>
         <Ionicons name="checkmark-circle" size={22} color="#333" />
-        {index !== steps.length - 1 && (
-          <View style={styles.verticalLine} />
-        )}
+        {index !== steps.length - 1 && <View style={styles.verticalLine} />}
       </View>
 
       <View style={styles.contentColumn}>
@@ -64,27 +62,13 @@ const TrackOrder = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
- {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}>
-          <Ionicons name="chevron-back" size={22} color="#000" />
-        </TouchableOpacity>
-        <View>
-          <Text style={styles.headerTitle}>Order #1514</Text>
-        </View>
-        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-          <Ionicons name="search" size={24} color="#333" />
-        </TouchableOpacity>
-      </View>
+      <Header title="Order #1514" navigation={navigation} showBack={true} />
 
       {/* Info */}
-      <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
+      <View style={{paddingHorizontal: 16, paddingBottom: 10}}>
         <Text style={styles.infoText}>Delivered on 15.05.21</Text>
         <Text style={styles.infoText}>
-          Tracking Number :{' '}
-          <Text style={styles.trackingNo}>IK287368838</Text>
+          Tracking Number : <Text style={styles.trackingNo}>IK287368838</Text>
         </Text>
       </View>
 
@@ -93,7 +77,7 @@ const TrackOrder = ({ navigation }) => {
         data={steps}
         renderItem={renderStep}
         keyExtractor={item => item.id}
-        contentContainerStyle={{ paddingHorizontal: 16 }}
+        contentContainerStyle={{paddingHorizontal: 16}}
         scrollEnabled={false}
       />
 
@@ -128,7 +112,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
- header: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
@@ -206,6 +190,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
+    marginBottom:10,
   },
   continueText: {
     color: '#fff',

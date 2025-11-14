@@ -616,14 +616,13 @@ import {
 import {fetchProfile} from './slices/profileSlice';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useNavigation} from '@react-navigation/native';
+import Header from '../constants/Header';
 
 const Cart = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const {items: cartItems} = useSelector(state => state.cart);
-  const {data, loading} = useSelector(state => state.profile);
-
-  console.log('data?.vendordocuments------------->', data?.vendordocuments);
+  const {data} = useSelector(state => state.profile);
 
   // Fetch cart on mount
   useEffect(() => {
@@ -637,20 +636,12 @@ const Cart = () => {
         checkoutAPI({
           type: 'cart_product',
           barcode_id: item?.barcode_id,
-          single_product_price: item?.price,
           cart_id: item?.cart_id,
           navigation,
         }),
       );
     });
   };
-
-  const getTotalPrice = () =>
-    cartItems.reduce((sum, item) => sum + item.price, 0);
-
-  const subtotal = getTotalPrice();
-  const gst = subtotal * 0.18;
-  const total = subtotal + gst;
 
   const renderItem = ({item}) => (
     <View style={styles.cartItem}>
@@ -708,23 +699,10 @@ const Cart = () => {
     );
   };
 
-  const kycStatus = !data?.vendordocuments ? 'pending' : 'verified';
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}>
-            <Ionicons name="chevron-back" size={22} color="#000" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Cart</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-            <Ionicons name="search" size={24} color="#333" />
-          </TouchableOpacity>
-        </View>
+        <Header title="Cart" navigation={navigation} showBack={true} />
 
         {/* Business Banner */}
         <ImageBackground
@@ -742,11 +720,11 @@ const Cart = () => {
                 </Text>
                 <Text style={styles.bannerSubtitle}>bulk order options.</Text>
               </View>
-              <TouchableOpacity
+              <View
                 onPress={() => navigation.navigate('UpgradeNow')}
                 style={styles.upgradeBtn}>
                 <Text style={styles.upgradeText}>Upgrade Now</Text>
-              </TouchableOpacity>
+              </View>
             </View>
           </View>
         </ImageBackground>
@@ -770,27 +748,6 @@ const Cart = () => {
                 onPress={() => dispatch(clearCartAPI())}>
                 <Text style={styles.clearText}>🗑️ Clear Cart</Text>
               </TouchableOpacity>
-
-              {/* Price Summary */}
-              <View style={styles.summary}>
-                <Text style={styles.summaryTitle}>Price Summary</Text>
-                <View style={styles.row}>
-                  <Text style={styles.label}>Subtotal:</Text>
-                  <Text style={styles.value}>₹{subtotal.toFixed(2)}</Text>
-                </View>
-                <View style={styles.row}>
-                  <Text style={styles.label}>Shipping:</Text>
-                  <Text style={styles.value}>Free</Text>
-                </View>
-                <View style={styles.row}>
-                  <Text style={styles.label}>GST:</Text>
-                  <Text style={styles.value}>₹{gst.toFixed(2)}</Text>
-                </View>
-                <View style={styles.row}>
-                  <Text style={styles.labelTotal}>Total:</Text>
-                  <Text style={styles.valueTotal}>₹{total.toFixed(2)}</Text>
-                </View>
-              </View>
             </>
           )}
           {/* KYC Section */}
@@ -798,7 +755,7 @@ const Cart = () => {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.carousel}>
-            {!data?.vendordocuments && (
+            {data?.vendordocuments?.aadhaar_no ? (
               <KYCStatusCard
                 title="Your KYC is pending"
                 subtitle="Complete your KYC to place orders and unlock business account benefits."
@@ -810,26 +767,27 @@ const Cart = () => {
                 textColor="#fff"
                 isDisabled={false}
               />
-            )}
+            ) : null}
           </ScrollView>
-
-          {/* Footer Buttons */}
-          <TouchableOpacity
-            onPress={handleCartCheckout}
-            style={[styles.footerBtn, {backgroundColor: '#666666'}]}>
-            <Text style={styles.footerBtnText}>Proceed to Checkout</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Home')}
-            style={[
-              styles.footerBtn,
-              {backgroundColor: '#333333', marginTop: 10},
-            ]}>
-            <Text style={styles.footerBtnText}>Continue Shopping</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
+      {/* Footer Buttons */}
+      <View style={{marginHorizontal: 10}}>
+        <TouchableOpacity
+          onPress={handleCartCheckout}
+          style={[styles.footerBtn, {backgroundColor: '#666666'}]}>
+          <Text style={styles.footerBtnText}>Proceed to Checkout</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Home')}
+          style={[
+            styles.footerBtn,
+            {backgroundColor: '#333333', marginTop: 10},
+          ]}>
+          <Text style={styles.footerBtnText}>Continue Shopping</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };

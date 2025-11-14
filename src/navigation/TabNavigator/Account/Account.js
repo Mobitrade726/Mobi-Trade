@@ -305,9 +305,7 @@
 
 // export default ProfileScreen;
 
-
-
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -321,14 +319,29 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import DeviceInfo from 'react-native-device-info';
 import {useSelector, useDispatch} from 'react-redux';
-import { fetchProfile } from '../../../redux/slices/profileSlice';
+import {fetchProfile} from '../../../redux/slices/profileSlice';
 import Toast from 'react-native-toast-message';
-import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from 'react-native-responsive-screen';
 
 const ProfileScreen = ({navigation}) => {
   const dispatch = useDispatch();
   const {data, error} = useSelector(state => state.profile);
   const [appVersion, setAppVersion] = React.useState('');
+  const [kycData, setKycData] = useState({
+    status: 'pending', // 'approved' | 'pending' | 'rejected'
+    firmName: data?.firm_name,
+    accountType: data?.vendor_type,
+    aadhaarCard: data?.vendordocuments?.aadhaar_no || 'N/A',
+    gstNo: data?.vendordocuments?.gst_number || 'N/A',
+    submissionDate: '2024-01-15',
+    documents: [
+      {name: 'Aadhaar Card', status: 'Updated'},
+      {name: 'GST Certificate', status: 'pending'},
+    ],
+  });
 
   useEffect(() => {
     const getVersion = async () => {
@@ -340,20 +353,63 @@ const ProfileScreen = ({navigation}) => {
   }, [dispatch]);
 
   useEffect(() => {
+    if (data?.vendordocuments?.aadhaar_no) {
+      setKycData(prev => ({...prev, status: 'Approved'}));
+    } else {
+      setKycData(prev => ({...prev, status: 'Pending'}));
+    }
+  }, [data]);
+
+  useEffect(() => {
     if (error) {
       Toast.show({type: 'error', text2: error});
     }
   }, [error]);
 
   const options = [
-    {label: 'My Orders', image: require('../../../../assets/images/OrdersIcon.png'), screen: 'Myorder'},
-    {label: 'KYC Status', image: require('../../../../assets/images/kycstatus.png'), screen: 'KYCStatus'},
-    {label: 'Wishlist', image: require('../../../../assets/images/WishlistIcon.png'), screen: 'WatchList'},
-    {label: 'My Wallet', image: require('../../../../assets/images/wallet.png'), screen: 'Wallet'},
-    {label: 'Saved Addresses', image: require('../../../../assets/images/AddressIcon.png'), screen: 'Addresses'},
-    {label: 'Help Centre', image: require('../../../../assets/images/HelpIcon.png'), subtext: 'FAQs', screen: 'HelpSupport'},
-    {label: 'About', image: require('../../../../assets/images/about.png'), subtext: `App Version: v${appVersion}`, screen: 'AboutMobiTrade'},
-    {label: 'Settings', image: require('../../../../assets/images/setting.png'), screen: 'Settings'},
+    {
+      label: 'My Orders',
+      image: require('../../../../assets/images/OrdersIcon.png'),
+      screen: 'Myorder',
+    },
+    {
+      label: 'KYC Status',
+      image: require('../../../../assets/images/kycstatus.png'),
+      screen: 'KYCStatus',
+      kycStatus: kycData?.status,
+    },
+    {
+      label: 'Wishlist',
+      image: require('../../../../assets/images/WishlistIcon.png'),
+      screen: 'WatchList',
+    },
+    {
+      label: 'My Wallet',
+      image: require('../../../../assets/images/wallet.png'),
+      screen: 'Wallet',
+    },
+    {
+      label: 'Saved Addresses',
+      image: require('../../../../assets/images/AddressIcon.png'),
+      screen: 'Addresses',
+    },
+    {
+      label: 'Help Centre',
+      image: require('../../../../assets/images/HelpIcon.png'),
+      subtext: 'FAQs',
+      screen: 'HelpSupport',
+    },
+    {
+      label: 'About',
+      image: require('../../../../assets/images/about.png'),
+      subtext: `App Version: v${appVersion}`,
+      screen: 'AboutMobiTrade',
+    },
+    {
+      label: 'Settings',
+      image: require('../../../../assets/images/setting.png'),
+      screen: 'Settings',
+    },
   ];
 
   const handleNavigation = screen => {
@@ -368,7 +424,9 @@ const ProfileScreen = ({navigation}) => {
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}>
           <Ionicons name="chevron-back" size={wp('6%')} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Profile info</Text>
@@ -377,19 +435,37 @@ const ProfileScreen = ({navigation}) => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}>
         <View style={styles.profileContainer}>
           <Text style={styles.name}>{data?.customer_name || ''}</Text>
           <Text style={styles.email}>{data?.email || ''}</Text>
         </View>
 
         {options.map((item, index) => (
-          <TouchableOpacity key={index} onPress={() => handleNavigation(item.screen)} style={styles.optionRow}>
+          <TouchableOpacity
+            key={index}
+            onPress={() => handleNavigation(item.screen)}
+            style={styles.optionRow}>
             <Image source={item.image} style={styles.optionImage} />
             <View style={styles.optionTextContainer}>
               <Text style={styles.optionLabel}>{item.label}</Text>
-              {item.subtext && <Text style={styles.optionSubtext}>{item.subtext}</Text>}
+              {item.subtext && (
+                <Text style={styles.optionSubtext}>{item.subtext}</Text>
+              )}
             </View>
+            {data?.vendordocuments?.aadhaar_no ? (
+              <Text
+                style={{marginRight: 10, color: 'green', fontWeight: 'bold'}}>
+                {item.kycStatus}
+              </Text>
+            ) : (
+              <Text
+                style={{marginRight: 10, color: 'red', fontWeight: 'bold'}}>
+                {item.kycStatus}
+              </Text>
+            )}
             <Icon name="chevron-forward" size={wp('5%')} color="#999" />
           </TouchableOpacity>
         ))}

@@ -60,8 +60,6 @@ const ChangePassword = ({navigation}) => {
         },
       );
 
-      console.log('API Response:', response.data);
-
       if (response.data.status) {
         Alert.alert('Success', 'Password changed successfully');
         navigation.goBack();

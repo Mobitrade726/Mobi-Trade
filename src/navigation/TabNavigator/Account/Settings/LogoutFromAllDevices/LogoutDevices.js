@@ -100,8 +100,6 @@ const LogoutDevices = ({navigation}) => {
                   },
                 );
 
-                console.log('Logout Response:', response.data);
-
                 if (response.data.status) {
                   // Clear storage after logout
                   await AsyncStorage.removeItem('TOKEN');
@@ -115,7 +113,6 @@ const LogoutDevices = ({navigation}) => {
                   );
                 }
               } catch (err) {
-                console.log('Logout Error Response:', err.response?.data);
                 Alert.alert(
                   'Error',
                   err.response?.data?.message || 'Logout failed.',

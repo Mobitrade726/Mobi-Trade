@@ -308,18 +308,12 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API_BASE_URL} from '../../../../utils/utils';
 import {useRoute} from '@react-navigation/native';
+import Header from '../../../../constants/Header';
 
 const AddNewAddress = ({navigation}) => {
   const route = useRoute();
   const {editNewAddress, addNewAddress, type, user_address_id} =
     route.params || {};
-  console.log(
-    'editNewAddress--------------------->',
-    editNewAddress,
-    addNewAddress,
-    type,
-    user_address_id,
-  );
 
   const [addressTag, setAddressTag] = useState(type || 'Home'); // Home / Work / Office
 
@@ -341,7 +335,6 @@ const AddNewAddress = ({navigation}) => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  console.log('billing address----------->', billing?.address);
 
   const handleBillingChange = (key, value) =>
     setBilling({...billing, [key]: value});
@@ -366,8 +359,6 @@ const AddNewAddress = ({navigation}) => {
           `${API_BASE_URL}/buyer-address/${userId}/${user_address_id}`,
           {headers: {Authorization: `Bearer ${token}`}},
         );
-
-        console.log('res+++++++++++++++++++++', response?.data?.data);
 
         if (response.data?.data) {
           const addr = response.data.data[0];
@@ -485,24 +476,11 @@ const AddNewAddress = ({navigation}) => {
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
       <ScrollView contentContainerStyle={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}>
-            <Ionicons name="chevron-back" size={22} color="#000" />
-          </TouchableOpacity>
-          <View>
-            {editNewAddress ? (
-              <Text style={styles.headerTitle}>Update Address</Text>
-            ) : (
-              <Text style={styles.headerTitle}>Saved Address</Text>
-            )}
-          </View>
-          <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-            <Ionicons name="search" size={24} color="#333" />
-          </TouchableOpacity>
-        </View>
+        <Header
+          title={editNewAddress ? 'Update Address' : 'Saved Address'}
+          navigation={navigation}
+          showBack={true}
+        />
 
         {/* Address Tag Selector */}
         <View style={styles.tagContainer}>
@@ -612,7 +590,7 @@ const AddNewAddress = ({navigation}) => {
 export default AddNewAddress;
 
 const styles = StyleSheet.create({
-  container: {padding: 16, paddingBottom: 30},
+  container: {padding: 0, paddingBottom: 0, marginHorizontal:10},
   heading: {fontSize: 16, fontWeight: '600', marginTop: 20},
   input: {
     borderWidth: 1,

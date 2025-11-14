@@ -22,7 +22,9 @@ import {
 } from '../../../redux/slices/wishlistSlice';
 import {
   fetchProductList,
-  fetchFilterData, addRecentlyViewed, fetchProductLatestStock
+  fetchFilterData,
+  addRecentlyViewed,
+  fetchProductLatestStock,
 } from '../../../redux/slices/productSlice';
 
 const {width} = Dimensions.get('window');
@@ -30,11 +32,11 @@ const {width} = Dimensions.get('window');
 const Recentlyadd = ({osName}) => {
   const navigation = useNavigation(); // ✅ make sure navigation is available
   const dispatch = useDispatch();
-  const {lateststock, filterdata} = useSelector(
+  const {lateststock, filterdata, loading} = useSelector(
     state => state.product,
   );
 
-  console.log("lateststock----------->", lateststock);
+  console.log('filterdata----------->', filterdata);
 
   // state
   // const [lateststock, setProductData] = useState();
@@ -127,7 +129,7 @@ const Recentlyadd = ({osName}) => {
   const filteredProducts = (lateststock || []).filter(
     item => item.operating_systems && item.operating_systems === osName,
   );
-
+  console.log('filteredProducts--------->', filteredProducts);
   const budgetOptions = [
     {
       id: 1,
@@ -457,10 +459,8 @@ const Recentlyadd = ({osName}) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-
         {/* Top android Devices */}
-        {filteredProducts?.length > 0 ? (
-          <>
+       
             <View style={styles.headerButtons}>
               <TouchableOpacity
                 onPress={() => setShowSortModal(true)}
@@ -485,10 +485,45 @@ const Recentlyadd = ({osName}) => {
                 keyExtractor={item => item.id}
                 showsHorizontalScrollIndicator={false}
                 numColumns={2}
+                ListEmptyComponent={
+                  !loading && (
+                    <>
+                      <Image
+                        source={require('../../../../assets/images/emptyproduct.png')} // Update path to your image
+                      />
+                      <Text
+                        style={{
+                          textAlign: 'center',
+                          marginTop: 10,
+                          fontSize: 18,
+                          fontWeight: 'bold',
+                          color: '#000',
+                        }}>
+                        Oops
+                      </Text>
+                      <Text
+                        style={{
+                          textAlign: 'center',
+                          marginTop: 10,
+                          color: '#000',
+                          fontSize: 18,
+                        }}>
+                        Can’t find what you’re looking for?
+                      </Text>
+                      <Text
+                        style={{
+                          textAlign: 'center',
+                          marginTop: 10,
+                          color: '#777',
+                        }}>
+                        Try adjusting your filters or browsing all products.
+                      </Text>
+                    </>
+                  )
+                }
               />
             </View>
-          </>
-        ) : null}
+       
 
         {/* Sort Modal */}
         <Modal visible={showSortModal} transparent animationType="slide">
@@ -759,10 +794,10 @@ const styles = StyleSheet.create({
   gradeBoxD: {
     paddingVertical: 2,
     position: 'absolute',
-    marginTop: 225,
+    marginTop: 230,
     alignSelf: 'center',
     backgroundColor: '#fff',
-    width: '92%',
+    width: '100%',
     borderRadius: 10,
     borderWidth: 0.2,
   },
@@ -809,7 +844,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#000',
     backgroundColor: '#EAE6E5',
-    width: '98%',
+    width: '100%',
     textAlign: 'center',
     padding: 5,
   },

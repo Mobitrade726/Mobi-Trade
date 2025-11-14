@@ -9,6 +9,7 @@ import {
   Image,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Header from '../../../../constants/Header';
 
 const orderItems = [
   {
@@ -41,20 +42,12 @@ const ProcessToPay = ({navigation}) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={{paddingBottom: 20}}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}>
-            <Ionicons name="chevron-back" size={22} color="#000" />
-          </TouchableOpacity>
-          <View>
-            <Text style={styles.headerTitle}>Order Confirmed!</Text>
-          </View>
-          <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-            <Ionicons name="search" size={24} color="#333" />
-          </TouchableOpacity>
-        </View>
+        <Header
+          title="Order Confirmed!"
+          navigation={navigation}
+          showBack={true}
+        />
+
         {/* Top Green Confirmation Block */}
         <View style={styles.confirmContainer}>
           <Text style={styles.confirmTitle}>Order</Text>
@@ -79,10 +72,14 @@ const ProcessToPay = ({navigation}) => {
 
           {/* Action Buttons */}
           <View style={styles.buttonRow}>
-            <TouchableOpacity onPress={()=> navigation.navigate('TrackOrder')} style={styles.blackButton}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('TrackOrder')}
+              style={styles.blackButton}>
               <Text style={styles.buttonText}>Track Order</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={()=> navigation.navigate('YourOrderIsOnTheWay')} style={styles.blackButton}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('YourOrderIsOnTheWay')}
+              style={styles.blackButton}>
               <Text style={styles.buttonText}>View Order</Text>
             </TouchableOpacity>
           </View>

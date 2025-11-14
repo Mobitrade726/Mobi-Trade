@@ -8,6 +8,7 @@ import {
   FlatList,
   SafeAreaView,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {Dimensions} from 'react-native';
@@ -34,14 +35,9 @@ const CatPage = ({osName}) => {
   const {productData, filterdata, loading} = useSelector(
     state => state.product,
   );
-
-  console.log("osName----------->", osName);
-
   // state
-  // const [productData, setProductData] = useState();
   const [applyselectedfilters, ApplyselectedFilters] = useState();
   const [filteredProduct, setFilteredProducts] = useState([]);
-  // const [filterdata, setFilterData] = useState();
   const [showSortModal, setShowSortModal] = useState(false);
   const [selectedOption, setSelectedOption] = useState('lowToHigh');
   const [showFilterModal, setFilterSortModal] = useState(false);
@@ -51,7 +47,6 @@ const CatPage = ({osName}) => {
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedColors, setSelectedColors] = useState([]);
   const [selectedGrade, setSelectedGrade] = useState(null);
-
   useEffect(() => {
     dispatch(fetchProductList());
     dispatch(fetchFilterData());
@@ -126,6 +121,8 @@ const CatPage = ({osName}) => {
   const filteredProducts = (productData || []).filter(
     item => item.operating_systems && item.operating_systems === osName,
   );
+
+  console.log('osName+++++++++++++++++++++++++++', osName);
 
   const budgetOptions = [
     {
@@ -404,7 +401,6 @@ const CatPage = ({osName}) => {
     const isInWishlist = wishlistItems.some(
       w => w.barcode_id == item.barcode_id,
     );
-    console.log('wishlistItems--------->', isInWishlist);
     const handleWishlistToggle = () => {
       if (isInWishlist) {
         dispatch(removeFromWishlistAPI(item));
@@ -455,12 +451,21 @@ const CatPage = ({osName}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
+      <ScrollView showsVerticalScrollIndicator={false}>
         {/* Banner */}
         <Image
           style={styles.bannerImage}
           source={{
-            uri: uri?.urlandroid,
+            uri:
+              osName === 'Android'
+                ? uri?.urlandroid
+                : osName === 'iOS'
+                ? uri?.urlios
+                : osName === 'windows'
+                ? uri?.urlwindows
+                : osName === 'macOS'
+                ? uri?.urlmacos
+                : uri?.urlandroid, // default fallback
           }}
         />
 
@@ -504,18 +509,70 @@ const CatPage = ({osName}) => {
                 <Text style={styles.sortText}>Filter</Text>
               </TouchableOpacity>
             </View>
-            <View
-              style={{
-                flex: 1,
-              }}>
-              <FlatList
-                data={filteredProduct}
-                renderItem={({item}) => <ProductCard item={item} />}
-                keyExtractor={item => item.id}
-                showsHorizontalScrollIndicator={false}
-                numColumns={2}
-              />
-            </View>
+            {loading ? (
+              <View
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginTop: 50,
+                }}>
+                <ActivityIndicator size="large" color="#11A5D7" />
+                <Text style={{marginTop: 10, color: '#555'}}>
+                  Loading products...
+                </Text>
+              </View>
+            ) : (
+              <View
+                style={{
+                  flex: 1,
+                }}>
+                <FlatList
+                  data={filteredProduct}
+                  renderItem={({item}) => <ProductCard item={item} />}
+                  keyExtractor={item => item.id}
+                  showsHorizontalScrollIndicator={false}
+                  numColumns={2}
+                  ListEmptyComponent={
+                    !loading && (
+                      <>
+                        <Image
+                          source={require('../../../../assets/images/emptyproduct.png')} // Update path to your image
+                          style={{resizeMode: 'contain', height: 100}}
+                        />
+                        <Text
+                          style={{
+                            textAlign: 'center',
+                            marginTop: 10,
+                            fontSize: 18,
+                            fontWeight: 'bold',
+                            color: '#000',
+                          }}>
+                          Oops
+                        </Text>
+                        <Text
+                          style={{
+                            textAlign: 'center',
+                            marginTop: 10,
+                            color: '#000',
+                            fontSize: 18,
+                          }}>
+                          Can’t find what you’re looking for?
+                        </Text>
+                        <Text
+                          style={{
+                            textAlign: 'center',
+                            marginTop: 10,
+                            color: '#777',
+                          }}>
+                          Try adjusting your filters or browsing all products.
+                        </Text>
+                      </>
+                    )
+                  }
+                />
+              </View>
+            )}
           </>
         ) : null}
 
@@ -824,7 +881,7 @@ const styles = StyleSheet.create({
     marginTop: 225,
     alignSelf: 'center',
     backgroundColor: '#fff',
-    width: '92%',
+    width: '100%',
     borderRadius: 10,
     borderWidth: 0.2,
   },
@@ -871,7 +928,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#000',
     backgroundColor: '#EAE6E5',
-    width: '98%',
+    width: '100%',
     textAlign: 'center',
     padding: 5,
   },

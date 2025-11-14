@@ -121,13 +121,12 @@ import axios from 'axios';
 import {styles} from './styles';
 import {API_BASE_URL} from '../../../../utils/utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Header from '../../../../constants/Header';
 
 const Addresses = ({navigation}) => {
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  console.log('selectedAddress+++++++++++++++++', selectedAddress);
 
   // 🔹 Fetch address data from API
 
@@ -136,9 +135,6 @@ const Addresses = ({navigation}) => {
     try {
       const user_id = await AsyncStorage.getItem('USERID');
       const token = await AsyncStorage.getItem('TOKEN');
-
-      console.log('Fetching address for user_id:', user_id);
-      console.log('Token:', token);
 
       // ✅ Use GET request with proper Authorization header
       const response = await axios.get(
@@ -150,8 +146,6 @@ const Addresses = ({navigation}) => {
           },
         },
       );
-
-      console.log('API Response:', response.data?.data);
 
       if (response.data.status && response.data.data) {
         const formattedAddresses = response.data.data;
@@ -205,9 +199,7 @@ const Addresses = ({navigation}) => {
             <Ionicons name="storefront-outline" size={24} color="#11A5D7" />
           ) : item.address_type === 'Home' ? (
             <Ionicons name="home-outline" size={24} color="#11A5D7" />
-          ) : (
-            null
-          )}
+          ) : null}
         </View>
 
         <View style={styles.iconText}>
@@ -221,7 +213,7 @@ const Addresses = ({navigation}) => {
           onPress={() =>
             navigation.navigate('AddNewAddress', {
               editNewAddress: 'editNewAddress',
-              user_address_id : item?.user_address_id,
+              user_address_id: item?.user_address_id,
             })
           }>
           <Text style={styles.edit}>Edit</Text>
@@ -246,20 +238,7 @@ const Addresses = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}>
-          <Ionicons name="chevron-back" size={22} color="#000" />
-        </TouchableOpacity>
-        <View>
-          <Text style={styles.headerTitle}>Saved Address</Text>
-        </View>
-        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-          <Ionicons name="search" size={24} color="#333" />
-        </TouchableOpacity>
-      </View>
+      <Header title="Saved Address" navigation={navigation} showBack={true} />
 
       {/* Loader */}
       {loading ? (

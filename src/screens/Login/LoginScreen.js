@@ -559,7 +559,6 @@
 
 // export default LoginScreen;
 
-
 import React, {useState} from 'react';
 import {
   View,
@@ -617,13 +616,28 @@ const LoginScreen = ({navigation}) => {
   };
 
   const requestLocationPermission = async () => {
-    if (Platform.OS === 'android') {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      );
-      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    try {
+      if (Platform.OS === 'android') {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          {
+            title: 'Location Permission',
+            message: 'App needs access to your location for secure login.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          },
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      } else {
+        const auth = await Geolocation.requestAuthorization('whenInUse');
+        console.log('iOS Location Permission:', auth);
+        return auth === 'granted';
+      }
+    } catch (err) {
+      console.warn('Permission Error:', err);
+      return false;
     }
-    return true;
   };
 
   const getLocation = () =>
@@ -661,7 +675,7 @@ const LoginScreen = ({navigation}) => {
           const response = await axios.get(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${loc.latitude}&lon=${loc.longitude}&zoom=10&addressdetails=1`,
             {
-              headers: {'User-Agent': 'MyApp/1.1 (contacts@myapp.com)'},
+              headers: {'User-Agent': 'MyApp/2.1 (contactssss@myapp.com)'},
             },
           );
 

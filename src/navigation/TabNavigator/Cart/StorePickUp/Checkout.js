@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -7,82 +7,351 @@ import {
   ScrollView,
   SafeAreaView,
   Image,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {useNavigation, useRoute} from '@react-navigation/native';
-
-const storeData = [
-  {
-    id: 1,
-    name: 'Springfield Store #1',
-    status: 'In Stock',
-    distance: '101 km away',
-    address: '123 Main Street, Springfield, IL 62704',
-  },
-  {
-    id: 2,
-    name: 'Springfield Store #2',
-    status: 'Low Stock',
-    distance: '4.1 km away',
-    address: '789 Elm Street, Springfield, IL 62704',
-  },
-  {
-    id: 3,
-    name: 'Springfield Store #3',
-    status: 'In Stock',
-    distance: '6.5 km away',
-    address: '456 Oak Avenue, Springfield, IL 62704',
-  },
-];
+import {useNavigation} from '@react-navigation/native';
+import Header from '../../../../constants/Header';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  checkoutAPI,
+  fetchCartAPI,
+  checkoutDetailsAPI,
+} from '../../../../redux/slices/cartSlice';
+import {useDispatch, useSelector} from 'react-redux';
+import axios from 'axios';
+import {API_BASE_URL} from '../../../../utils/utils';
+import Toast from 'react-native-toast-message';
+import RazorpayCheckout from 'react-native-razorpay';
 
 const CheckoutScreen = () => {
   const navigation = useNavigation(); // <-- Add this
-  const [deliveryMode, setDeliveryMode] = useState('pickup');
-  const [selectedStore, setSelectedStore] = useState(2);
+  const dispatch = useDispatch();
+  const {
+    checkoutData,
+    checkoutDetailsData,
+    items: cartItems,
+    loading,
+  } = useSelector(state => state.cart);
+  const [deliveryMode, setDeliveryMode] = useState('home');
+  const [selectedStore, setSelectedStore] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState('pickup');
-  const [selected, setSelected] = useState('UPI');
 
-  const route = useRoute();
+  // ✅ Mapping between method name → transaction_type value
+  const transactionTypeMap = {
+    upi: '0',
+    neft: '1',
+    imps: '2',
+    rtgs: '3',
+    card: '4',
+    netbanking: '5',
+  };
 
-  // Access params safely
-  const {type_product} = route.params || {};
+  // Fetch cart on mount
+  useEffect(() => {
+    dispatch(checkoutAPI());
+    dispatch(fetchCartAPI());
+  }, [dispatch]);
 
-  console.log('Route param type:', type_product);
+  useEffect(() => {
+    if (checkoutData?.checkout_id) {
+      dispatch(checkoutDetailsAPI(checkoutData.checkout_id));
+    }
+  }, [checkoutData, dispatch]);
 
-  const paymentMethods = [
-    {
-      id: 'UPI',
-      label: 'UPI',
-      image: require('../../../../../assets/images/R.png'),
-    },
-    {
-      id: 'CARD',
-      label: 'Card',
-      image: require('../../../../../assets/images/R2.jpeg'),
-    },
-    {
-      id: 'NETBANKING',
-      label: 'Net Banking',
-      image: require('../../../../../assets/images/R1.png'),
-    },
-  ];
+  // GST label logic
+  const gstLabel =
+    parseFloat(checkoutDetailsData?.invoice_amount?.igst_amount) > 0
+      ? '18%'
+      : parseFloat(checkoutDetailsData?.invoice_amount?.cgst_amount) > 0
+      ? '9%'
+      : '0%';
+
+  // GST amount logic
+  let gstAmount = '0.00';
+  if (gstLabel === '18%') {
+    gstAmount = checkoutDetailsData?.invoice_amount?.igst_amount || '0.00';
+  } else if (gstLabel === '9%') {
+    const cgst =
+      parseFloat(checkoutDetailsData?.invoice_amount?.cgst_amount) || 0;
+    const sgst =
+      parseFloat(checkoutDetailsData?.invoice_amount?.sgst_amount) || 0;
+    gstAmount = (cgst + sgst).toFixed(2);
+  }
+
+  // 🧾 Helper function to map payment option
+  const getPaymentOptionValue = (method, mode) => {
+    if (mode === 'home') {
+      // 🏠 Home Delivery
+      switch (method) {
+        case 'cod':
+          return '0'; // COD
+        case 'online':
+          return '1'; // Online
+        case 'wallet':
+          return '2'; // Wallet
+        default:
+          return '0';
+      }
+    } else {
+      // 🏬 Store Pickup
+      switch (method) {
+        case 'pickup':
+          return '0'; // Pay at Store Pickup
+        case 'online':
+          return '1';
+        case 'wallet':
+          return '2';
+        default:
+          return '0';
+      }
+    }
+  };
+
+  const getDeliveryModeValue = mode => (mode === 'home' ? '0' : '1');
+
+  const handlePlaceOrder = async () => {
+    const paymentOption = getPaymentOptionValue(paymentMethod);
+    const deliveryModeValue = getDeliveryModeValue(deliveryMode);
+
+    try {
+      const token = await AsyncStorage.getItem('TOKEN');
+      const barcode_ids = cartItems.map(item => ({
+        barcode_id: item.barcode_id,
+        barcode_price: item.price,
+      }));
+
+      const payload = {
+        user_id: checkoutData?.user_id,
+        payment_mode: paymentOption,
+        delivery_type: deliveryModeValue,
+        delivery_address_id: 1,
+        checkout_id: checkoutData?.checkout_id,
+        barcode_ids: barcode_ids,
+      };
+
+      console.log('Payload ===>', payload);
+
+      // ✅ Step 1: Create Order in backend
+      const createOrderRes = await axios.post(
+        `${API_BASE_URL}/orders/create`,
+        payload,
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const razorpayOrderId = createOrderRes?.data?.data?.razorpay_order_id;
+      const totalAmount = createOrderRes?.data?.data?.total_amount;
+      const orderId = createOrderRes?.data?.data?.order_id;
+
+      // -------------------- CASE 1 --------------------
+      // ✅ COD (no Razorpay needed)
+      if (paymentMethod === 'pickup' && deliveryMode === 'home') {
+        Toast.show({
+          type: 'success',
+          text2: 'Order placed successfully with COD!',
+        });
+        navigation.navigate('BottomNavigator');
+        return;
+      }
+
+      console.log(
+        'paymentMethod+++++++++++++++++++++++++++++++++++++++++',
+        paymentMethod,
+      );
+
+      // -------------------- CASE 2 --------------------
+      // ✅ Online Payment via Razorpay (UPI, Card, Netbanking)
+      if (paymentMethod === 'online') {
+        const options = {
+          description: 'Payment for Order',
+          image: 'https://i.postimg.cc/3x3QzSGq/logo.png',
+          currency: 'INR',
+          key: 'rzp_test_RLLrUG1OvG4YYd',
+          amount: totalAmount * 100,
+          name: 'MobiTrde',
+          order_id: razorpayOrderId,
+          prefill: {
+            email: 'user@example.com',
+            contact: '9999999999',
+            name: 'User',
+          },
+          theme: {color: '#1C9C48'},
+          method: transactionTypeMap // ✅ numeric value
+        };
+
+        console.log('options------------------------------------>', options);
+
+        RazorpayCheckout.open(options)
+          .then(async data => {
+            console.log('Razorpay Response ===>', data);
+
+            const paymentStatus =
+              data?.razorpay_payment_id && data?.razorpay_signature
+                ? 'success'
+                : 'failed';
+
+            try {
+              const verifyResponse = await axios.post(
+                `${API_BASE_URL}/orders/verify-payment`,
+                {
+                  razorpay_payment_id: data?.razorpay_payment_id || null,
+                  razorpay_order_id: data?.razorpay_order_id || razorpayOrderId,
+                  razorpay_signature: data?.razorpay_signature || null,
+                  order_id: orderId,
+                  status: paymentStatus,
+                },
+                {
+                  headers: {
+                    Accept: 'application/json',
+                    Authorization: `Bearer ${token}`,
+                  },
+                },
+              );
+
+              if (verifyResponse?.data?.status === true) {
+                Toast.show({
+                  type: 'success',
+                  text2: verifyResponse?.data?.message || 'Payment Successful!',
+                });
+                navigation.navigate('BottomNavigator');
+              } else {
+                Toast.show({
+                  type: 'error',
+                  text2:
+                    verifyResponse?.data?.message ||
+                    'Payment verification failed.',
+                });
+              }
+            } catch (error) {
+              console.log('verify-payment error ===>', error?.response?.data);
+            }
+          })
+          .catch(error => {
+            console.log('Razorpay Cancelled/Error ===>', error);
+            Toast.show({
+              type: 'error',
+              text2: 'Payment cancelled or failed.',
+            });
+          });
+
+        return;
+      }
+
+      // -------------------- CASE 3 --------------------
+      // ✅ Wallet Payment (handled through /wallet/verify)
+      if (paymentMethod === 'wallet') {
+        if (!totalAmount || parseFloat(totalAmount) <= 0) {
+          Alert.alert('Invalid Amount', 'Please enter a valid amount.');
+          return;
+        }
+
+        try {
+          const tokenwallet = await AsyncStorage.getItem('TOKEN');
+          const userId = await AsyncStorage.getItem('USERID');
+
+          const payloadwallet = {
+            buyer_id: userId,
+            amount: totalAmount,
+            transaction_type: transactionTypeMap[selectedMethod], // ✅ numeric value
+          };
+
+          // ✅ Create Razorpay order
+          const response = await axios.post(
+            `${API_BASE_URL}/wallet/create-order`,
+            payloadwallet,
+            {
+              headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${tokenwallet}`,
+              },
+            },
+          );
+
+          const order = response.data;
+
+          const paymentMethods = {
+            upi: selectedMethod === 'upi',
+            card: selectedMethod === 'card',
+            netbanking: selectedMethod === 'netbanking',
+            wallet: false,
+            emi: false,
+            paylater: false,
+          };
+
+          const options = {
+            description: 'Add Money to Wallet',
+            currency: 'INR',
+            key: order?.razorpay_key,
+            amount: order.amount,
+            name: 'MobiTrade Wallet',
+            order_id: order.order_id,
+            theme: {color: '#14AE5C'},
+            method: paymentMethods,
+          };
+
+          console.log('options------------------>', options);
+
+          // ✅ NEFT / IMPS / RTGS handled manually (offline)
+          if (['neft', 'imps', 'rtgs'].includes(selectedMethod)) {
+            Alert.alert(
+              `${selectedMethod.toUpperCase()} Selected`,
+              'Please complete this transfer using your bank app or contact support.',
+            );
+            return;
+          }
+          // ✅ Launch Razorpay checkout
+          RazorpayCheckout.open(options)
+            .then(async data => {
+              const verifyResponse = await axios.post(
+                `${API_BASE_URL}/wallet/verify`,
+                {
+                  razorpay_payment_id: data.razorpay_payment_id,
+                  razorpay_order_id: data.razorpay_order_id,
+                  razorpay_signature: data.razorpay_signature,
+                  amount: totalAmount,
+                  transaction_type: transactionTypeMap[selectedMethod],
+                },
+                {
+                  headers: {
+                    Accept: 'application/json',
+                    Authorization: `Bearer ${token}`,
+                  },
+                },
+              );
+              Toast.show({
+                type: 'success',
+                text2: verifyResponse?.data?.message || 'Payment Successful!',
+              });
+              navigation.navigate('BottomNavigator');
+              console.log('res--------------------------------->', verifyResponse?.data);
+            })
+            .catch(error => {
+              console.log('error--------------------------------->', error);
+              Alert.alert(
+                'Payment Failed',
+                error.description || 'Transaction cancelled.',
+              );
+            });
+        } catch (error) {
+          console.log('Payment Error:', error.response?.data || error.message);
+          Alert.alert('Error', 'Something went wrong! Please try again.');
+        }
+      }
+    } catch (error) {
+      console.log('handlePlaceOrder error ===>', error?.response?.data);
+      Alert.alert('Error', 'Something went wrong while placing the order.');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}>
-          <Ionicons name="chevron-back" size={22} color="#000" />
-        </TouchableOpacity>
-        <View>
-          <Text style={styles.headerTitle}>Checkout</Text>
-        </View>
-        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-          <Ionicons name="search" size={24} color="#333" />
-        </TouchableOpacity>
-      </View>
+      <Header title="Checkout" navigation={navigation} showBack={true} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -269,62 +538,62 @@ const CheckoutScreen = () => {
             <Text style={styles.optionText}>Pay Online</Text>
             <Text style={styles.discount}>Get 5% OFF</Text>
           </TouchableOpacity>
-        </View>
 
-        {/* Price Summary */}
-        {/* {paymentMethod === 'online' ? (
-          <>
-            <Text style={styles.sectionTitle}>Choose Payment Method</Text>
-            <View style={styles.containerPay}>
-              {paymentMethods.map(method => (
-                <View key={method.id} style={styles.paymentItem}>
-                  <TouchableOpacity
-                    onPress={() => setSelected(method.id)}
-                    style={[
-                      styles.cardPay,
-                      selected === method.id && styles.selectedCardPay,
-                    ]}>
-                    <Image
-                      source={method.image}
-                      style={styles.iconPay}
-                      resizeMode="contain"
-                    />
-                  </TouchableOpacity>
-                  <Text style={styles.labelPay}>{method.label}</Text>
-                </View>
-              ))}
-            </View>
-          </>
-        ) : null} */}
+          <TouchableOpacity
+            style={[
+              styles.radioBox,
+              paymentMethod === 'wallet' && styles.selectedBox,
+            ]}
+            onPress={() => setPaymentMethod('wallet')}>
+            <Ionicons
+              name={
+                paymentMethod === 'wallet'
+                  ? 'radio-button-on'
+                  : 'radio-button-off'
+              }
+              size={20}
+              color="#000"
+            />
+            <Text style={styles.optionText}>Pay via Wallet</Text>
+          </TouchableOpacity>
+        </View>
         <Text style={styles.sectionTitle}>Price Summary</Text>
         <View style={styles.priceSummary}>
           <View style={styles.priceRow}>
             <Text>Subtotal </Text>
-            <Text style={styles.bold}>₹131,095</Text>
+            <Text style={styles.bold}>
+              ₹{checkoutDetailsData?.invoice_amount?.subtotal}
+            </Text>
           </View>
           <View style={styles.priceRow}>
             <Text>Shipping </Text>
             <Text style={styles.bold}>Free</Text>
           </View>
           <View style={styles.priceRow}>
-            <Text>GST </Text>
-            <Text style={styles.bold}>₹6,554.75</Text>
+            <Text>GST({gstLabel})</Text>
+            <Text style={styles.bold}>₹{gstAmount}</Text>
           </View>
-          {/* <View style={styles.divider} /> */}
           <View style={styles.priceRow}>
             <Text>Total </Text>
-            <Text style={[styles.bold, {fontSize: 16}]}>₹133,899.75</Text>
+            <Text style={[styles.bold, {fontSize: 16}]}>
+              ₹{checkoutDetailsData?.invoice_amount?.total_amount}
+            </Text>
           </View>
         </View>
-
-        {/* Place Order */}
         <TouchableOpacity
-          onPress={() => navigation.navigate('PaymentMethod')}
-          style={styles.placeOrderBtn}>
-          {paymentMethod === 'online' ? (
-            <Text style={styles.placeOrderText}>Pay</Text>
+          onPress={handlePlaceOrder}
+          style={styles.placeOrderBtn}
+          disabled={loading}>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.placeOrderText}>Place Order</Text>
+            <Text style={styles.placeOrderText}>
+              {deliveryMode === 'pickup' && paymentMethod === 'pickup'
+                ? 'Confirm Pickup'
+                : paymentMethod === 'online' || paymentMethod === 'wallet'
+                ? 'Pay'
+                : 'Place Order'}
+            </Text>
           )}
         </TouchableOpacity>
 

@@ -91,6 +91,7 @@ import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useSelector} from 'react-redux';
 import CatPage from './CatPage';
+import Header from '../../../constants/Header';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -114,17 +115,7 @@ const CategoriesTab = ({navigation, route}) => {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}>
-          <Ionicons name="chevron-back" size={22} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Categories</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-          <Ionicons name="search" size={24} color="#333" />
-        </TouchableOpacity>
-      </View>
+      <Header title="Categories" navigation={navigation} showBack={true} />
 
       <Tab.Navigator
         initialRouteName={initialTab || osList[0]?.os_name || 'Default'}

@@ -125,7 +125,7 @@ const Header = ({navigation}) => {
       )}
 
       <View style={{flexDirection: 'row', alignItems: 'center'}}>
-        <TouchableOpacity
+        <TouchableOpacity onPress={() => navigation.navigate('Invoice')}
           style={{
             backgroundColor: '#fff',
             borderRadius: 20,

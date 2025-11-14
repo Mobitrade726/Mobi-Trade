@@ -1,4 +1,4 @@
-// import React, {useState} from 'react';
+// import React, {useEffect, useState} from 'react';
 // import {
 //   View,
 //   Text,
@@ -12,25 +12,38 @@
 // import Ionicons from 'react-native-vector-icons/Ionicons';
 // import {launchImageLibrary} from 'react-native-image-picker';
 // import AsyncStorage from '@react-native-async-storage/async-storage';
-// import axios from 'axios';
 // import {API_BASE_URL} from '../../../../utils/utils';
+// import {useDispatch, useSelector} from 'react-redux';
+// import {fetchProfile} from '../../../../redux/slices/profileSlice';
 
 // const KycScreen = ({navigation}) => {
 //   const [aadhaarNo, setAadhaarNo] = useState('');
-//   const [selectedDocType, setSelectedDocType] = useState('Aadhar Card');
+//   const [selectedDocType, setSelectedDocType] = useState('aadhaar');
 //   const [showDropdown, setShowDropdown] = useState(false);
 //   const [confirmInfo, setConfirmInfo] = useState(false);
 //   const [agreeTerms, setAgreeTerms] = useState(false);
 //   const [aadhaarFront, setAadhaarFront] = useState(null);
 //   const [aadhaarBack, setAadhaarBack] = useState(null);
 //   const [loading, setLoading] = useState(false);
+//   const dispatch = useDispatch();
+//   const {data, error} = useSelector(state => state.profile);
+
+//   console.log(
+//     'data?.vendordocuments?------------------->',
+//     data?.vendor_category,
+//   );
+//   console.log('data?.vendordocuments?------------------->', data?.vendor_type);
+
+//   useEffect(() => {
+//     dispatch(fetchProfile());
+//   }, [dispatch]);
 
 //   const documentTypes = [
-//     'Aadhar Card',
-//     'Driver’s Licence',
-//     'Voter Id',
-//     'Passport',
-//     'Pan Card',
+//     'aadhaar',
+//     'driving_licence',
+//     'voter_id',
+//     'passport',
+//     'pan_number',
 //   ];
 
 //   const handleBrowseFile = async type => {
@@ -59,7 +72,7 @@
 //     try {
 //       setLoading(true);
 //       const token = await AsyncStorage.getItem('TOKEN');
-//       const user_id = await AsyncStorage.getItem('USERID'); // fetch logged-in user ID
+//       const user_id = await AsyncStorage.getItem('USERID');
 //       if (!user_id) {
 //         setLoading(false);
 //         return Alert.alert('Error', 'User ID not found.');
@@ -79,23 +92,28 @@
 //         type: aadhaarBack.type,
 //         name: aadhaarBack.fileName || 'aadhaar_back.jpg',
 //       });
-
-//       const response = await axios.post(
-//         `${API_BASE_URL}/buyer/documents/store`,
-//         formData,
-//        {headers: {Authorization: `Bearer ${token}`}},
-//       );
-
+//       const response = await fetch(`${API_BASE_URL}/buyer/documents/store`, {
+//         method: 'POST',
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//           // ⚠️ DO NOT manually set 'Content-Type' for FormData — let fetch handle it
+//         },
+//         body: formData,
+//       });
+//       console.log('response++++++++++++++++++++++++++', response);
+//       const result = await response.json();
 //       setLoading(false);
-//       if (response.data?.status) {
+
+//       if (result?.status) {
 //         Alert.alert('Success', 'KYC submitted successfully!');
 //         navigation.navigate('KycConfirmation');
 //       } else {
-//         Alert.alert('Error', response.data?.message || 'Submission failed');
+//         console.log('res++++++++++++', result);
+//         // Alert.alert('Error', result?.message || 'Submission failed');
 //       }
 //     } catch (error) {
 //       setLoading(false);
-//       console.log("error-------------------->", error);
+//       console.log('error-------------------->', error);
 //       Alert.alert('Error', 'Something went wrong. Please try again.');
 //     }
 //   };
@@ -114,7 +132,7 @@
 
 //         {/* Document Details */}
 //         <View style={styles.cardContainer}>
-//           <Text style={styles.sectionTitle}>Aadhaar Details</Text>
+//           <Text style={styles.sectionTitle}>Document Details</Text>
 
 //           <TextInput
 //             style={styles.textInput}
@@ -147,26 +165,75 @@
 //                 <Text>{item}</Text>
 //               </TouchableOpacity>
 //             ))}
+//           {(data?.vendor_category === 'vendor_customer' &&
+//             data?.vendor_type === 'Unregistered') ||
+//           (data?.vendor_category === 'vendor_dealer' &&
+//             data?.vendor_type === 'Unregistered') ? (
+//             // Aadhaar Only
+//             <>
+//               {/* Aadhaar Front */}
+//               <TouchableOpacity
+//                 style={styles.uploadBox}
+//                 onPress={() => handleBrowseFile('front')}>
+//                 <Ionicons name="cloud-upload-outline" size={30} color="#999" />
+//                 <Text style={styles.uploadText}>
+//                   {aadhaarFront
+//                     ? aadhaarFront.fileName
+//                     : 'Upload Aadhaar Front'}
+//                 </Text>
+//               </TouchableOpacity>
 
-//           {/* Aadhaar Front */}
-//           <TouchableOpacity
-//             style={styles.uploadBox}
-//             onPress={() => handleBrowseFile('front')}>
-//             <Ionicons name="cloud-upload-outline" size={30} color="#999" />
-//             <Text style={styles.uploadText}>
-//               {aadhaarFront ? aadhaarFront.fileName : 'Upload Aadhaar Front'}
-//             </Text>
-//           </TouchableOpacity>
+//               {/* Aadhaar Back */}
+//               <TouchableOpacity
+//                 style={styles.uploadBox}
+//                 onPress={() => handleBrowseFile('back')}>
+//                 <Ionicons name="cloud-upload-outline" size={30} color="#999" />
+//                 <Text style={styles.uploadText}>
+//                   {aadhaarBack ? aadhaarBack.fileName : 'Upload Aadhaar Back'}
+//                 </Text>
+//               </TouchableOpacity>
+//             </>
+//           ) : data?.vendor_category === 'vendor_dealer' &&
+//             data?.vendor_type === 'Registered' ? (
+//             // Aadhaar + GST
+//             <>
+//               {/* Aadhaar Front */}
+//               <TouchableOpacity
+//                 style={styles.uploadBox}
+//                 onPress={() => handleBrowseFile('front')}>
+//                 <Ionicons name="cloud-upload-outline" size={30} color="#999" />
+//                 <Text style={styles.uploadText}>
+//                   {aadhaarFront
+//                     ? aadhaarFront.fileName
+//                     : 'Upload Aadhaar Front'}
+//                 </Text>
+//               </TouchableOpacity>
 
-//           {/* Aadhaar Back */}
-//           <TouchableOpacity
-//             style={styles.uploadBox}
-//             onPress={() => handleBrowseFile('back')}>
-//             <Ionicons name="cloud-upload-outline" size={30} color="#999" />
-//             <Text style={styles.uploadText}>
-//               {aadhaarBack ? aadhaarBack.fileName : 'Upload Aadhaar Back'}
-//             </Text>
-//           </TouchableOpacity>
+//               {/* Aadhaar Back */}
+//               <TouchableOpacity
+//                 style={styles.uploadBox}
+//                 onPress={() => handleBrowseFile('back')}>
+//                 <Ionicons name="cloud-upload-outline" size={30} color="#999" />
+//                 <Text style={styles.uploadText}>
+//                   {aadhaarBack ? aadhaarBack.fileName : 'Upload Aadhaar Back'}
+//                 </Text>
+//               </TouchableOpacity>
+
+//               {/* GST Certificate */}
+//               <Text
+//                 style={{fontWeight: '700', fontSize: 16, marginVertical: 12}}>
+//                 GST Certificate
+//               </Text>
+//               <TouchableOpacity
+//                 style={styles.uploadBox}
+//                 onPress={() => handleBrowseFile('gst')}>
+//                 <Ionicons name="cloud-upload-outline" size={30} color="#999" />
+//                 <Text style={styles.uploadText}>
+//                   {gstFile ? gstFile.fileName : 'Upload GST Certificate'}
+//                 </Text>
+//               </TouchableOpacity>
+//             </>
+//           ) : null}
 
 //           {/* Checkboxes */}
 //           <TouchableOpacity
@@ -287,8 +354,7 @@
 // });
 
 
-
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -303,6 +369,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import {launchImageLibrary} from 'react-native-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API_BASE_URL} from '../../../../utils/utils';
+import {useDispatch, useSelector} from 'react-redux';
+import {fetchProfile} from '../../../../redux/slices/profileSlice';
 
 const KycScreen = ({navigation}) => {
   const [aadhaarNo, setAadhaarNo] = useState('');
@@ -312,9 +380,15 @@ const KycScreen = ({navigation}) => {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [aadhaarFront, setAadhaarFront] = useState(null);
   const [aadhaarBack, setAadhaarBack] = useState(null);
+  const [gstFile, setGstFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  console.log("selectedDocType----------->", selectedDocType);
+  const dispatch = useDispatch();
+  const {data, error} = useSelector(state => state.profile);
+
+  useEffect(() => {
+    dispatch(fetchProfile());
+  }, [dispatch]);
 
   const documentTypes = [
     'aadhaar',
@@ -324,15 +398,20 @@ const KycScreen = ({navigation}) => {
     'pan_number',
   ];
 
+  // ✅ Universal File Picker Handler (for front, back, gst)
   const handleBrowseFile = async type => {
     const options = {mediaType: 'photo', selectionLimit: 1};
     launchImageLibrary(options, response => {
       if (response.didCancel) return;
       if (response.errorMessage)
         return Alert.alert('Error', response.errorMessage);
+
       const file = response.assets[0];
+      if (!file) return;
+
       if (type === 'front') setAadhaarFront(file);
-      else setAadhaarBack(file);
+      else if (type === 'back') setAadhaarBack(file);
+      else if (type === 'gst') setGstFile(file);
     });
   };
 
@@ -345,6 +424,14 @@ const KycScreen = ({navigation}) => {
       !agreeTerms
     ) {
       return Alert.alert('Error', 'Please complete all fields and checkboxes.');
+    }
+
+    if (
+      data?.vendor_category === 'vendor_dealer' &&
+      data?.vendor_type === 'Registered' &&
+      !gstFile
+    ) {
+      return Alert.alert('Error', 'Please upload your GST Certificate.');
     }
 
     try {
@@ -370,15 +457,27 @@ const KycScreen = ({navigation}) => {
         type: aadhaarBack.type,
         name: aadhaarBack.fileName || 'aadhaar_back.jpg',
       });
+
+      if (
+        data?.vendor_category === 'vendor_dealer' &&
+        data?.vendor_type === 'Registered' &&
+        gstFile
+      ) {
+        formData.append('gst_certificate', {
+          uri: gstFile.uri,
+          type: gstFile.type,
+          name: gstFile.fileName || 'gst_certificate.jpg',
+        });
+      }
+
       const response = await fetch(`${API_BASE_URL}/buyer/documents/store`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
-          // ⚠️ DO NOT manually set 'Content-Type' for FormData — let fetch handle it
         },
         body: formData,
       });
-      console.log("response++++++++++++++++++++++++++", response);
+
       const result = await response.json();
       setLoading(false);
 
@@ -386,12 +485,11 @@ const KycScreen = ({navigation}) => {
         Alert.alert('Success', 'KYC submitted successfully!');
         navigation.navigate('KycConfirmation');
       } else {
-        console.log("res++++++++++++", result);
-        // Alert.alert('Error', result?.message || 'Submission failed');
+        Alert.alert('Error', result?.message || 'Submission failed.');
       }
     } catch (error) {
       setLoading(false);
-      console.log('error-------------------->', error);
+      console.log('Error:', error);
       Alert.alert('Error', 'Something went wrong. Please try again.');
     }
   };
@@ -408,10 +506,10 @@ const KycScreen = ({navigation}) => {
           <Ionicons name="search" size={20} marginRight={10} color="#000" />
         </View>
 
-        {/* Document Details */}
         <View style={styles.cardContainer}>
-          <Text style={styles.sectionTitle}>Aadhaar Details</Text>
+          <Text style={styles.sectionTitle}>Document Details</Text>
 
+          {/* Aadhaar Input */}
           <TextInput
             style={styles.textInput}
             placeholder="Enter Aadhaar Number"
@@ -431,6 +529,7 @@ const KycScreen = ({navigation}) => {
               size={20}
             />
           </TouchableOpacity>
+
           {showDropdown &&
             documentTypes.map((item, index) => (
               <TouchableOpacity
@@ -444,25 +543,74 @@ const KycScreen = ({navigation}) => {
               </TouchableOpacity>
             ))}
 
-          {/* Aadhaar Front */}
-          <TouchableOpacity
-            style={styles.uploadBox}
-            onPress={() => handleBrowseFile('front')}>
-            <Ionicons name="cloud-upload-outline" size={30} color="#999" />
-            <Text style={styles.uploadText}>
-              {aadhaarFront ? aadhaarFront.fileName : 'Upload Aadhaar Front'}
-            </Text>
-          </TouchableOpacity>
+          {/* File Uploads */}
+          {(data?.vendor_category === 'vendor_customer' &&
+            data?.vendor_type === 'Unregistered') ||
+          (data?.vendor_category === 'vendor_dealer' &&
+            data?.vendor_type === 'Unregistered') ? (
+            <>
+              {/* Aadhaar Front */}
+              <TouchableOpacity
+                style={styles.uploadBox}
+                onPress={() => handleBrowseFile('front')}>
+                <Ionicons name="cloud-upload-outline" size={30} color="#999" />
+                <Text style={styles.uploadText}>
+                  {aadhaarFront
+                    ? aadhaarFront.fileName
+                    : 'Upload Aadhaar Front'}
+                </Text>
+              </TouchableOpacity>
 
-          {/* Aadhaar Back */}
-          <TouchableOpacity
-            style={styles.uploadBox}
-            onPress={() => handleBrowseFile('back')}>
-            <Ionicons name="cloud-upload-outline" size={30} color="#999" />
-            <Text style={styles.uploadText}>
-              {aadhaarBack ? aadhaarBack.fileName : 'Upload Aadhaar Back'}
-            </Text>
-          </TouchableOpacity>
+              {/* Aadhaar Back */}
+              <TouchableOpacity
+                style={styles.uploadBox}
+                onPress={() => handleBrowseFile('back')}>
+                <Ionicons name="cloud-upload-outline" size={30} color="#999" />
+                <Text style={styles.uploadText}>
+                  {aadhaarBack ? aadhaarBack.fileName : 'Upload Aadhaar Back'}
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : data?.vendor_category === 'vendor_dealer' &&
+            data?.vendor_type === 'Registered' ? (
+            <>
+              {/* Aadhaar Front */}
+              <TouchableOpacity
+                style={styles.uploadBox}
+                onPress={() => handleBrowseFile('front')}>
+                <Ionicons name="cloud-upload-outline" size={30} color="#999" />
+                <Text style={styles.uploadText}>
+                  {aadhaarFront
+                    ? aadhaarFront.fileName
+                    : 'Upload Aadhaar Front'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Aadhaar Back */}
+              <TouchableOpacity
+                style={styles.uploadBox}
+                onPress={() => handleBrowseFile('back')}>
+                <Ionicons name="cloud-upload-outline" size={30} color="#999" />
+                <Text style={styles.uploadText}>
+                  {aadhaarBack ? aadhaarBack.fileName : 'Upload Aadhaar Back'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* GST Upload */}
+              <Text
+                style={{fontWeight: '700', fontSize: 16, marginVertical: 12}}>
+                GST Certificate
+              </Text>
+              <TouchableOpacity
+                style={styles.uploadBox}
+                onPress={() => handleBrowseFile('gst')}>
+                <Ionicons name="cloud-upload-outline" size={30} color="#999" />
+                <Text style={styles.uploadText}>
+                  {gstFile ? gstFile.fileName : 'Upload GST Certificate'}
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : null}
 
           {/* Checkboxes */}
           <TouchableOpacity

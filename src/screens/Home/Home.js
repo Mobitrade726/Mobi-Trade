@@ -43,6 +43,8 @@ const Home = ({navigation}) => {
   } = useSelector(state => state.home);
   const {recentlyview} = useSelector(state => state.product);
 
+  console.log("recentlyview--------->", recentlyview);
+
   useEffect(() => {
     dispatch(fetchOsList());
     dispatch(fetchBrands());
@@ -175,7 +177,7 @@ const Home = ({navigation}) => {
           {/* Offers */}
           <Section
             title="Shop by brands"
-            onPress={() => navigation.navigate('shopbybrand')}>
+            onPress={() => navigation.navigate('shopbybrandsTab')}>
             <FlatList
               horizontal
               data={brands}

@@ -78,7 +78,7 @@ const RegisterAsDealer = ({navigation}) => {
     }
     setLoading(true);
     try {
-      const response = await axios.post(API_BASE_URL + 'getDetail-gstno', {
+      const response = await axios.post(API_BASE_URL + '/getDetail-gstno', {
         gst_number: gstNumber,
       });
 

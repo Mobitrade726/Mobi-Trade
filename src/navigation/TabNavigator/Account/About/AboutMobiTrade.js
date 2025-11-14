@@ -6,26 +6,17 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import styles from './styles';
+import Header from '../../../../constants/Header';
 
 const AboutMobiTrade = ({navigation}) => {
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}>
-          <Ionicons name="chevron-back" size={22} color="#000" />
-        </TouchableOpacity>
-        <View>
-          <Text style={styles.headerTitle}>About Mobi Trade</Text>
-        </View>
-        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-          <Ionicons name="search" size={24} color="#333" />
-        </TouchableOpacity>
-      </View>
+      <Header
+          title="About Mobi Trade"
+          navigation={navigation}
+          showBack={true}
+        />
 
       {/* Body */}
       <ScrollView contentContainerStyle={styles.content}>

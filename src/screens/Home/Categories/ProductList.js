@@ -28,6 +28,7 @@ import {
   fetchProductList,
   addRecentlyViewed,
 } from '../../../redux/slices/productSlice';
+import Header from '../../../constants/Header';
 
 const {width} = Dimensions.get('window');
 
@@ -178,7 +179,6 @@ const ProductDetail = ({route, iconType, icon, text}) => {
       }),
     );
   };
-  console.log('recentlyViewedAdded--------------------->', addrecentlyview);
   let featureImage = product?.feature_images || [];
   let barcodeDetails = product?.barcode || [];
   let modelSpecification = product?.model_specification || [];
@@ -307,20 +307,11 @@ const ProductDetail = ({route, iconType, icon, text}) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}>
-            <Ionicons name="chevron-back" size={22} color="#000" />
-          </TouchableOpacity>
-          <View>
-            <Text style={styles.headerTitle}>Product List</Text>
-          </View>
-          <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-            <Ionicons name="search" size={24} color="#333" />
-          </TouchableOpacity>
-        </View>
+        <Header
+          title="Product List"
+          navigation={navigation}
+          showBack={true}
+        />
 
         {/* Main Image Carousel */}
         <View style={styles.carouselWrapper}>

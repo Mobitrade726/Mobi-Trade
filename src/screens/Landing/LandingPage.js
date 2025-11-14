@@ -1,14 +1,9 @@
 import {useNavigation} from '@react-navigation/native';
 import React, {useState} from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Image,
-  SafeAreaView,
-} from 'react-native';
+import {View, Text, TouchableOpacity, Image, SafeAreaView} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import styles from './styles';
+import Header from '../../constants/Header';
 
 const LandingPage = () => {
   const navigation = useNavigation();
@@ -30,28 +25,11 @@ const LandingPage = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={{marginHorizontal: 10}}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}>
-            <Ionicons
-              name="chevron-back-outline"
-              size={24}
-              style={{
-                backgroundColor: '#fff',
-                borderRadius: 20,
-                padding: 6,
-                elevation: 2,
-              }}
-            />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Login or Sign Up as</Text>
-        </View>
-
-        {/* Title & Subtitle */}
-        <Text style={styles.title}>Login or Sign Up as</Text>
-        <Text style={styles.subtitle}>Please select an option</Text>
+        <Header
+          title="Login or Sign Up as"
+          navigation={navigation}
+          showBack={true}
+        />
 
         {/* Options */}
         {options.map(option => (
@@ -70,7 +48,11 @@ const LandingPage = () => {
         ))}
 
         {/* Button */}
-        <TouchableOpacity onPress={()=> navigation.navigate('SignUpTab', { accountType: selectedOption })} style={styles.button}>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate('SignUpTab', {accountType: selectedOption})
+          }
+          style={styles.button}>
           <Text style={styles.buttonText}>Continue</Text>
         </TouchableOpacity>
       </View>
@@ -79,5 +61,3 @@ const LandingPage = () => {
 };
 
 export default LandingPage;
-
-

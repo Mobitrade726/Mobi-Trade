@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {
   View,
   Text,
@@ -6,17 +6,62 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Header from '../../../../constants/Header';
+import {useDispatch, useSelector} from 'react-redux';
+import {fetchOrderDetailsAPI} from '../../../../redux/slices/orderSlice';
 
-const YourOrderIsDelever = ({navigation}) => {
+const MyorderDetails = ({navigation, route}) => {
+  const {order_id} = route.params;
+  const dispatch = useDispatch();
+  const {orderDetails, loading, error} = useSelector(state => state.orders);
+
+  useEffect(() => {
+    dispatch(fetchOrderDetailsAPI(order_id));
+  }, [dispatch, order_id]);
+
+  // GST label logic
+  const gstLabel =
+    parseFloat(orderDetails?.checkout_detail?.igst_tax_amount) > 0
+      ? '18%'
+      : parseFloat(orderDetails?.checkout_detail?.cgst_tax_amount) > 0
+      ? '9%'
+      : '0%';
+
+  // GST amount logic
+  let gstAmount = '0.00';
+  if (gstLabel === '18%') {
+    gstAmount = orderDetails?.checkout_detail?.igst_tax_amount || '0.00';
+  } else if (gstLabel === '9%') {
+    const cgst =
+      parseFloat(orderDetails?.checkout_detail?.cgst_tax_amount) || 0;
+    const sgst =
+      parseFloat(orderDetails?.checkout_detail?.sgst_tax_amount) || 0;
+    gstAmount = (cgst + sgst).toFixed(2);
+  }
+
+  // Grand total
+  const amountBeforeTax = orderDetails?.checkout_detail?.amount_before_tax || 0;
+  const grandTotal =
+    orderDetails?.checkout_detail?.grand_total ||
+    (amountBeforeTax + parseFloat(gstAmount)).toFixed(2);
+
+  if (loading) return <ActivityIndicator size="large" color="#000" />;
+  if (error) return <Text>Error: {error}</Text>;
+  if (!orderDetails) return <Text>No order details found.</Text>;
+
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
-      <Header title="Order #1514" navigation={navigation} showBack={true} />
+      <Header
+        title={`#${orderDetails?.order_id}`}
+        navigation={navigation}
+        showBack={true}
+      />
 
-      <ScrollView contentContainerStyle={{padding: 16}}>
+      <ScrollView contentContainerStyle={{marginHorizontal: 16}}>
         {/* Track Bar */}
         <TouchableOpacity style={styles.trackBanner}>
           <View style={{flex: 1}}>
@@ -28,19 +73,6 @@ const YourOrderIsDelever = ({navigation}) => {
           />
         </TouchableOpacity>
 
-        {/* Image Placeholder */}
-        <View style={styles.imageBox} />
-
-        {/* Order Info */}
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Order number</Text>
-          <Text style={styles.infoValue}>#1514</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Tracking Number</Text>
-          <Text style={styles.infoValue}>IK987362341</Text>
-        </View>
-
         {/* Delivery Info */}
         <TouchableOpacity style={styles.grayBox}>
           <Ionicons name="location-outline" size={24} color="#000" />
@@ -48,63 +80,72 @@ const YourOrderIsDelever = ({navigation}) => {
             <Text style={styles.grayBoxLabel}>Deliver to</Text>
             <Text style={styles.grayBoxText}>123 Main St, Springfield</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#000" />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.grayBox}>
           <Ionicons name="person-circle-outline" size={24} />
           <View style={styles.grayBoxContent}>
-            <Text style={styles.grayBoxLabel}>Instructions</Text>
-            <Text style={styles.grayBoxText}>Johnathan Doe</Text>
+            <Text style={styles.grayBoxLabel}>Buyer name</Text>
+            <Text style={styles.grayBoxText}>{orderDetails?.buyer_name}</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#000" />
         </TouchableOpacity>
 
-        {/* Bill Details */}
-        <Text style={styles.billTitle}>Bill Details</Text>
-        {[
-          ['Samsung Galaxy S21', '₹74,999'],
-          ['OnePlus 9', '₹49,999'],
-          ['Google Pixel 5', '₹59,999'],
-          ['Xiaomi Mi 11', '₹56,999'],
-          ['Realme GT', '₹37,999', true],
-        ].map(([label, amount, bold]) => (
-          <View key={label} style={styles.billRow}>
-            <Text style={[styles.billText, bold && styles.boldText]}>
-              {label}
-            </Text>
-            <Text style={[styles.billText, bold && styles.boldText]}>
-              {amount}
-            </Text>
-          </View>
+        <Text style={styles.billTitle}>Product list</Text>
+
+        {orderDetails?.bill_details?.map((elements, index) => (
+          <>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+              <View key={index} style={{}}>
+                <Text style={[styles.billText && styles.boldText]}>
+                  {elements?.model_name}
+                </Text>
+                <Text style={{}}>₹{elements?.price}</Text>
+              </View>
+              <Image
+                source={{uri: elements.model_image}}
+                style={styles.imageBox}
+              />
+            </View>
+
+            <View style={styles.billRow}>
+              <Text style={styles.billText}>Payment mode</Text>
+              <Text style={styles.billText}>({elements?.payment_mode})</Text>
+            </View>
+            <View style={styles.billRow}>
+              <Text style={styles.billText}>Delivery type</Text>
+              <Text style={styles.billText}>({elements?.delivery_type})</Text>
+            </View>
+          </>
         ))}
 
         <View style={styles.divider} />
+        <Text
+          style={{
+            fontSize: 16,
+            fontWeight: 'bold',
+            marginTop: 0,
+            marginBottom: 10,
+            color: '#000',
+          }}>
+          Bill Details
+        </Text>
 
-        {[
-          ['GST(18%)', '₹264'],
-          ['Platform Fee', '₹999'],
-          ['Other Taxes', '₹9'],
-        ].map(([label, amount]) => (
-          <View key={label} style={styles.billRow}>
-            <Text style={styles.billText}>{label}</Text>
-            <Text style={styles.billText}>{amount}</Text>
-          </View>
-        ))}
-
-        <View style={styles.divider} />
-
+        <View style={styles.billRow}>
+          <Text style={styles.billText}>GST({gstLabel})</Text>
+          <Text style={styles.billText}>{gstAmount}</Text>
+        </View>
         <View style={styles.billRow}>
           <Text style={styles.billText}>Subtotal</Text>
-          <Text style={styles.billText}>₹2,64,999</Text>
+          <Text style={styles.billText}>{amountBeforeTax}</Text>
         </View>
         <View style={styles.billRow}>
-          <Text style={styles.billText}>Delivery</Text>
-          <Text style={styles.billText}>₹999</Text>
-        </View>
-        <View style={styles.billRow}>
-          <Text style={styles.boldText}>Paid</Text>
-          <Text style={styles.boldText}>₹2,64,999</Text>
+          <Text style={styles.billText}>Grand Total</Text>
+          <Text style={styles.billText}>{grandTotal}</Text>
         </View>
 
         {/* Buttons */}
@@ -128,7 +169,7 @@ const YourOrderIsDelever = ({navigation}) => {
   );
 };
 
-export default YourOrderIsDelever;
+export default MyorderDetails;
 
 const styles = StyleSheet.create({
   header: {
@@ -174,10 +215,13 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   imageBox: {
-    height: 200,
+    height: 50,
+    width: 50,
+    marginBottom: 5,
+    resizeMode: 'cover',
     backgroundColor: '#e0e0e0',
-    borderRadius: 16,
-    marginBottom: 16,
+    // borderRadius: 16,
+    // marginBottom: 16,
   },
   infoRow: {
     flexDirection: 'row',
@@ -223,9 +267,9 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   billRow: {
+    marginBottom: 6,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 6,
   },
   billText: {
     fontSize: 14,

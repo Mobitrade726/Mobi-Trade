@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -9,28 +9,52 @@ import {
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useDispatch, useSelector} from 'react-redux';
+import {fetchProfile} from '../../../../redux/slices/profileSlice';
+import Header from '../../../../constants/Header';
 
 const KycStatusScreen = ({navigation}) => {
+  const dispatch = useDispatch();
+  const {data} = useSelector(state => state.profile);
+  const dateString = data?.vendordocuments?.created_at;
+  const formattedDate = dateString ? dateString.split('T')[0] : 'N/A';
+
   const [kycData, setKycData] = useState({
     status: 'pending', // 'approved' | 'pending' | 'rejected'
-    firmName: 'Liam Harper',
-    accountType: 'Individual',
-    aadhaarCard: 'XXXX-XXXX-XXXX-1234',
-    gstNo: 'N/A',
-    submissionDate: '2024-01-15',
+    firmName: data?.firm_name,
+    accountType: data?.vendor_category,
+    aadhaarCard: data?.vendordocuments?.aadhaar_no,
+    gstNo: data?.vendordocuments?.gst_number || 'N/A',
+    submissionDate: formattedDate,
     documents: [
-      {name: 'Aadhaar Card', status: 'Updated'},
-      {name: 'GST Certificate', status: 'pending'},
+      {
+        name: 'Aadhaar Card',
+        status: data?.vendordocuments?.aadhaar_no ? 'Approved' : 'Pending',
+      },
+      {
+        name: 'GST Certificate',
+        status: data?.vendordocuments?.gst_certificate ? 'Approved' : 'Pending',
+      },
     ],
   });
+
+  useEffect(() => {
+    dispatch(fetchProfile());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (data?.vendordocuments?.aadhaar_no) {
+      setKycData(prev => ({...prev, status: 'approved'}));
+    } else {
+      setKycData(prev => ({...prev, status: 'pending'}));
+    }
+  }, [data]);
 
   const getBannerColor = () => {
     switch (kycData.status) {
       case 'approved':
         return '#4CAF50';
       case 'pending':
-        return '#03A9F4';
-      case 'rejected':
         return '#F44336';
       default:
         return '#999';
@@ -61,9 +85,9 @@ const KycStatusScreen = ({navigation}) => {
     switch (status) {
       case 'pending':
         return {name: 'time-outline', color: '#03A9F4'};
-      case 'Updated':
+      case 'Approved':
         return {name: 'checkmark-circle-outline', color: '#4CAF50'};
-      case 'error':
+      case 'Pending':
         return {name: 'alert-circle-outline', color: '#F44336'};
       default:
         return {name: 'help-circle-outline', color: '#999'};
@@ -72,13 +96,11 @@ const KycStatusScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>KYC Status</Text>
-        <Ionicons name="search" size={20} color="#000" />
-      </View>
+      <Header
+          title="KYC Status"
+          navigation={navigation}
+          showBack={true}
+        />
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Banner */}
         <View style={[styles.banner, {backgroundColor: getBannerColor()}]}>
@@ -93,24 +115,24 @@ const KycStatusScreen = ({navigation}) => {
           </TouchableOpacity>
         </View>
 
-        {/* Info Section */}
-        <Text style={styles.sectionTitle}>Submitted Info</Text>
-
         <View style={styles.infoSection}>
           <Text style={styles.label}>Firm Name</Text>
-          <Text style={styles.value}>{kycData.firmName}</Text>
+          <Text style={styles.value}>{kycData.firmName || 'N/A'}</Text>
 
           <Text style={styles.label}>Account Type</Text>
-          <Text style={styles.value}>{kycData.accountType}</Text>
-
+          {kycData.accountType === 'Unregistered' ? (
+            <Text style={styles.value}>Indivisual</Text>
+          ) : (
+            <Text style={styles.value}>Dealer</Text>
+          )}
           <Text style={styles.label}>Aadhaar Card</Text>
-          <Text style={styles.value}>{kycData.aadhaarCard}</Text>
+          <Text style={styles.value}>{kycData.aadhaarCard || 'N/A'}</Text>
 
           <Text style={styles.label}>GST Number</Text>
-          <Text style={styles.value}>{kycData.gstNo}</Text>
+          <Text style={styles.value}>{kycData.gstNo || 'N/A'}</Text>
 
           <Text style={styles.label}>Submitted On</Text>
-          <Text style={styles.value}>{kycData.submissionDate}</Text>
+          <Text style={styles.value}>{kycData.submissionDate || 'N/A'}</Text>
         </View>
 
         {/* Documents Section */}
@@ -132,7 +154,6 @@ const KycStatusScreen = ({navigation}) => {
             </View>
           );
         })}
-
       </ScrollView>
     </SafeAreaView>
   );
@@ -195,7 +216,7 @@ const styles = StyleSheet.create({
   },
   infoSection: {
     borderRadius: 10,
-    padding: 16,
+    // padding: 16,
     marginBottom: 20,
   },
   label: {
@@ -248,7 +269,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     color: '#000',
   },
-   placeOrderBtn: {
+  placeOrderBtn: {
     backgroundColor: '#333333',
     padding: 14,
     borderRadius: 10,

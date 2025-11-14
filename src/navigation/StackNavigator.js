@@ -85,6 +85,9 @@ import CatPage from '../screens/Home/Categories/CatPage';
 import CategoriesTab from '../screens/Home/Categories/CategoriesTab';
 import ShopByBudget from '../screens/Home/Categories/ShopByBudget';
 import RecentlyAddedTab from '../screens/Home/RecentlyAdd/RecentlyAddedTab';
+import shopbybrandsTab from '../screens/Home/ShopByBrand/shopbybrandsTab';
+import Invoice from '../screens/Home/Invoice';
+import MyorderDetails from './TabNavigator/Account/MyOrder/MyorderDetails';
 
 const Stack = createNativeStackNavigator();
 
@@ -196,6 +199,9 @@ const StackNavigator = () => (
       <Stack.Screen name="CategoriesTab" component={CategoriesTab} />
       <Stack.Screen name="ShopByBudget" component={ShopByBudget} />
       <Stack.Screen name="RecentlyAddedTab" component={RecentlyAddedTab} />
+      <Stack.Screen name="shopbybrandsTab" component={shopbybrandsTab} />
+      <Stack.Screen name="Invoice" component={Invoice} />
+      <Stack.Screen name="MyorderDetails" component={MyorderDetails} />
     </Stack.Navigator>
   </>
 );

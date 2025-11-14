@@ -8,13 +8,12 @@ import {
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useSelector} from 'react-redux';
-import Recentlyadd from './Recentlyadd';
-import Header from '../../../constants/Header';
+import ShopByBrand from './shopbybrand';
 // import CatPage from './CatPage';
 
 const Tab = createMaterialTopTabNavigator();
 
-const RecentlyAddedTab = ({navigation, route}) => {
+const shopbybrandsTab = ({navigation, route}) => {
   const {initialTab} = route.params || {};
   const {osList} = useSelector(state => state.home);
 
@@ -26,14 +25,26 @@ const RecentlyAddedTab = ({navigation, route}) => {
 
     return (
       <View style={styles.tabContent}>
-        <Recentlyadd tabId={tabId} osName={os_name} />
+        <ShopByBrand tabId={tabId} osName={os_name} />
       </View>
     );
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="Recently added" navigation={navigation} showBack={true} />
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}>
+          <Ionicons name="chevron-back" size={22} color="#000" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Shop by brands</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+          <Ionicons name="search" size={24} color="#333" />
+        </TouchableOpacity>
+      </View>
+
       <Tab.Navigator
         initialRouteName={initialTab || osList[0]?.os_name || 'Default'}
         screenOptions={{
@@ -82,4 +93,4 @@ const styles = StyleSheet.create({
   tabText: {fontSize: 16, color: '#333'},
 });
 
-export default RecentlyAddedTab;
+export default shopbybrandsTab;

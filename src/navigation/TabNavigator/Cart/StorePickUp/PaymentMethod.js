@@ -1,4 +1,3 @@
-
 import React, {useState} from 'react';
 import {
   View,
@@ -8,10 +7,12 @@ import {
   ScrollView,
   Image,
   StyleSheet,
-  SafeAreaView,KeyboardAvoidingView,
+  SafeAreaView,
+  KeyboardAvoidingView,
 } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Header from '../../../../constants/Header';
 
 const PaymentScreen = ({navigation}) => {
   const [selectedBank, setSelectedBank] = useState('');
@@ -21,14 +22,12 @@ const PaymentScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={22} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Choose a Payment Method</Text>
-        <Ionicons name="search" size={20} color="#000" />
-      </View>
+      <Header
+        title="Choose a Payment Method"
+        navigation={navigation}
+        showBack={true}
+      />
+
       <ScrollView style={{marginHorizontal: 10}}>
         <Text style={styles.discountText}>
           You will get a 5% discount on prepaid payments.
@@ -140,13 +139,24 @@ const PaymentScreen = ({navigation}) => {
                 style={styles.input}
                 keyboardType="numeric"
               />
-              <View style={{flexDirection: 'row',  justifyContent:"space-between", marginBottom:8}}>
-                <Text style={{fontWeight: '600', color: '#000',}} >
-                Expiry Month
-                </Text >
-                <Text style={{right:90, fontWeight: '600', color: '#000',marginBottom:0}} >
-                Expiry Month
-                </Text >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  marginBottom: 8,
+                }}>
+                <Text style={{fontWeight: '600', color: '#000'}}>
+                  Expiry Month
+                </Text>
+                <Text
+                  style={{
+                    right: 90,
+                    fontWeight: '600',
+                    color: '#000',
+                    marginBottom: 0,
+                  }}>
+                  Expiry Month
+                </Text>
               </View>
               <View style={styles.row}>
                 <TextInput
@@ -160,9 +170,9 @@ const PaymentScreen = ({navigation}) => {
                   keyboardType="numeric"
                 />
               </View>
-              <Text style={{fontWeight: '600', color: '#000', marginBottom:8}} >
+              <Text style={{fontWeight: '600', color: '#000', marginBottom: 8}}>
                 Expiry Month
-                </Text >
+              </Text>
               <TextInput
                 placeholder="Enter CVV"
                 style={styles.input}
@@ -228,7 +238,9 @@ const PaymentScreen = ({navigation}) => {
         </TouchableOpacity>
 
         {/* Pay at Store */}
-        <TouchableOpacity onPress={()=> navigation.navigate('Wallet')} style={styles.sectionHeader}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Wallet')}
+          style={styles.sectionHeader}>
           <Image
             source={require('../../../../../assets/images/playatstor.png')}
             style={styles.icon}
@@ -240,16 +252,18 @@ const PaymentScreen = ({navigation}) => {
         </TouchableOpacity>
       </ScrollView>
 
-        {/* Proceed Button */}
-        <TouchableOpacity onPress={()=> navigation.navigate('ProcessToPay')} style={styles.proceedButton}>
-          <Text style={styles.proceedText}>Proceed to Pay</Text>
-        </TouchableOpacity>
+      {/* Proceed Button */}
+      <TouchableOpacity
+        onPress={() => navigation.navigate('ProcessToPay')}
+        style={styles.proceedButton}>
+        <Text style={styles.proceedText}>Proceed to Pay</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {flex:1,padding: 16, backgroundColor: '#fff'},
+  container: {flex: 1, backgroundColor: '#fff'},
   header: {
     padding: 15,
     flexDirection: 'row',
@@ -314,8 +328,8 @@ const styles = StyleSheet.create({
     marginTop: 25,
     borderRadius: 12,
     alignItems: 'center',
-    marginHorizontal:20,
-    marginBottom:10,
+    marginHorizontal: 20,
+    marginBottom: 10,
   },
   proceedText: {color: '#fff', fontWeight: 'bold', fontSize: 16},
 });

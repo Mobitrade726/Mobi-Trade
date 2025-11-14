@@ -10,14 +10,17 @@ import {
   StatusBar,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useSelector } from 'react-redux';
+import {useSelector} from 'react-redux';
+import Header from '../../../constants/Header';
 
 const Categories = ({navigation}) => {
   const {osList} = useSelector(state => state.home);
 
   const renderItem = ({item}) => (
     <TouchableOpacity
-      onPress={() => navigation.navigate('CategoriesTab',{ initialTab: item.os_name })}
+      onPress={() =>
+        navigation.navigate('CategoriesTab', {initialTab: item.os_name})
+      }
       style={styles.card}>
       <Image
         source={{uri: item.image_url}}
@@ -32,20 +35,7 @@ const Categories = ({navigation}) => {
     <>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <SafeAreaView style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}>
-            <Ionicons name="chevron-back" size={22} color="#000" />
-          </TouchableOpacity>
-          <View>
-            <Text style={styles.headerTitle}>Categories</Text>
-          </View>
-          <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-            <Ionicons name="search" size={24} color="#333" />
-          </TouchableOpacity>
-        </View>
+        <Header title="Categories" navigation={navigation} showBack={true} />
 
         {/* Category Grid */}
         <FlatList

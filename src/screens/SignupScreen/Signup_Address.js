@@ -53,10 +53,12 @@ const Signup_Address = ({navigation}) => {
     const vendorCode = profileEdit?.profileEdit?.vendor_code;
     console.log('vendorCode--------->', vendorCode);
     const url = vendorCode
-      ? API_BASE_URL + `buyerUpdate/${vendorCode}`
-      : API_BASE_URL + 'buyer/register';
+      ? API_BASE_URL + `/buyerUpdate/${vendorCode}`
+      : API_BASE_URL + '/buyer/register';
     const token = await AsyncStorage.getItem('TOKEN');
     const axiosMethod = vendorCode ? 'put' : 'post';
+
+    console.log("url------------>", url);
 
     // The back code
 

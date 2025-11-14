@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Header from '../../../../constants/Header';
 
 export default function Wallet({navigation}) {
   const transactions = [
@@ -56,34 +57,27 @@ export default function Wallet({navigation}) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={{marginHorizontal: 10}}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}>
-            <Ionicons name="chevron-back" size={22} color="#000" />
-          </TouchableOpacity>
-          <View>
-            <Text style={styles.headerTitle}>Wallet</Text>
-          </View>
-          <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-            <Ionicons name="search" size={24} color="#333" />
-          </TouchableOpacity>
-        </View>
+        <Header title="Wallet" navigation={navigation} showBack={true} />
 
         {/* Balance Card */}
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>Your Balance</Text>
           <Text style={styles.balanceAmount}>₹2,500</Text>
           <View style={styles.buttonRow}>
-            <TouchableOpacity onPress={()=> navigation.navigate('WalletAddMoney')} style={styles.addMoneyBtn}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('WalletAddMoney')}
+              style={styles.addMoneyBtn}>
               <Text style={styles.addMoneyText}>Add Money</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={()=> navigation.navigate('Withdraw')} style={styles.withdrawBtn}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Withdraw')}
+              style={styles.withdrawBtn}>
               <Text style={styles.withdrawText}>Withdraw</Text>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity onPress={()=> navigation.navigate('WalletTransactions')} style={styles.allTransactionsBtn}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('WalletTransactions')}
+            style={styles.allTransactionsBtn}>
             <Text style={styles.allTransactionsText}>
               View All Transactions
             </Text>
@@ -130,7 +124,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9F9F9',
     padding: 20,
     borderRadius: 12,
-    marginBottom: 20, borderWidth:0.2, 
+    marginBottom: 20,
+    borderWidth: 0.2,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOpacity: 0.1,
@@ -138,7 +133,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
     marginVertical: 10,
-    marginHorizontal:15,
+    marginHorizontal: 15,
   },
   balanceLabel: {
     fontSize: 14,
@@ -183,7 +178,7 @@ const styles = StyleSheet.create({
   allTransactionsText: {
     color: '#fff',
     fontWeight: 'bold',
-    textAlign:'center',
+    textAlign: 'center',
   },
   recentTitle: {
     fontSize: 14,
