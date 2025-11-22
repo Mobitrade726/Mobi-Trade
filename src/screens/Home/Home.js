@@ -30,6 +30,7 @@ import {
   fetchProductList,
 } from '../../redux/slices/productSlice';
 
+
 const Home = ({navigation}) => {
   const dispatch = useDispatch();
   const {

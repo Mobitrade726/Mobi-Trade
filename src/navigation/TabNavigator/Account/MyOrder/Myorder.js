@@ -1,346 +1,3 @@
-// import React, {useEffect, useState} from 'react';
-// import {
-//   View,
-//   Text,
-//   FlatList,
-//   TouchableOpacity,
-//   StyleSheet,
-//   Image,
-//   ActivityIndicator,
-// } from 'react-native';
-// import {SafeAreaView} from 'react-native-safe-area-context';
-// import Ionicons from 'react-native-vector-icons/Ionicons';
-// import {useDispatch, useSelector} from 'react-redux';
-// import {fetchOrdersAPI} from '../../../../redux/slices/orderSlice';
-// import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// const orders = [
-//   {
-//     id: '1',
-//     orderNo: '#1524',
-//     date: '13/05/2021',
-//     time: '11:25 AM',
-//     quantity: 2,
-//     subtotal: '₹8,200',
-//     status: 'Pending',
-//   },
-//   {
-//     id: '2',
-//     orderNo: '#1524',
-//     date: '13/05/2021',
-//     time: '11:25 AM',
-//     quantity: 2,
-//     subtotal: '₹8,200',
-//     status: 'Shipped',
-//   },
-//   {
-//     id: '3',
-//     orderNo: '#1524',
-//     date: '13/05/2021',
-//     time: '11:25 AM',
-//     quantity: 2,
-//     subtotal: '₹8,200',
-//     status: 'Delivered',
-//   },
-//   {
-//     id: '4',
-//     orderNo: '#1524',
-//     date: '13/05/2021',
-//     time: '11:25 AM',
-//     quantity: 2,
-//     subtotal: '₹8,200',
-//     status: 'Canceled',
-//   },
-// ];
-
-// const statusImages = {
-//   Pending: require('../../../../../assets/images/pending.png'),
-//   Shipped: require('../../../../../assets/images/shiped.png'),
-//   Delivered: require('../../../../../assets/images/delever.png'),
-//   Canceled: require('../../../../../assets/images/cancle.png'),
-// };
-
-// const statusColors = {
-//   Pending: '#CF6112',
-//   Shipped: '#CF6112',
-//   Delivered: '#28A745',
-//   Canceled: '#E53935',
-// };
-
-// const tabs = ['All', 'Pending', 'Delivered', 'Canceled'];
-
-// const Myorder = ({navigation}) => {
-//   const [activeTab, setActiveTab] = useState('All');
-//   const dispatch = useDispatch();
-//   const {orderList, loading, error} = useSelector(state => state.orders);
-
-//   useEffect(() => {
-//     const loadOrders = async () => {
-//       const userId = await AsyncStorage.getItem('USERID');
-//       if (userId) dispatch(fetchOrdersAPI(userId));
-//     };
-//     loadOrders();
-//   }, [dispatch]);
-
-//   if (loading) return <ActivityIndicator size="large" color="#1C9C48" />;
-//   if (error) return <Text style={{color: 'red'}}>{error}</Text>;
-
-//   const filteredOrders =
-//     activeTab === 'All'
-//       ? orders
-//       : orders.filter(order => order.status === activeTab);
-
-//   const renderOrder = ({item}) => (
-//     <View style={styles.card}>
-//       <View style={styles.cardTopRow}>
-//         <View style={{flex: 1}}>
-//           <Text style={styles.orderTitle}>Order {item.orderNo}</Text>
-//         </View>
-//         <View style={styles.statusContainer}>
-//           <Image source={statusImages[item.status]} style={styles.statusIcon} />
-//           <Text style={[styles.statusText, {color: statusColors[item.status]}]}>
-//             {item.order_status}
-//           </Text>
-//         </View>
-//       </View>
-
-//       <View style={styles.cardContent}>
-//         <View style={{flex: 1}}>
-//           <Text style={styles.subText}>
-//             {item.date} {item.order_date_time}
-//           </Text>
-//           <Text style={styles.subText}>Quantity: {item.order_quantity}</Text>
-//           <Text style={styles.subText}>
-//             Subtotal: <Text style={styles.boldText}>{item.total_amount}</Text>
-//           </Text>
-
-//           <View style={styles.actions}>
-//             {item.status === 'Pending' && (
-//               <>
-//                 <TouchableOpacity
-//                   onPress={() => navigation.navigate('YourOrderIsCancle')}
-//                   style={styles.button}>
-//                   <Text style={styles.buttonText}>Cancel</Text>
-//                 </TouchableOpacity>
-//                 <TouchableOpacity
-//                   onPress={() =>
-//                     navigation.navigate('YourOrderIsGettingPacked')
-//                   }
-//                   style={styles.button}>
-//                   <Text style={styles.buttonText}>Details</Text>
-//                 </TouchableOpacity>
-//               </>
-//             )}
-//             {item.status === 'Shipped' && (
-//               <>
-//                 <TouchableOpacity
-//                   onPress={() => navigation.navigate('YourOrderIsOnTheWay')}
-//                   style={styles.button}>
-//                   <Text style={styles.buttonText}>Details</Text>
-//                 </TouchableOpacity>
-//               </>
-//             )}
-//             {item.status === 'Canceled' && (
-//               <>
-//                 <TouchableOpacity
-//                   onPress={() => navigation.navigate('YourOrderIsCancle')}
-//                   style={styles.button}>
-//                   <Text style={styles.buttonText}>Details</Text>
-//                 </TouchableOpacity>
-//               </>
-//             )}
-//             {item.status === 'Delivered' && (
-//               <>
-//                 <TouchableOpacity
-//                   onPress={() => navigation.navigate('ReturnRequest')}
-//                   style={styles.button}>
-//                   <Text style={styles.buttonText}>Return</Text>
-//                 </TouchableOpacity>
-//                 <TouchableOpacity
-//                   onPress={() => navigation.navigate('YourOrderIsDelever')}
-//                   style={styles.button}>
-//                   <Text style={styles.buttonText}>Details</Text>
-//                 </TouchableOpacity>
-//               </>
-//             )}
-//             {/* <TouchableOpacity
-//               onPress={() => navigation.navigate('YourOrderIsOnTheWay')}
-//               style={styles.button}>
-//               <Text style={styles.buttonText}>Details</Text>
-//             </TouchableOpacity> */}
-//           </View>
-//         </View>
-
-//         <View style={styles.imageBox} />
-//       </View>
-//     </View>
-//   );
-
-//   console.log("orderList------------------------------------>", orderList);
-
-//   return (
-//     <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
-//       {/* Header */}
-//       <View style={styles.header}>
-//         <TouchableOpacity
-//           onPress={() => navigation.goBack()}
-//           style={styles.backButton}>
-//           <Ionicons name="chevron-back" size={22} color="#000" />
-//         </TouchableOpacity>
-//         <View>
-//           <Text style={styles.headerTitle}>My Order</Text>
-//         </View>
-//         <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-//           <Ionicons name="search" size={24} color="#333" />
-//         </TouchableOpacity>
-//       </View>
-
-//       <View style={styles.tabs}>
-//         {tabs.map(tab => (
-//           <TouchableOpacity
-//             key={tab}
-//             onPress={() => setActiveTab(tab)}
-//             style={[styles.tabItem, activeTab === tab && styles.activeTabItem]}>
-//             <Text
-//               style={[
-//                 styles.tabText,
-//                 activeTab === tab && styles.activeTabText,
-//               ]}>
-//               {tab}
-//             </Text>
-//           </TouchableOpacity>
-//         ))}
-//       </View>
-
-//       <FlatList
-//         data={orderList}
-//         keyExtractor={item => item.id}
-//         renderItem={renderOrder}
-//         contentContainerStyle={{padding: 16}}
-//       />
-//     </SafeAreaView>
-//   );
-// };
-
-// export default Myorder;
-
-// const styles = StyleSheet.create({
-//   header: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     paddingVertical: 10,
-//     justifyContent: 'space-between',
-//     marginHorizontal: 10,
-//   },
-//   backButton: {
-//     backgroundColor: '#f5f5f5',
-//     borderRadius: 20,
-//     padding: 6,
-//     left: 0,
-//   },
-//   headerTitle: {
-//     fontSize: 16,
-//     fontWeight: '500',
-//     color: '#000',
-//     textAlign: 'center',
-//   },
-//   tabs: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-around',
-//     borderBottomWidth: 1,
-//     borderColor: '#ccc',
-//   },
-//   tabItem: {
-//     paddingVertical: 12,
-//   },
-//   tabText: {
-//     fontSize: 15,
-//     color: '#888',
-//     fontWeight: 'bold',
-//   },
-//   activeTabItem: {
-//     borderBottomWidth: 2,
-//     borderColor: 'black',
-//   },
-//   activeTabText: {
-//     color: 'black',
-//     fontWeight: 'bold',
-//   },
-//   card: {
-//     borderWidth: 1,
-//     borderColor: '#666666',
-//     borderRadius: 12,
-//     padding: 16,
-//     marginBottom: 16,
-//   },
-//   cardHeader: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//   },
-//   orderTitle: {
-//     fontSize: 18,
-//     fontWeight: 'bold',
-//   },
-//   statusContainer: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     gap: 4,
-//   },
-//   statusText: {
-//     fontSize: 14,
-//     fontWeight: 'semibold',
-//   },
-//   subText: {
-//     fontSize: 12,
-//     color: '#555',
-//     marginTop: 4,
-//     fontWeight: 'regular',
-//     marginTop: 8,
-//   },
-//   boldText: {
-//     fontWeight: 'bold',
-//     color: '#000',
-//   },
-//   actions: {
-//     flexDirection: 'row',
-//     justifyContent: 'flex-start',
-//     gap: 10,
-//     marginTop: 12,
-//   },
-//   button: {
-//     borderWidth: 1,
-//     borderColor: '#000',
-//     paddingVertical: 6,
-//     paddingHorizontal: 14,
-//     borderRadius: 20,
-//   },
-//   buttonText: {
-//     fontSize: 14,
-//     color: '#000',
-//   },
-//   cardTopRow: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//   },
-//   cardContent: {
-//     flexDirection: 'row',
-//     marginTop: 12,
-//   },
-//   imageBox: {
-//     width: 80,
-//     height: 80,
-//     backgroundColor: '#e0e0e0',
-//     borderRadius: 12,
-//     marginLeft: 10,
-//   },
-//   statusIcon: {
-//     width: 18,
-//     height: 18,
-//     resizeMode: 'contain',
-//     marginRight: 4,
-//   },
-// });
-
 import React, {useEffect, useState} from 'react';
 import {
   View,
@@ -348,37 +5,23 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  Image,
   ActivityIndicator,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useDispatch, useSelector} from 'react-redux';
-import {fetchOrdersAPI} from '../../../../redux/slices/orderSlice';
+import {
+  fetchOrdersAPI,
+} from '../../../../redux/slices/orderSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../../../../constants/Header';
 
-// 🔹 Images for each order status
-const statusImages = {
-  Pending: require('../../../../../assets/images/pending.png'),
-  Shipped: require('../../../../../assets/images/shiped.png'),
-  Delivered: require('../../../../../assets/images/delever.png'),
-  Confirmed: require('../../../../../assets/images/delever.png'),
-  Canceled: require('../../../../../assets/images/cancle.png'),
-};
-
-// 🔹 Status color mapping
-const statusColors = {
-  Pending: '#CF6112',
-  Shipped: '#CF6112',
-  Delivered: '#28A745',
-  Confirmed: '#28A745',
-  Canceled: '#E53935',
-};
 
 const Myorder = ({navigation}) => {
   const dispatch = useDispatch();
-  const {orderList, loading, error} = useSelector(state => state.orders);
+  const {orderList, loading, error} = useSelector(
+    state => state.orders,
+  );
+  console.log('orderList------------------------->', orderList);
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -403,25 +46,41 @@ const Myorder = ({navigation}) => {
       </View>
     );
 
+  const statusStyles = {
+    'Order Placed': {bg: '#D9D9D9', color: '#5A5A5A'},
+    'Payment Verified': {bg: '#9BD4F6', color: '#FFFFFF'},
+    'Stock-out Requested': {bg: '#E4DCCF', color: '#5A4F3D'},
+    'Under Process': {bg: '#C9B79A', color: '#ffffff'},
+    Packed: {bg: '#C9B79A', color: '#ffffff'},
+    'Ready for dispatch': {bg: '#EED8B8', color: '#6E5B3B'},
+    Dispatched: {bg: '#A28F79', color: '#ffffff'},
+    Delivered: {bg: '#3FAE49', color: '#ffffff'},
+    Returned: {bg: '#E1B040', color: '#ffffff'},
+    Cancelled: {bg: '#DD6B6B', color: '#ffffff'},
+
+    // second list
+    Confirmed: {bg: '#9BD4F6', color: '#ffffff'},
+    'Ready for pick-up': {bg: '#EED8B8', color: '#6E5B3B'},
+    'Picked by buyer': {bg: '#3FAE49', color: '#ffffff'},
+  };
+
   // 🔹 Render each order
   const renderOrder = ({item}) => {
     return (
       <View style={styles.card}>
         <View style={styles.cardTopRow}>
           <View style={{flex: 1}}>
-            <Text style={styles.orderTitle}>Order #{item.order_id}</Text>
+            <Text style={styles.orderTitle}>#{item.order_id_Number}</Text>
           </View>
-          <View style={styles.statusContainer}>
-            {statusImages[item.order_status] && (
-              <Image
-                source={statusImages[item.order_status]}
-                style={styles.statusIcon}
-              />
-            )}
+          <View
+            style={[
+              styles.statusBox,
+              {backgroundColor: statusStyles[item.order_status]?.bg || '#ccc'},
+            ]}>
             <Text
               style={[
                 styles.statusText,
-                {color: statusColors[item.order_status]},
+                {color: statusStyles[item.order_status]?.color || '#000'},
               ]}>
               {item.order_status}
             </Text>
@@ -429,26 +88,81 @@ const Myorder = ({navigation}) => {
         </View>
 
         <View style={styles.cardContent}>
-          <View style={{flex: 1}}>
-            <Text style={styles.subText}>{item?.order_date_time}</Text>
-            <Text style={styles.subText}>
-              Quantity: {item.order_quantity || 0}
-            </Text>
-            <Text style={styles.subText}>
-              Subtotal:{' '}
-              <Text style={styles.boldText}>₹{item.total_amount}</Text>
-            </Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              flex: 1,
+            }}>
+            <View style={{}}>
+              <Text style={styles.subText}>{item?.order_date_time}</Text>
+              <Text style={styles.subText}>
+                Quantity: {item.order_quantity || 0}
+              </Text>
+              <Text style={styles.subText}>
+                Subtotal:{' '}
+                <Text style={styles.boldText}>₹{item.total_amount}</Text>
+              </Text>
+              {/* 🔹 Buttons */}
+              <View style={styles.actions}>
+                {item.order_status === 'Pending' && (
+                  <>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate('YourOrderIsCancle')}
+                      style={styles.button}>
+                      <Text style={styles.buttonText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate('MyorderDetails', {
+                          order_id: item?.order_id,
+                        })
+                      }
+                      style={styles.button}>
+                      <Text style={styles.buttonText}>Details</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
 
-            {/* 🔹 Buttons */}
-            <View style={styles.actions}>
-              {item.order_status === 'Pending' && (
-              // {item.order_status === 'Confirmed' && (
-                <>
-                  <TouchableOpacity
-                    onPress={() => navigation.navigate('YourOrderIsCancle')}
-                    style={styles.button}>
-                    <Text style={styles.buttonText}>Cancel</Text>
-                  </TouchableOpacity>
+                {item.order_status === 'Delivered' && (
+                  <>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate('ReturnRequest')}
+                      style={styles.button}>
+                      <Text style={styles.buttonText}>Return</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate('MyorderDetails', {
+                          order_id: item?.order_id,
+                        })
+                      }
+                      style={styles.button}>
+                      <Text style={styles.buttonText}>Details</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+
+                 {item.order_status === 'Confirmed' && (
+                  <>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate('ReturnRequest')}
+                      style={styles.button}>
+                      <Text style={styles.buttonText}>Return</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate('MyorderDetails', {
+                          order_id: item?.order_id,
+                        })
+                      }
+                      style={styles.button}>
+                      <Text style={styles.buttonText}>Details</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+
+                {item.order_status === 'Cancelled' && (
                   <TouchableOpacity
                     onPress={() =>
                       navigation.navigate('MyorderDetails', {
@@ -458,16 +172,21 @@ const Myorder = ({navigation}) => {
                     style={styles.button}>
                     <Text style={styles.buttonText}>Details</Text>
                   </TouchableOpacity>
-                </>
-              )}
-
-              {item.order_status === 'Delivered' && (
-                <>
+                )}
+                {item.order_status === 'Order Placed' && (
                   <TouchableOpacity
-                    onPress={() => navigation.navigate('ReturnRequest')}
+                    onPress={() =>
+                      navigation.navigate('MyorderDetails', {
+                        order_id: item?.order_id,
+                        order_id_Number: item?.order_id_Number,
+                      })
+                    }
                     style={styles.button}>
-                    <Text style={styles.buttonText}>Return</Text>
+                    <Text style={styles.buttonText}>Details</Text>
                   </TouchableOpacity>
+                )}
+
+                {item.order_status === 'Shipped' && (
                   <TouchableOpacity
                     onPress={() =>
                       navigation.navigate('MyorderDetails', {
@@ -477,51 +196,8 @@ const Myorder = ({navigation}) => {
                     style={styles.button}>
                     <Text style={styles.buttonText}>Details</Text>
                   </TouchableOpacity>
-                </>
-              )}
-
-              {item.order_status === 'Confirmed' && (
-                <>
-                  <TouchableOpacity
-                    onPress={() => navigation.navigate('ReturnRequest')}
-                    style={styles.button}>
-                    <Text style={styles.buttonText}>Return</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() =>
-                      navigation.navigate('MyorderDetails', {
-                        order_id: item?.order_id,
-                      })
-                    }
-                    style={styles.button}>
-                    <Text style={styles.buttonText}>Details</Text>
-                  </TouchableOpacity>
-                </>
-              )}
-
-              {item.order_status === 'Canceled' && (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate('MyorderDetails', {
-                      order_id: item?.order_id,
-                    })
-                  }
-                  style={styles.button}>
-                  <Text style={styles.buttonText}>Details</Text>
-                </TouchableOpacity>
-              )}
-
-              {item.order_status === 'Shipped' && (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate('MyorderDetails', {
-                      order_id: item?.order_id,
-                    })
-                  }
-                  style={styles.button}>
-                  <Text style={styles.buttonText}>Details</Text>
-                </TouchableOpacity>
-              )}
+                )}
+              </View>
             </View>
           </View>
         </View>
@@ -532,11 +208,7 @@ const Myorder = ({navigation}) => {
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
       {/* Header */}
-       <Header
-        title='My Orders'
-        navigation={navigation}
-        showBack={true}
-      />
+      <Header title="My Orders" navigation={navigation} showBack={true} />
 
       {/* Order List */}
       <FlatList
@@ -637,5 +309,55 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     resizeMode: 'contain',
+  },
+
+  card_invoice: {
+    backgroundColor: '#fff',
+    padding: 18,
+    marginHorizontal: 0,
+    marginTop: 20,
+    borderRadius: 16,
+    elevation: 4, // Android shadow
+    shadowColor: '#000', // iOS shadow
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: {width: 0, height: 4},
+  },
+  invoiceBox: {
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 10,
+    paddingHorizontal: 22,
+    borderRadius: 16,
+
+    // Shadow (iOS)
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    shadowOffset: {width: 0, height: 3},
+
+    // Shadow (Android)
+    elevation: 5,
+
+    alignSelf: 'flex-end',
+  },
+
+  invoiceText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#222',
+    textAlign: 'center',
+  },
+
+  title: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#222',
+  },
+  statusBox: {
+    alignSelf: 'flex-start',
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    marginVertical: 4,
   },
 });

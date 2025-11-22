@@ -100,36 +100,40 @@
 // export const {clearOrders} = orderSlice.actions;
 // export default orderSlice.reducer;
 
-
-
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
-import { API_BASE_URL } from '../../utils/utils';
+import {API_BASE_URL} from '../../utils/utils';
 
 // 🧩 1️⃣ Fetch All Orders API
 export const fetchOrdersAPI = createAsyncThunk(
   'orders/fetchOrdersAPI',
-  async (userId, { rejectWithValue }) => {
+  async (userId, {rejectWithValue}) => {
     try {
       const token = await AsyncStorage.getItem('TOKEN');
 
-      const response = await axios.get(`${API_BASE_URL}/fetchorders/${userId}`, {
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${token}`,
+      const response = await axios.get(
+        `${API_BASE_URL}/fetchorders/${userId}`,
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       if (response.data.status) {
         return response.data.data;
       } else {
-        Toast.show({ type: 'error', text1: response.data.message });
+        Toast.show({type: 'error', text1: response.data.message});
         return rejectWithValue(response.data.message);
       }
     } catch (error) {
-      console.log('fetchOrdersAPI Error:', error?.response?.data || error.message);
+      console.log(
+        'fetchOrdersAPI Error:',
+        error?.response?.data || error.message,
+      );
       return rejectWithValue(error?.response?.data || error.message);
     }
   },
@@ -138,27 +142,106 @@ export const fetchOrdersAPI = createAsyncThunk(
 // 🧩 2️⃣ Fetch Order Details API
 export const fetchOrderDetailsAPI = createAsyncThunk(
   'orders/fetchOrderDetailsAPI',
-  async (order_id, { rejectWithValue }) => {
+  async (order_id, {rejectWithValue}) => {
     try {
       const token = await AsyncStorage.getItem('TOKEN');
 
-      const response = await axios.get(`${API_BASE_URL}/fetchordersdetail/${order_id}`, {
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${token}`,
+      const response = await axios.get(
+        `${API_BASE_URL}/fetchordersdetail/${order_id}`,
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       if (response.data.status) {
-        Toast.show({ type: 'success', text1: 'Order details loaded successfully' });
+        Toast.show({
+          type: 'success',
+          text1: 'Order details loaded successfully',
+        });
         return response.data.data;
       } else {
-        Toast.show({ type: 'error', text1: response.data.message });
+        Toast.show({type: 'error', text1: response.data.message});
+        return rejectWithValue(response.data.message); // STRING
+      }
+    } catch (error) {
+      const message =
+        error?.response?.data?.message ||
+        error.message ||
+        'Something went wrong';
+
+      Toast.show({type: 'error', text1: message});
+
+      return rejectWithValue(message); // also STRING
+    }
+  },
+);
+
+// 🧩 3️⃣ Fetch Sales Invoice Details
+export const fetchSalesInvoiceAPI = createAsyncThunk(
+  'orders/fetchSalesInvoiceAPI',
+  async (orderId, {rejectWithValue}) => {
+    try {
+      const token = await AsyncStorage.getItem('TOKEN');
+
+      const response = await axios.get(
+        `${API_BASE_URL}/sales-invoice/${orderId}`,
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (response.data.status) {
+        Toast.show({type: 'success', text1: 'Invoice loaded successfully'});
+        return response.data.data; // API data
+      } else {
+        Toast.show({type: 'error', text1: response.data.message});
         return rejectWithValue(response.data.message);
       }
     } catch (error) {
-      console.log('fetchOrderDetailsAPI Error:', error?.response?.data || error.message);
-      return rejectWithValue(error?.response?.data || error.message);
+      console.log(
+        'fetchSalesInvoiceAPI Error:',
+        error?.response?.data?.message || error.message,
+      );
+      return rejectWithValue(error?.response?.data?.message || error.message);
+    }
+  },
+);
+
+// 🧩 4️⃣ Fetch Order Status Logs API
+export const fetchOrderStatusLogsAPI = createAsyncThunk(
+  'orders/fetchOrderStatusLogsAPI',
+  async (orderId, {rejectWithValue}) => {
+    try {
+      const token = await AsyncStorage.getItem('TOKEN');
+
+      const response = await axios.get(
+        `${API_BASE_URL}/order/statuslogs/${orderId}`,
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      console.log('tracking------------------------------------------------>',response?.data);
+      if (response.data.status) {
+        return response.data; // status logs array
+      } else {
+        return rejectWithValue(response.data.message);
+      }
+    } catch (error) {
+      const message =
+        error?.response?.data?.message ||
+        error.message ||
+        'Something went wrong';
+
+      return rejectWithValue(message);
     }
   },
 );
@@ -168,22 +251,26 @@ const orderSlice = createSlice({
   name: 'orders',
   initialState: {
     orderList: [],
+    orderStatusLogs: [],
     orderDetails: null,
     loading: false,
     error: null,
+    invoiceData: null,
   },
   reducers: {
-    clearOrders: (state) => {
+    clearOrders: state => {
       state.orderList = [];
       state.orderDetails = null;
+      state.invoiceData = null;
+      state.orderStatusLogs = [];
       state.error = null;
       state.loading = false;
     },
   },
-  extraReducers: (builder) => {
+  extraReducers: builder => {
     builder
       // Fetch Orders
-      .addCase(fetchOrdersAPI.pending, (state) => {
+      .addCase(fetchOrdersAPI.pending, state => {
         state.loading = true;
         state.error = null;
       })
@@ -197,7 +284,7 @@ const orderSlice = createSlice({
       })
 
       // Fetch Order Details
-      .addCase(fetchOrderDetailsAPI.pending, (state) => {
+      .addCase(fetchOrderDetailsAPI.pending, state => {
         state.loading = true;
         state.error = null;
       })
@@ -208,9 +295,37 @@ const orderSlice = createSlice({
       .addCase(fetchOrderDetailsAPI.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Failed to fetch order details';
+      })
+
+      // Fetch Sales Invoice
+      .addCase(fetchSalesInvoiceAPI.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchSalesInvoiceAPI.fulfilled, (state, action) => {
+        state.loading = false;
+        state.invoiceData = action.payload;
+      })
+      .addCase(fetchSalesInvoiceAPI.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to fetch invoice';
+      })
+
+      // Fetch Order Status Logs
+      .addCase(fetchOrderStatusLogsAPI.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchOrderStatusLogsAPI.fulfilled, (state, action) => {
+        state.loading = false;
+        state.orderStatusLogs = action.payload;
+      })
+      .addCase(fetchOrderStatusLogsAPI.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to fetch status logs';
       });
   },
 });
 
-export const { clearOrders } = orderSlice.actions;
+export const {clearOrders} = orderSlice.actions;
 export default orderSlice.reducer;

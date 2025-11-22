@@ -19,6 +19,7 @@ import {
   fetchCartAPI,
   checkoutDetailsAPI,
 } from '../../../../redux/slices/cartSlice';
+import {fetchBuyerAddress} from '../../../../redux/slices/buyerAddressSlice';
 import {useDispatch, useSelector} from 'react-redux';
 import axios from 'axios';
 import {API_BASE_URL} from '../../../../utils/utils';
@@ -34,9 +35,38 @@ const CheckoutScreen = () => {
     items: cartItems,
     loading,
   } = useSelector(state => state.cart);
+  const {addresses, loading: addressLoading} = useSelector(
+    state => state.buyerAddress,
+  );
+
+  const billingAddress = addresses?.length
+    ? `${addresses[0].billing_Address}, ${addresses[0].billing_City}, ${addresses[0].billing_State} - ${addresses[0].billing_Zip}`
+    : '';
+
+  const shippingAddress = addresses?.length
+    ? `${addresses[0].shipping_Address}, ${addresses[0].shipping_City}, ${addresses[0].shipping_State} - ${addresses[0].shipping_Zip}`
+    : '';
+
+    const deliveryAddressId = addresses?.[0]?.user_address_id;
+
+
   const [deliveryMode, setDeliveryMode] = useState('home');
   const [selectedStore, setSelectedStore] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState('pickup');
+  const [selectedMethod, setSelectedMethod] = useState('upi');
+
+  console.log(
+    'checkoutData------------------------------------------>',
+    checkoutData,
+  );
+  console.log(
+    'addresses------------------------------------------>',
+    addresses,
+  );
+  console.log(
+    'deliveryAddressId------------------------------------------>',
+    deliveryAddressId,
+  );
 
   // ✅ Mapping between method name → transaction_type value
   const transactionTypeMap = {
@@ -52,6 +82,7 @@ const CheckoutScreen = () => {
   useEffect(() => {
     dispatch(checkoutAPI());
     dispatch(fetchCartAPI());
+    dispatch(fetchBuyerAddress()); // pass buyer ID dynamically later
   }, [dispatch]);
 
   useEffect(() => {
@@ -126,7 +157,7 @@ const CheckoutScreen = () => {
         user_id: checkoutData?.user_id,
         payment_mode: paymentOption,
         delivery_type: deliveryModeValue,
-        delivery_address_id: 1,
+        delivery_address_id: deliveryAddressId,
         checkout_id: checkoutData?.checkout_id,
         barcode_ids: barcode_ids,
       };
@@ -143,6 +174,11 @@ const CheckoutScreen = () => {
             Authorization: `Bearer ${token}`,
           },
         },
+      );
+
+      console.log(
+        'createOrderRes++++++++++++++++++++++++++++++++++++++++',
+        createOrderRes,
       );
 
       const razorpayOrderId = createOrderRes?.data?.data?.razorpay_order_id;
@@ -182,7 +218,7 @@ const CheckoutScreen = () => {
             name: 'User',
           },
           theme: {color: '#1C9C48'},
-          method: transactionTypeMap // ✅ numeric value
+          method: transactionTypeMap,
         };
 
         console.log('options------------------------------------>', options);
@@ -219,6 +255,10 @@ const CheckoutScreen = () => {
                   type: 'success',
                   text2: verifyResponse?.data?.message || 'Payment Successful!',
                 });
+                console.log(
+                  'success______________online__________________>',
+                  verifyResponse?.data?.message,
+                );
                 navigation.navigate('BottomNavigator');
               } else {
                 Toast.show({
@@ -329,7 +369,10 @@ const CheckoutScreen = () => {
                 text2: verifyResponse?.data?.message || 'Payment Successful!',
               });
               navigation.navigate('BottomNavigator');
-              console.log('res--------------------------------->', verifyResponse?.data);
+              console.log(
+                'res--------------------------------->',
+                verifyResponse?.data,
+              );
             })
             .catch(error => {
               console.log('error--------------------------------->', error);
@@ -474,25 +517,15 @@ const CheckoutScreen = () => {
               <Ionicons name="location-outline" size={20} />
             </View>
             <View style={{flex: 1}}>
-              <Text style={styles.infoTitle}>Deliver to</Text>
-              <Text style={[styles.infoValue]}>123 Main St, Springfield</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} />
-          </TouchableOpacity>
-
-          {/* <View style={styles.infoBox}>
-            <View style={{borderWidth: 1, padding: 5, borderRadius: 50}}>
-              <Ionicons name="person-outline" size={20} />
-            </View>
-
-            <View style={{flex: 1}}>
-              <Text style={styles.infoTitle}>Instructions</Text>
-              <Text style={styles.infoValue}>
-                Johnathan Doe {'\n'}+91 xxxxx-xxxxx
+              <Text style={styles.infoTitle}>
+                {deliveryMode === 'home' ? 'Deliver to' : 'Bill to'}
+              </Text>
+              <Text style={[styles.infoValue]}>
+                {deliveryMode === 'home' ? shippingAddress : billingAddress}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={20} />
-          </View> */}
+          </TouchableOpacity>
         </View>
 
         {/* Payment Option */}

@@ -6,7 +6,6 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
-  StatusBar,
 } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import DrawerNavigator from './src/navigation/DrawerNavigator';
@@ -35,7 +34,6 @@ const App = () => {
   if (isConnected) {
     return (
       <Provider store={store}>
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
         <DrawerNavigator />;
       </Provider>
     );

@@ -56,56 +56,61 @@ const ForgotPasswordScreen = ({navigation}) => {
   };
 
   return (
-    <SafeAreaView style={styles_forgetpassword.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F1FFFA" />
-      {/* Back Button */}
-      <TouchableOpacity
-        style={styles_forgetpassword.backButton}
-        onPress={() => navigation.goBack()}>
-        <Ionicons name="chevron-back-outline" size={24} color="#000" />
-      </TouchableOpacity>
-
-      {/* Content */}
-      <View style={styles_forgetpassword.content}>
-        <Text style={styles_forgetpassword.title}>Forgot password?</Text>
-        <Text style={styles_forgetpassword.description}>
-          Don’t worry! It happens. Please enter the email associated with your
-          account.
-        </Text>
-
-        <Text style={styles_forgetpassword.label}>Email address</Text>
-        <TextInput
-          style={[
-            styles_forgetpassword.input,
-            errors.email && {borderColor: 'red'},
-          ]}
-          placeholder="Enter your email address"
-          placeholderTextColor={isDarkMode ? '#aaa' : '#666'}
-          keyboardType="email-address"
-          value={emailforget}
-          onChangeText={setEmail}
-        />
-        {errors.email && (
-          <Text style={styles_forgetpassword.errorText}>{errors.email}</Text>
-        )}
+    <>
+      <StatusBar
+        backgroundColor="transparent"
+        translucent={true}
+        barStyle="dark-content"
+      />
+      <SafeAreaView style={styles_forgetpassword.container}>
+        {/* Back Button */}
         <TouchableOpacity
-          style={styles_forgetpassword.button}
-          onPress={handleSendCode}>
-          <Text style={styles_forgetpassword.buttonText}>Send Code</Text>
+          style={styles_forgetpassword.backButton}
+          onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back-outline" size={24} color="#000" />
         </TouchableOpacity>
-
-        <Text style={styles_forgetpassword.footer}>
-          Remember password?{' '}
-          <Text
-            style={styles_forgetpassword.loginLink}
-            onPress={() =>
-              navigation.navigate('LoginScreen', {accountType: accountType})
-            }>
-            Log in
+        {/* Content */}
+        <View style={styles_forgetpassword.content}>
+          <Text style={styles_forgetpassword.title}>Forgot password?</Text>
+          <Text style={styles_forgetpassword.description}>
+            Don’t worry! It happens. Please enter the email associated with your
+            account.
           </Text>
-        </Text>
-      </View>
-    </SafeAreaView>
+
+          <Text style={styles_forgetpassword.label}>Email address</Text>
+          <TextInput
+            style={[
+              styles_forgetpassword.input,
+              errors.email && {borderColor: 'red'},
+            ]}
+            placeholder="Enter your email address"
+            placeholderTextColor={isDarkMode ? '#aaa' : '#666'}
+            keyboardType="email-address"
+            value={emailforget}
+            onChangeText={setEmail}
+          />
+          {errors.email && (
+            <Text style={styles_forgetpassword.errorText}>{errors.email}</Text>
+          )}
+          <TouchableOpacity
+            style={styles_forgetpassword.button}
+            onPress={handleSendCode}>
+            <Text style={styles_forgetpassword.buttonText}>Send Code</Text>
+          </TouchableOpacity>
+
+          <Text style={styles_forgetpassword.footer}>
+            Remember password?{' '}
+            <Text
+              style={styles_forgetpassword.loginLink}
+              onPress={() =>
+                navigation.navigate('LoginScreen', {accountType: accountType})
+              }>
+              Log in
+            </Text>
+          </Text>
+        </View>
+      </SafeAreaView>
+    </>
   );
 };
 

@@ -735,83 +735,88 @@ const LoginScreen = ({navigation}) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f0fefa" />
+    <>
+      <StatusBar
+        backgroundColor="transparent"
+        translucent={true}
+        barStyle="dark-content"
+      />
+      <SafeAreaView style={styles.container}>
+        <View style={{marginHorizontal: 10}}>
+          {/* Back Arrow */}
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}>
+            <Ionicons
+              name="chevron-back-outline"
+              size={24}
+              style={{
+                backgroundColor: '#fff',
+                borderRadius: 20,
+                padding: 6,
+              }}
+            />
+          </TouchableOpacity>
 
-      <View style={{marginHorizontal: 10}}>
-        {/* Back Arrow */}
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}>
-          <Ionicons
-            name="chevron-back-outline"
-            size={24}
-            style={{
-              backgroundColor: '#fff',
-              borderRadius: 20,
-              padding: 6,
-            }}
+          <Text style={styles.title}>Hey!</Text>
+
+          {/* Email or Phone */}
+          <TextInput
+            style={[styles.input, errors.emailOrPhone && {borderColor: 'red'}]}
+            placeholder="Email or Phone"
+            placeholderTextColor={isDarkMode ? '#aaa' : '#666'}
+            value={emailOrPhone}
+            onChangeText={setEmailOrPhone}
           />
-        </TouchableOpacity>
-
-        <Text style={styles.title}>Hey!</Text>
-
-        {/* Email or Phone */}
-        <TextInput
-          style={[styles.input, errors.emailOrPhone && {borderColor: 'red'}]}
-          placeholder="Email or Phone"
-          placeholderTextColor={isDarkMode ? '#aaa' : '#666'}
-          value={emailOrPhone}
-          onChangeText={setEmailOrPhone}
-        />
-        {errors.emailOrPhone && (
-          <Text style={styles.errorText}>{errors.emailOrPhone}</Text>
-        )}
-
-        {/* Password */}
-        <TextInput
-          style={[styles.input, errors.password && {borderColor: 'red'}]}
-          placeholder="Password"
-          placeholderTextColor={isDarkMode ? '#aaa' : '#666'}
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        {errors.password && (
-          <Text style={styles.errorText}>{errors.password}</Text>
-        )}
-
-        {/* Forgot Password */}
-        <TouchableOpacity
-          onPress={() => navigation.navigate('ForgetPassword')}
-          style={styles.forgotContainer}>
-          <Text style={styles.forgotText}>Forgot Password?</Text>
-        </TouchableOpacity>
-
-        {/* Login Button */}
-        <TouchableOpacity
-          onPress={handleLogin}
-          style={styles.loginButton}
-          disabled={loading}>
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.loginText}>Log in</Text>
+          {errors.emailOrPhone && (
+            <Text style={styles.errorText}>{errors.emailOrPhone}</Text>
           )}
-        </TouchableOpacity>
 
-        {/* Sign Up */}
-        <TouchableOpacity
-          onPress={() => navigation.navigate('LandingPage')}
-          style={styles.signupButton}>
-          <Text style={styles.signupText}>Sign up</Text>
-        </TouchableOpacity>
+          {/* Password */}
+          <TextInput
+            style={[styles.input, errors.password && {borderColor: 'red'}]}
+            placeholder="Password"
+            placeholderTextColor={isDarkMode ? '#aaa' : '#666'}
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+          {errors.password && (
+            <Text style={styles.errorText}>{errors.password}</Text>
+          )}
 
-        <TouchableOpacity onPress={() => navigation.navigate('LandingPage')}>
-          <Text style={styles.bottomText}>New here? Create an Account?</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+          {/* Forgot Password */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ForgetPassword')}
+            style={styles.forgotContainer}>
+            <Text style={styles.forgotText}>Forgot Password?</Text>
+          </TouchableOpacity>
+
+          {/* Login Button */}
+          <TouchableOpacity
+            onPress={handleLogin}
+            style={styles.loginButton}
+            disabled={loading}>
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.loginText}>Log in</Text>
+            )}
+          </TouchableOpacity>
+
+          {/* Sign Up */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('LandingPage')}
+            style={styles.signupButton}>
+            <Text style={styles.signupText}>Sign up</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => navigation.navigate('LandingPage')}>
+            <Text style={styles.bottomText}>New here? Create an Account?</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </>
   );
 };
 

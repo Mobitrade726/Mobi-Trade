@@ -22,6 +22,12 @@ const Splash = () => {
 
   return (
     <>
+      <StatusBar
+        backgroundColor="transparent"
+        translucent={true}
+        barStyle="dark-content"
+      />
+
       <LinearGradient
         colors={['#F5EFFE', '#FBFCDB']}
         locations={[0.2, 1]}

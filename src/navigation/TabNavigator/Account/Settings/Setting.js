@@ -11,31 +11,19 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from './styles';
 import {useRoute} from '@react-navigation/native';
+import Header from '../../../../constants/Header';
 
 const Settings = ({navigation}) => {
-  const [smsAlerts, setSmsAlerts] = useState(true);
   const route = useRoute();
   const {cat, profileEdit} = route.params;
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}>
-          <Ionicons name="chevron-back" size={22} color="#000" />
-        </TouchableOpacity>
-        <View>
-          <Text style={styles.headerTitle}>Settings</Text>
-        </View>
-        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-          <Ionicons name="search" size={24} color="#333" />
-        </TouchableOpacity>
-      </View>
+
+      <Header title="Settings" navigation={navigation} showBack={true} />
 
       <ScrollView style={styles.container}>
         {/* Settings Items */}

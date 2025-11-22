@@ -359,6 +359,7 @@ import {
   SafeAreaView,
   useWindowDimensions,
   Platform,
+  StatusBar,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 
@@ -478,24 +479,31 @@ const OnboardingScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <FlatList
-        ref={flatListRef}
-        data={slides}
-        key={width} // force re-render on orientation
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={updateCurrentSlideIndex}
-        renderItem={renderSlide}
-        keyExtractor={item => item.id}
-        getItemLayout={(_, index) => ({
-          length: width,
-          offset: width * index,
-          index,
-        })}
+    <>
+      <StatusBar
+        backgroundColor="transparent"
+        translucent={true}
+        barStyle="dark-content"
       />
-    </SafeAreaView>
+      <SafeAreaView style={styles.container}>
+        <FlatList
+          ref={flatListRef}
+          data={slides}
+          key={width} // force re-render on orientation
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onMomentumScrollEnd={updateCurrentSlideIndex}
+          renderItem={renderSlide}
+          keyExtractor={item => item.id}
+          getItemLayout={(_, index) => ({
+            length: width,
+            offset: width * index,
+            index,
+          })}
+        />
+      </SafeAreaView>
+    </>
   );
 };
 
@@ -524,7 +532,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#1c1c1c',
-    marginTop:-14,
+    marginTop: -14,
     marginBottom: 10,
   },
   subtitle: {

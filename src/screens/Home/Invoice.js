@@ -1,219 +1,348 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  Image,
-  ScrollView,
-  StyleSheet,
-} from 'react-native';
+import React, {useEffect} from 'react';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 
-const Invoice = () => {
-  const products = [
-    {
-      sno: 1,
-      description: 'Second Hand iPhone 6 (1GB/32GB)',
-      imei: '1234567890123456',
-      barcode: 'MT000101',
-      grade: 'A2',
-      hsn: '85171290',
-    },
-    {
-      sno: 2,
-      description: 'Second Hand Samsung Galaxy S21 (8GB/128GB)',
-      imei: '9876543210987654',
-      barcode: 'MT000102',
-      grade: 'A2',
-      hsn: '75135460',
-    },
-    {
-      sno: 3,
-      description: 'Second Hand Google Pixel 5 (8GB/128GB)',
-      imei: '5432167890123456',
-      barcode: 'MT000103',
-      grade: 'A3',
-      hsn: '96325874',
-    },
-    {
-      sno: 4,
-      description: 'Second Hand OnePlus 8T (8GB/32GB)',
-      imei: '3216549870123456',
-      barcode: 'MT000104',
-      grade: 'A1',
-      hsn: '85274196',
-    },
-  ];
+import RNFS from 'react-native-fs';
+import {PDFDocument, StandardFonts} from 'pdf-lib';
+import Share from 'react-native-share';
+import {Buffer} from 'buffer';
+import RNHTMLtoPDF from 'react-native-html-to-pdf';
 
-  return (
-    <ScrollView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        {/* <Image
-          source={require('../../assets/images/logo.png')}
-          style={styles.logo}
-        /> */}
-        <View style={{ flex: 1 }}>
-          <Text style={styles.companyName}>Sarvabhishta E-waste Management Pvt. Ltd.</Text>
-          <Text style={styles.address}>
-            Warehouse Address: A-272K, First Floor, Sector 10, Noida, Gautam Buddha Nagar, Uttar Pradesh 201301{'\n'}
-            Registered Address: D-6 KH No.633 Laxmi Nagar, East Delhi, Delhi-110092
-          </Text>
-          <Text style={styles.details}>
-            Website: www.mobitrade.in | Email: accounts@mobitrade.in | Phone: 8700172840
-          </Text>
-          <Text style={styles.details}>
-            CIN: U74900DL2018PTC343979 | GSTIN: 09AABCS3150L1Z7
-          </Text>
-        </View>
-      </View>
+export const createAndSharePDF = async invoiceResponse => {
+  try {
+    const data = invoiceResponse;
 
-      <Text style={styles.taxTitle}>Tax Invoice</Text>
+    console.log('data--------------------------------------->', data);
 
-      {/* Bill To / Ship To */}
-      <View style={styles.sectionRow}>
-        <View style={styles.box}>
-          <Text style={styles.boxTitle}>Bill To</Text>
-          <Text style={styles.boxText}>
-            A-123, Test Road, Test Colony, Paschim Vihar, Delhi-110096{'\n'}
-            PHONE: +91 999 999 9999{'\n'}
-            EMAIL: info@e-wasteenterprises.com{'\n'}
-            GSTIN: 19AABCS9080ABCD{'\n'}
-            PAN: BQPC1234J{'\n'}
-            Place of supply: Delhi{'\n'}
-            State Code: 19
-          </Text>
-        </View>
-        <View style={styles.box}>
-          <Text style={styles.boxTitle}>Ship To</Text>
-          <Text style={styles.boxText}>
-            Test Buyer 2{'\n'}
-            A-123, Test Road, Test Colony, Paschim Vihar, Delhi-110096{'\n'}
-            PHONE: +91 999 999 9999{'\n'}
-            EMAIL: info@e-wasteenterprises.com{'\n'}
-            GSTIN: 19AABCS9080ABCD{'\n'}
-            PAN: BQPC1234J{'\n'}
-            Place of supply: Delhi{'\n'}
-            State Code: 19
-          </Text>
-        </View>
-      </View>
+    const pdfDoc = await PDFDocument.create();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-      {/* Invoice Info */}
-      <View style={styles.invoiceInfo}>
-        <Text>Invoice No: <Text style={styles.bold}>UP2022-234076</Text></Text>
-        <Text>Invoice Date: <Text style={styles.bold}>28/08/2022</Text></Text>
-        <Text>Total Quantity: <Text style={styles.bold}>4</Text></Text>
-        <Text>Emp Code: <Text style={styles.bold}>MT0101</Text></Text>
-      </View>
+    const page = pdfDoc.addPage([600, 900]);
+    const {height} = page.getSize();
 
-      {/* Table Header */}
-      <View style={styles.tableHeader}>
-        <Text style={[styles.cell, styles.sno]}>S.No.</Text>
-        <Text style={[styles.cell, styles.desc]}>Description of Goods</Text>
-        <Text style={[styles.cell, styles.small]}>IMEI</Text>
-        <Text style={[styles.cell, styles.small]}>Barcode</Text>
-        <Text style={[styles.cell, styles.small]}>Grade</Text>
-        <Text style={[styles.cell, styles.small]}>HSN</Text>
-      </View>
+    const draw = (text, x, y, size = 10, fontType = font) => {
+      page.drawText(String(text ?? ''), {x, y, size, font: fontType});
+    };
 
-      {/* Table Rows */}
-      {products.map(item => (
-        <View style={styles.tableRow} key={item.sno}>
-          <Text style={[styles.cell, styles.sno]}>{item.sno}</Text>
-          <Text style={[styles.cell, styles.desc]}>{item.description}</Text>
-          <Text style={[styles.cell, styles.small]}>{item.imei}</Text>
-          <Text style={[styles.cell, styles.small]}>{item.barcode}</Text>
-          <Text style={[styles.cell, styles.small]}>{item.grade}</Text>
-          <Text style={[styles.cell, styles.small]}>{item.hsn}</Text>
-        </View>
-      ))}
+    let y = height - 40;
 
-      {/* Total */}
-      <View style={styles.totalBox}>
-        <Text style={styles.totalText}>
-          Amount in Words: <Text style={styles.bold}>Thirteen Thousand Six Hundred Twenty Four Rupees Only</Text>
-        </Text>
-        <Text style={styles.totalText}>Total: ₹13,500</Text>
-      </View>
+    // ------------------------------
+    // 🔵 COMPANY HEADER
+    // ------------------------------
+    draw(data.company_details.regd_company_details, 50, y, 14, boldFont);
+    y -= 20;
+    draw(
+      `${data.company_details.regd_address}, ${data.company_details.regd_city}`,
+      50,
+      y,
+    );
+    y -= 15;
+    draw(
+      `State: ${data.company_details.regd_state} - ${data.company_details.regd_zip}`,
+      50,
+      y,
+    );
+    y -= 15;
+    draw(`Website: ${data.company_details.company_website}`, 50, y);
+    y -= 15;
+    draw(`PAN: ${data.company_details.company_pan}`, 50, y);
+    y -= 15;
+    draw(`CIN: ${data.company_details.company_cin}`, 50, y);
+    y -= 30;
 
-      {/* Tax */}
-      <View style={styles.taxSection}>
-        <Text style={styles.bold}>Tax Bifurcation</Text>
-        <View style={styles.taxRow}>
-          <Text style={styles.taxCell}>IGST (18%)</Text>
-          <Text style={styles.taxCell}>CGST (9%)</Text>
-          <Text style={styles.taxCell}>SGST (9%)</Text>
-          <Text style={styles.taxCell}>Total Tax</Text>
-        </View>
-        <View style={styles.taxRow}>
-          <Text style={styles.taxCell}>124</Text>
-          <Text style={styles.taxCell}>0</Text>
-          <Text style={styles.taxCell}>0</Text>
-          <Text style={styles.taxCell}>124</Text>
-        </View>
-      </View>
+    // ------------------------------
+    // 🔰 TITLE
+    // ------------------------------
+    draw('TAX INVOICE', 240, y, 16, boldFont);
+    y -= 40;
 
-      {/* Footer */}
-      <Text style={styles.footerText}>Thank you for your business.</Text>
-      <View style={styles.signatureBox}>
-        <Text style={styles.signLabel}>For Sarvabhishta E-waste Management Pvt. Ltd.</Text>
-        {/* <Image
-          source={require('../../assets/images/stamp.png')}
-          style={styles.stamp}
-        /> */}
-        <Text style={styles.signName}>Authorized Signatory</Text>
-      </View>
+    // ------------------------------
+    // 🟩 BILL TO
+    // ------------------------------
+    draw('Bill To:', 50, y, 12, boldFont);
+    y -= 18;
 
-      {/* Terms */}
-      <View style={styles.termsBox}>
-        <Text style={styles.bold}>Terms & Conditions</Text>
-        <Text style={styles.termsText}>
-          1. Value of supply is determined under section 15(5) of CGST rules.{'\n'}
-          2. Goods once sold cannot be returned. Buyer assumes full responsibility.{'\n'}
-          3. Buyer agrees to hold seller harmless from any claims or damages.
-        </Text>
-      </View>
-    </ScrollView>
-  );
+    const bill = data.bill_to;
+
+    draw(bill.name, 50, y);
+    y -= 15;
+    draw(bill.address, 50, y);
+    y -= 15;
+    draw(`${bill.city}, ${bill.state} - ${bill.zip}`, 50, y);
+    y -= 15;
+    draw(`Phone: ${bill.phone}`, 50, y);
+    y -= 15;
+    draw(`Email: ${bill.email}`, 50, y);
+    y -= 15;
+    draw(`GSTIN: ${bill.gstin}`, 50, y);
+    y -= 15;
+    draw(`State Code: ${bill.state_code}`, 50, y);
+    y -= 15;
+    draw(`Place of Supply: ${bill.place_of_supply}`, 50, y);
+    y -= 25;
+
+    // ------------------------------
+    // 🟦 INVOICE DETAILS RIGHT SIDE
+    // ------------------------------
+    let iy = height - 160;
+    draw(
+      `Invoice No : ${data.invoice_details.invoice_number ?? 'N/A'}`,
+      350,
+      iy,
+    );
+    iy -= 15;
+    draw(`Invoice Date : ${data.invoice_details.invoice_date}`, 350, iy);
+    iy -= 15;
+    draw(`Total Quantity : ${data.invoice_details.total_quantity}`, 350, iy);
+    iy -= 15;
+    draw(
+      `Tax Type : ${
+        data.invoice_details.tax_type === '0' ? 'IGST' : 'CGST/SGST'
+      }`,
+      350,
+      iy,
+    );
+    iy -= 15;
+    draw(`Emp Code : ${data.invoice_details.emp_code ?? 'N/A'}`, 350, iy);
+
+    // ------------------------------
+    // 📦 ITEMS TABLE
+    // ------------------------------
+    y -= 20;
+
+    draw('S.No', 20, y, 10, boldFont);
+    draw('Description', 60, y, 10, boldFont);
+    draw('IMEI / SN', 190, y, 10, boldFont);
+    draw('Barcode', 300, y, 10, boldFont);
+    draw('HSN', 380, y, 10, boldFont);
+    draw('Qty', 430, y, 10, boldFont);
+    draw('Price', 470, y, 10, boldFont);
+    draw('Amount', 530, y, 10, boldFont);
+
+    y -= 20;
+
+    data.items.forEach(item => {
+      draw(item.s_no, 25, y);
+      draw(item.description, 60, y);
+      draw(item.imei, 190, y);
+      draw(item.barcode, 300, y);
+      draw(item.hsn, 380, y);
+      draw(String(item.qty), 430, y);
+      draw(String(item.price_before_tax), 470, y);
+      draw(String(item.total_amount), 530, y);
+      y -= 20;
+    });
+
+    // ------------------------------
+    // 🧮 SUMMARY
+    // ------------------------------
+    y -= 20;
+
+    const sum = data.summary;
+
+    draw(`Total Before Tax: Rs. ${sum.total_before_tax}`, 350, y);
+    y -= 15;
+    draw(`CGST: Rs. ${sum.total_cgst}`, 350, y);
+    y -= 15;
+    draw(`SGST: Rs. ${sum.total_sgst}`, 350, y);
+    y -= 15;
+    draw(`IGST: Rs. ${sum.total_igst}`, 350, y);
+    y -= 15;
+
+    draw(`Grand Total: Rs. ${sum.grand_total}`, 350, y, 12, boldFont);
+    y -= 25;
+
+    draw(`Amount in Words: ${sum.amount_in_words}`, 50, y, 10, boldFont);
+    y -= 25;
+
+    draw('Note: Whether tax payable under reverse charge - NO', 50, y);
+    y -= 25;
+
+    draw('Thank you for the business!', 50, y, 12, boldFont);
+
+    // ------------------------------
+    // 📄 SAVE & SHARE PDF
+    // ------------------------------
+    const pdfBytes = await pdfDoc.save();
+    const pdfBase64 = Buffer.from(pdfBytes).toString('base64');
+
+    const invoiceNo = data.invoice_details.invoice_number ?? 'no_number';
+    const filePath = `${RNFS.CachesDirectoryPath}/Invoice_${invoiceNo}.pdf`;
+
+    await RNFS.writeFile(filePath, pdfBase64, 'base64');
+
+    await Share.open({
+      url: `file://${filePath}`,
+      type: 'application/pdf',
+    });
+  } catch (error) {
+    console.log('PDF Error:', error);
+  }
+
+  ///--------------------------------------HTML-----------------------------------------------
+
+  // try {
+  //   const data = invoiceResponse;
+  //   console.log("html----------------->",data);
+  //   const itemsHTML = data.items
+  //     .map((item, index) => {
+  //       return `
+  //       <tr>
+  //         <td>${index + 1}</td>
+  //         <td>${item.description}</td>
+  //         <td>${item.imei}</td>
+  //         <td>${item.barcode}</td>
+  //         <td>${item.grade}</td>
+  //         <td>${item.hsn}</td>
+  //         <td>${item.qty}</td>
+  //         <td>${item.price}</td>
+  //         <td>${item.amount}</td>
+  //       </tr>
+  //     `;
+  //     })
+  //     .join('');
+
+  //   const htmlContent = `
+  //     <html>
+  //     <head>
+  //       <style>
+  //         body { font-family: Arial; padding: 10px; }
+  //         .header { text-align: center; font-size: 22px; font-weight: bold; }
+  //         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+  //         table, th, td { border: 1px solid #000; }
+  //         th, td { padding: 6px; font-size: 12px; text-align: center; }
+  //         .title { text-align:center; font-size: 18px; margin-top:20px; color:#0B6F28; font-weight:bold; }
+  //         .section-title { font-size:14px; font-weight:bold; margin-top:20px; }
+  //       </style>
+  //     </head>
+
+  //     <body>
+
+  //       <div class="header">
+  //         ${data.company_details.regd_company_details}
+  //       </div>
+
+  //       <p style="text-align:center; margin:5px 0;">
+  //         ${data.company_details.regd_address}<br/>
+  //         GSTIN: ${data.company_details.company_cin}
+  //       </p>
+
+  //       <h3 class="title">Tax Invoice</h3>
+
+  //       <table>
+  //         <tr>
+  //           <td style="text-align:left;">
+  //             <b>Bill To:</b><br/>
+  //             ${data.bill_to.name}<br/>
+  //             ${data.bill_to.address}<br/>
+  //             Phone: ${data.bill_to.phone}<br/>
+  //             Email: ${data.bill_to.email}<br/>
+  //             GSTIN: ${data.bill_to.gstin}
+  //           </td>
+
+  //           <td style="text-align:left;">
+  //             <b>Invoice No:</b> ${data.invoice_details.invoice_number}<br/>
+  //             <b>Date:</b> ${data.invoice_details.invoice_date}<br/>
+  //             <b>Total Qty:</b> ${data.invoice_details.total_quantity}<br/>
+  //             <b>Emp Code:</b> ${data.invoice_details.invoice_id}
+  //           </td>
+  //         </tr>
+  //       </table>
+
+  //       <table>
+  //         <tr>
+  //           <th>S.No</th>
+  //           <th>Description</th>
+  //           <th>IMEI</th>
+  //           <th>Barcode</th>
+  //           <th>Grade</th>
+  //           <th>HSN</th>
+  //           <th>Qty</th>
+  //           <th>Price (Rs.)</th>
+  //           <th>Amount (Rs.)</th>
+  //         </tr>
+  //         ${itemsHTML}
+  //       </table>
+
+  //       <table>
+  //         <tr>
+  //           <td style="text-align:right; font-weight:bold;" colspan="8">Total Before Tax</td>
+  //           <td>${data.summary.total_before_tax}</td>
+  //         </tr>
+
+  //         <tr>
+  //           <td style="text-align:right; font-weight:bold;" colspan="8">Total CGST</td>
+  //           <td>${data.summary.total_cgst}</td>
+  //         </tr>
+
+  //         <tr>
+  //           <td style="text-align:right; font-weight:bold;" colspan="8">Total SGST</td>
+  //           <td>${data.summary.total_sgst}</td>
+  //         </tr>
+
+  //         <tr>
+  //           <td style="text-align:right; font-weight:bold;" colspan="8">Grand Total</td>
+  //           <td><b>${data.summary.grand_total}</b></td>
+  //         </tr>
+  //       </table>
+
+  //       <p><b>Amount in Words:</b> ${data.summary.amount_in_words}</p>
+
+  //       <p><b>Note:</b> Whether tax payable under reverse charge - NO</p>
+
+  //       <p style="margin-top:40px; font-size:12px;">
+  //         <b>Terms & Conditions:</b><br/>
+  //         1. Goods once sold cannot be returned.<br/>
+  //         2. Seller is not liable for damages after delivery.<br/>
+  //       </p>
+
+  //     </body>
+  //     </html>
+  //   `;
+
+  //   const options = {
+  //     html: htmlContent,
+  //     fileName: `Invoice_${data.invoice_details.invoice_number}`,
+  //     directory: 'Documents',
+  //   };
+
+  //   const file = await RNHTMLtoPDF.convert(options);
+
+  //   await Share.open({
+  //     url: `file://${file.filePath}`,
+  //     type: 'application/pdf',
+  //   });
+  // } catch (err) {
+  //   console.log('PDF ERROR:', err);
+  // }
+
 };
 
-export default Invoice;
+// SCREEN UI
+export default function Invoice({route}) {
+  const {order_id} = route.params;
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Invoice Screen</Text>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => createAndSharePDF(order_id)}>
+        <Text style={styles.buttonText}>Download Invoice PDF</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', padding: 16 },
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  logo: { width: 60, height: 60, marginRight: 10 },
-  companyName: { fontSize: 16, fontWeight: '700', color: '#000' },
-  address: { fontSize: 12, color: '#444', marginTop: 2 },
-  details: { fontSize: 12, color: '#444' },
-  taxTitle: {
-    textAlign: 'center',
-    color: '#00A884',
-    fontSize: 16,
-    fontWeight: '700',
-    marginVertical: 6,
+  container: {flex: 1, justifyContent: 'center', alignItems: 'center'},
+  title: {fontSize: 24, marginBottom: 40, fontWeight: 'bold'},
+  button: {
+    backgroundColor: '#1ca147',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 10,
   },
-  sectionRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
-  box: { flex: 1, borderWidth: 1, borderColor: '#ccc', margin: 4, padding: 8, borderRadius: 6 },
-  boxTitle: { fontWeight: '700', fontSize: 13, color: '#000' },
-  boxText: { fontSize: 12, color: '#444', marginTop: 4 },
-  invoiceInfo: { marginVertical: 8, padding: 8, borderWidth: 1, borderColor: '#ddd', borderRadius: 6 },
-  bold: { fontWeight: '700', color: '#000' },
-  tableHeader: { flexDirection: 'row', backgroundColor: '#f3f3f3', borderWidth: 1, borderColor: '#ccc' },
-  tableRow: { flexDirection: 'row', borderWidth: 1, borderColor: '#ccc' },
-  cell: { borderRightWidth: 1, borderColor: '#ccc', padding: 4, fontSize: 11, color: '#000' },
-  sno: { width: '8%' },
-  desc: { width: '38%' },
-  small: { width: '18%' },
-  totalBox: { marginTop: 10, padding: 8, borderWidth: 1, borderColor: '#ccc', borderRadius: 6 },
-  totalText: { fontSize: 13, marginVertical: 2 },
-  taxSection: { marginTop: 10, borderWidth: 1, borderColor: '#ccc', borderRadius: 6 },
-  taxRow: { flexDirection: 'row', borderTopWidth: 1, borderColor: '#ccc' },
-  taxCell: { flex: 1, textAlign: 'center', padding: 4, fontSize: 12 },
-  footerText: { textAlign: 'center', fontSize: 13, fontWeight: '600', marginTop: 10 },
-  signatureBox: { alignItems: 'center', marginTop: 16 },
-  stamp: { width: 90, height: 90, marginVertical: 8, opacity: 0.8 },
-  signLabel: { fontSize: 13, color: '#000' },
-  signName: { fontSize: 12, fontWeight: '600' },
-  termsBox: { marginTop: 10, padding: 10, backgroundColor: '#f9f9f9', borderRadius: 6 },
-  termsText: { fontSize: 12, color: '#444', marginTop: 4, lineHeight: 18 },
+  buttonText: {color: '#fff', fontSize: 18, fontWeight: 'bold'},
 });

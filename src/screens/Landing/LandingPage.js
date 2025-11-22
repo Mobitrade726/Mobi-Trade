@@ -1,6 +1,13 @@
 import {useNavigation} from '@react-navigation/native';
 import React, {useState} from 'react';
-import {View, Text, TouchableOpacity, Image, SafeAreaView} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  SafeAreaView,
+  StatusBar,
+} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import styles from './styles';
 import Header from '../../constants/Header';
@@ -23,40 +30,47 @@ const LandingPage = () => {
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={{marginHorizontal: 10}}>
-        <Header
-          title="Login or Sign Up as"
-          navigation={navigation}
-          showBack={true}
-        />
+    <>
+      <StatusBar
+        backgroundColor="transparent"
+        translucent={true}
+        barStyle="dark-content"
+      />
+      <SafeAreaView style={styles.container}>
+        <View style={{marginHorizontal: 10}}>
+          <Header
+            title="Login or Sign Up as"
+            navigation={navigation}
+            showBack={true}
+          />
 
-        {/* Options */}
-        {options.map(option => (
+          {/* Options */}
+          {options.map(option => (
+            <TouchableOpacity
+              key={option.id}
+              style={styles.optionContainer}
+              onPress={() => setSelectedOption(option.id)}>
+              <Image source={option.icon} style={styles.icon} />
+              <Text style={styles.optionText}>{option.label}</Text>
+              <View style={styles.radioCircle}>
+                {selectedOption === option.id && (
+                  <View style={styles.selectedDot} />
+                )}
+              </View>
+            </TouchableOpacity>
+          ))}
+
+          {/* Button */}
           <TouchableOpacity
-            key={option.id}
-            style={styles.optionContainer}
-            onPress={() => setSelectedOption(option.id)}>
-            <Image source={option.icon} style={styles.icon} />
-            <Text style={styles.optionText}>{option.label}</Text>
-            <View style={styles.radioCircle}>
-              {selectedOption === option.id && (
-                <View style={styles.selectedDot} />
-              )}
-            </View>
+            onPress={() =>
+              navigation.navigate('SignUpTab', {accountType: selectedOption})
+            }
+            style={styles.button}>
+            <Text style={styles.buttonText}>Continue</Text>
           </TouchableOpacity>
-        ))}
-
-        {/* Button */}
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate('SignUpTab', {accountType: selectedOption})
-          }
-          style={styles.button}>
-          <Text style={styles.buttonText}>Continue</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+        </View>
+      </SafeAreaView>
+    </>
   );
 };
 

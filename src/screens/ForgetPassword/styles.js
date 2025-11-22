@@ -92,7 +92,7 @@ const styles_forgetpassword = StyleSheet.create({
     backgroundColor: '#F1FFFA', // very light green like screenshot
   },
   backButton: {
-    marginTop: 20,
+    marginTop: 30,
     marginLeft: 20,
     width: 40,
     height: 40,

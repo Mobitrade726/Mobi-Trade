@@ -8,6 +8,8 @@ import profileReducer from './slices/profileSlice';
 import productReducer from './slices/productSlice';
 import walletReducer from './slices/walletSlice';
 import orderReducer from './slices/orderSlice';
+import returnReducer from './slices/returnSlice';
+import buyerAddressReducer from './slices/buyerAddressSlice';
 
 export const store = configureStore({
   reducer: {
@@ -18,6 +20,8 @@ export const store = configureStore({
     profile: profileReducer,
     product: productReducer,
     wallet: walletReducer,
-    orders: orderReducer, // 👈 add here
+    orders: orderReducer,
+    returns: returnReducer,
+    buyerAddress: buyerAddressReducer,
   },
 });

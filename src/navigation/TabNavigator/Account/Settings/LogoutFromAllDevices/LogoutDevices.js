@@ -14,11 +14,17 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_BASE_URL } from '../../../../../utils/utils';
+import {API_BASE_URL} from '../../../../../utils/utils';
+import Header from '../../../../../constants/Header';
+import Toast from 'react-native-toast-message';
 
 const LogoutDevices = ({navigation}) => {
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const deviceId = devices?.[0]?.device_id;
+
+  console.log('devices----------------------------->', devices);
 
   // Fetch devices from API
   const fetchDevices = async () => {
@@ -49,7 +55,7 @@ const LogoutDevices = ({navigation}) => {
         setDevices(mappedDevices);
       }
     } catch (error) {
-      console.log('Error fetching devices:', error.message);
+      console.log('Error fetching devices:', error.response?.data);
     } finally {
       setLoading(false);
     }
@@ -88,7 +94,7 @@ const LogoutDevices = ({navigation}) => {
                 const response = await axios.post(
                   `${API_BASE_URL}/logout`,
                   {
-                    user_id:userId,
+                    user_id: userId,
                     device_id: device_id,
                   },
                   {
@@ -104,7 +110,15 @@ const LogoutDevices = ({navigation}) => {
                   // Clear storage after logout
                   await AsyncStorage.removeItem('TOKEN');
                   await AsyncStorage.removeItem('USERID');
-                  Alert.alert('Success', 'Device logged out successfully!');
+                  Toast.show({
+                    type: 'success',
+                    text2: response?.data?.message,
+                  });
+                  // Navigate to login
+                  navigation.reset({
+                    index: 0,
+                    routes: [{name: 'LoginScreen'}],
+                  });
                   fetchDevices(); // Refresh devices list
                 } else {
                   Alert.alert(
@@ -145,7 +159,7 @@ const LogoutDevices = ({navigation}) => {
               const token = await AsyncStorage.getItem('TOKEN');
 
               const response = await axios.post(
-                `${API_BASE_URL}/logout`,
+                `${API_BASE_URL}/alllogoutdevices`,
                 {user_id: userId},
                 {
                   headers: {
@@ -159,7 +173,10 @@ const LogoutDevices = ({navigation}) => {
                 // Clear storage after logout
                 await AsyncStorage.removeItem('TOKEN');
                 await AsyncStorage.removeItem('USERID');
-
+                Toast.show({
+                  type: 'success',
+                  text2: response?.data?.message,
+                });
                 // Navigate to login
                 navigation.reset({
                   index: 0,
@@ -169,7 +186,7 @@ const LogoutDevices = ({navigation}) => {
                 Alert.alert('Failed', response.data.message || 'Logout failed');
               }
             } catch (error) {
-              console.log('Logout All Error:', error.message);
+              console.log('Logout All Error:', error.response?.data);
               Alert.alert('Error', 'Something went wrong. Please try again.');
             }
           },
@@ -213,15 +230,11 @@ const LogoutDevices = ({navigation}) => {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}>
-          <Ionicons name="chevron-back" size={22} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Logged-in Devices</Text>
-        <View style={{width: 24}} /> {/* placeholder */}
-      </View>
+      <Header
+        title="Logged-in Devices"
+        navigation={navigation}
+        showBack={true}
+      />
 
       {/* Loader */}
       {loading ? (
@@ -246,7 +259,7 @@ const LogoutDevices = ({navigation}) => {
 
       {/* Logout All Devices Button */}
       <TouchableOpacity
-        onPress={handleLogoutAllDevices}
+        onPress={() => handleLogoutAllDevices()}
         style={styles.logoutAllButton}>
         <SimpleLineIcons name="logout" size={18} color="#fff" />
         <Text style={styles.logoutAllText}> Log out of all devices</Text>
