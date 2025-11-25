@@ -508,11 +508,6 @@ const carousel1 = ({navigation, visible, onClose, item}) => {
     setSelectedStorage([]);
   };
 
-  // const handleApply = () => {
-  //   console.log('Selected Brands:', selectedBrands);
-  //   onClose();
-  // };
-
   const [selectedGrade, setSelectedGrade] = useState(null);
 
   const handleSelect = grade => {

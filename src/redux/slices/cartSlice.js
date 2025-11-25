@@ -20,10 +20,6 @@ export const fetchCartAPI = createAsyncThunk(
       });
 
       if (response.data.success && response.data.data) {
-        console.log(
-          'res++++++++++++++++++++++++++++++',
-          response?.data?.data?.items,
-        );
         // Make sure to map all needed fields for the UI
         const cartItems = response.data.data.items.map(item => ({
           model: item.model,
@@ -42,7 +38,6 @@ export const fetchCartAPI = createAsyncThunk(
         return [];
       }
     } catch (error) {
-      console.log('Cart API error:', error?.message);
       return rejectWithValue(error.response?.data || error.message);
     }
   },
@@ -89,7 +84,6 @@ export const addToCartAPI = createAsyncThunk(
         return rejectWithValue(response.data.message);
       }
     } catch (error) {
-      console.log('error---------->', error?.response?.data);
       return rejectWithValue(error.response?.data || error.message);
     }
   },
@@ -112,7 +106,6 @@ export const removeFromCartAPI = createAsyncThunk(
           },
         },
       );
-      console.log('respone_____________________', response?.data);
       if (response.data.success) {
         Toast.show({type: 'success', text1: 'Item removed from cart'});
         return barcode_id; // Return the id to remove from Redux
@@ -121,7 +114,6 @@ export const removeFromCartAPI = createAsyncThunk(
         return rejectWithValue(response.data.message);
       }
     } catch (error) {
-      console.log('Remove Cart API error:', error.message);
       return rejectWithValue(error.response?.data || error.message);
     }
   },
@@ -199,7 +191,6 @@ export const checkoutAPI = createAsyncThunk(
         return rejectWithValue(response.data.message);
       }
     } catch (error) {
-      console.log('Checkout error:', error.response?.data || error.message);
       return rejectWithValue(error.response?.data || error.message);
     }
   },
@@ -228,7 +219,6 @@ export const checkoutDetailsAPI = createAsyncThunk(
         return rejectWithValue(response.data.message);
       }
     } catch (error) {
-      console.log('CheckoutDetails API error:', error.response?.data || error.message);
       return rejectWithValue(error.response?.data || error.message);
     }
   },

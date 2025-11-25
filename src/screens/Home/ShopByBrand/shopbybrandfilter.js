@@ -29,17 +29,13 @@ const shopbybrandfilter = ({navigation, route, visible, onClose, item}) => {
   const {brandname} = route?.params;
   const [brandsdata, setBrandsData] = useState(true);
 
-  console.log('brandname------------------------>', brandname);
-
   const fetchBrandsDetails = async zip => {
     try {
       const res = await axios.get(
         `${API_BASE_URL}/productlistbrand/${brandname}`,
       );
-      console.log("res+++++++++++++++++++++++++++++", res?.data);
       setBrandsData(res?.data?.data);
     } catch (error) {
-      console.log("error+++++++++++++++++++++++++++=", error?.response?.data);
       Toast.show({
         type: 'error',
         text2: JSON.stringify(error?.response?.data?.message),

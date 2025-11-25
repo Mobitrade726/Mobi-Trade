@@ -18,8 +18,6 @@ const RecentlyAddedTab = ({navigation, route}) => {
   const {initialTab} = route.params || {};
   const {osList} = useSelector(state => state.home);
 
-  console.log('osList--------->', osList);
-
   // Component for each tab
   const DynamicTabComponent = ({route}) => {
     const {tabId, os_name} = route.params;

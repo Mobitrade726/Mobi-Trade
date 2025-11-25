@@ -24,8 +24,6 @@ const LogoutDevices = ({navigation}) => {
 
   const deviceId = devices?.[0]?.device_id;
 
-  console.log('devices----------------------------->', devices);
-
   // Fetch devices from API
   const fetchDevices = async () => {
     try {
@@ -138,7 +136,6 @@ const LogoutDevices = ({navigation}) => {
         {cancelable: true},
       );
     } catch (error) {
-      console.log('Token/Device Error:', error);
       Alert.alert('Error', 'Something went wrong. Please try again.');
     }
   };
@@ -186,7 +183,6 @@ const LogoutDevices = ({navigation}) => {
                 Alert.alert('Failed', response.data.message || 'Logout failed');
               }
             } catch (error) {
-              console.log('Logout All Error:', error.response?.data);
               Alert.alert('Error', 'Something went wrong. Please try again.');
             }
           },

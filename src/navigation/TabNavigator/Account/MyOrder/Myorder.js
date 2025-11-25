@@ -21,7 +21,6 @@ const Myorder = ({navigation}) => {
   const {orderList, loading, error} = useSelector(
     state => state.orders,
   );
-  console.log('orderList------------------------->', orderList);
 
   useEffect(() => {
     const loadOrders = async () => {

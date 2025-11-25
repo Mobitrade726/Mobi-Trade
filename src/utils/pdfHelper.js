@@ -6,8 +6,6 @@ import { Platform } from 'react-native';
 import { Buffer } from 'buffer';
 
 export const createAndSharePDF = async (order_id) => {
-  console.log("PDF for order:", order_id);
-
   try {
     const pdfDoc = await PDFDocument.create();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);

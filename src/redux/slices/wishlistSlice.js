@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import axios from 'axios';
 import Toast from 'react-native-toast-message';
-import { API_BASE_URL } from '../../utils/utils';
+import {API_BASE_URL} from '../../utils/utils';
 
 // ✅ Fetch wishlist from API
 export const fetchWishlist = createAsyncThunk(
@@ -11,17 +11,12 @@ export const fetchWishlist = createAsyncThunk(
     try {
       const token = await AsyncStorage.getItem('TOKEN');
       const userId = await AsyncStorage.getItem('USERID'); // ✅ read inside thunk
-      console.log('userId=------->', userId);
-
-      const response = await axios.get(
-        `${API_BASE_URL}/wishlist/${userId}`,
-        {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
+      const response = await axios.get(`${API_BASE_URL}/wishlist/${userId}`, {
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
       return response.data.data; // returns wishlist array
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -34,8 +29,6 @@ export const addToWishlistAPI = createAsyncThunk(
   'wishlist/addToWishlistAPI',
   async (item, {rejectWithValue}) => {
     try {
-      console.log('📦 Product received:', item); // 👈 Add this log
-
       const token = await AsyncStorage.getItem('TOKEN');
       const userId = await AsyncStorage.getItem('USERID'); // ✅ read inside thunk
 
@@ -43,9 +36,6 @@ export const addToWishlistAPI = createAsyncThunk(
         user_id: userId,
         barcode_id: item.barcode_id,
       };
-
-      console.log('📤 Sending Payload Add:', payload);
-
       const response = await axios.post(
         `${API_BASE_URL}/wishlist/add`,
         payload,
@@ -83,8 +73,6 @@ export const removeFromWishlistAPI = createAsyncThunk(
         user_id: userId,
         barcode_id: item.barcode_id,
       };
-      console.log('📤 Sending Payload Removed:', payload);
-
       const response = await axios.post(
         `${API_BASE_URL}/wishlist/remove`,
         payload,
@@ -140,11 +128,14 @@ const wishlistSlice = createSlice({
       })
 
       // Remove
+      // .addCase(removeFromWishlistAPI.fulfilled, (state, action) => {
+      //   state.items = state.items.filter(item => item.id !== action.payload);
+      // });
       .addCase(removeFromWishlistAPI.fulfilled, (state, action) => {
-        state.items = state.items.filter(item => item.id !== action.payload);
+        const removedId = action.meta.arg.barcode_id;
+        state.items = state.items.filter(item => item.barcode_id !== removedId);
       });
   },
 });
 
 export default wishlistSlice.reducer;
-

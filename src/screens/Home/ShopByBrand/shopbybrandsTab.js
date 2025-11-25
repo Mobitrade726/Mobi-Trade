@@ -9,6 +9,7 @@ import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {useSelector} from 'react-redux';
 import ShopByBrand from './shopbybrand';
+import Header from '../../../constants/Header';
 // import CatPage from './CatPage';
 
 const Tab = createMaterialTopTabNavigator();
@@ -16,8 +17,6 @@ const Tab = createMaterialTopTabNavigator();
 const shopbybrandsTab = ({navigation, route}) => {
   const {initialTab} = route.params || {};
   const {osList} = useSelector(state => state.home);
-
-  console.log('osList--------->', osList);
 
   // Component for each tab
   const DynamicTabComponent = ({route}) => {
@@ -33,17 +32,8 @@ const shopbybrandsTab = ({navigation, route}) => {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}>
-          <Ionicons name="chevron-back" size={22} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Shop by brands</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-          <Ionicons name="search" size={24} color="#333" />
-        </TouchableOpacity>
-      </View>
+
+      <Header title="Shop by brands" navigation={navigation} showBack={true} />
 
       <Tab.Navigator
         initialRouteName={initialTab || osList[0]?.os_name || 'Default'}

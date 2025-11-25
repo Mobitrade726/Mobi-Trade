@@ -40,7 +40,6 @@
 //   const dispatch = useDispatch();
 //   const {reasons, loading} = useSelector(state => state.returns);
 
-//   console.log('reasons--------------------->', reasons);
 
 //   useEffect(() => {
 //     dispatch(fetchReturnReasons());
@@ -379,11 +378,6 @@ const ReturnRequest = ({navigation}) => {
     dispatch(fetchReturnReasons());
   }, [dispatch]);
 
-  console.log(
-    'reasons------------------request------------------------->',
-    reasons,
-  );
-
   // FIXED: Object toggle works correctly
   const toggleReason = item => {
     setSelectedReasons(prev =>
@@ -424,11 +418,6 @@ const ReturnRequest = ({navigation}) => {
       return_reason_id: selectedReasons.map(r => r.id),
       sales_return_video_upload: videoFile, // <-- Add video
     };
-
-    console.log(
-      'payload of return request--------------------------------->',
-      payload,
-    );
 
     const result = await dispatch(createReturnTicket(payload));
 

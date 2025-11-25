@@ -28,7 +28,7 @@ const BottomNavigator = () => {
             return <Ionicons name="home-outline" size={size} color={color} />;
           } else if (route.name === 'Account') {
             return <AntDesign name="user" size={size} color={color} />;
-          } else if (route.name === 'WatchList') {
+          } else if (route.name === 'Wishlist') {
             return <AntDesign name="hearto" size={size} color={color} />;
           } else if (route.name === 'Cart') {
             return <AntDesign name="shoppingcart" size={size} color={color} />;
@@ -40,7 +40,7 @@ const BottomNavigator = () => {
       })}>
       <Tab.Screen name="Home" component={Home} />
       <Tab.Screen name="Category" component={Categories} />
-      <Tab.Screen name="WatchList" component={WatchList} />
+      <Tab.Screen name="Wishlist" component={WatchList} />
       <Tab.Screen name="Cart" component={Cart} />
       <Tab.Screen name="Account" component={Account} />
     </Tab.Navigator>

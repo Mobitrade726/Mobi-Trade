@@ -5,8 +5,6 @@ import { Buffer } from "buffer";
 
 export const createAndSharePDF = async (invoiceData) => {
   try {
-    console.log("PDF DATA:", invoiceData);
-
     const pdfDoc = await PDFDocument.create();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);

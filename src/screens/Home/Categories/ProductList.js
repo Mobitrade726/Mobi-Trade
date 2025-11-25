@@ -29,6 +29,8 @@ import {
   addRecentlyViewed,
 } from '../../../redux/slices/productSlice';
 import Header from '../../../constants/Header';
+import Share from 'react-native-share';
+
 
 const {width} = Dimensions.get('window');
 
@@ -54,33 +56,6 @@ const ProductCard = ({item}) => (
     <Text style={styles.productPrice}>{item.price}</Text>
   </View>
 );
-
-const suggestions = [
-  {
-    image: 'https://i.postimg.cc/NfcGsSft/productlist1.png',
-    title: 'iPhone 13 Pro',
-    color: 'Midnight Black',
-    storage: '8GB | 256GB',
-    grade: 'Grade A1',
-    price: '₹59,999',
-  },
-  {
-    image: 'https://i.postimg.cc/NfcGsSft/productlist1.png',
-    title: 'iPhone 13 Pro',
-    color: 'White',
-    storage: '6GB | 128GB',
-    grade: 'Grade A2',
-    price: '₹49,999',
-  },
-  {
-    image: 'https://i.postimg.cc/NfcGsSft/productlist1.png',
-    title: 'iPhone 13 Pro',
-    color: 'Silver Grey',
-    storage: '6GB | 128GB',
-    grade: 'Grade A3',
-    price: '₹59,999',
-  },
-];
 
 const trustFeatures = [
   {
@@ -166,6 +141,8 @@ const ProductDetail = ({route, iconType, icon, text}) => {
   const {loading, error} = useSelector(state => state.cart);
   const [product, setProduct] = useState('');
   const {productData, addrecentlyview} = useSelector(state => state.product);
+  const [activeIndex, setActiveIndex] = useState(0);
+
   const handleAddToCart = () => {
     dispatch(addToCartAPI({product, navigation})); // ✅ pass an object
   };
@@ -221,8 +198,6 @@ const ProductDetail = ({route, iconType, icon, text}) => {
       return acc;
     }, []) || [];
 
-  console.log('details---------->', details);
-
   const getDeviceAgeLabel = age => {
     switch (
       String(age) // ensure string or number works
@@ -241,12 +216,6 @@ const ProductDetail = ({route, iconType, icon, text}) => {
         return 'N/A';
     }
   };
-
-  console.log('gradeNumbers----->', gradeNumbers);
-  console.log('switchings------->', switchings);
-  console.log('devicelocked----->', devicelocked);
-  console.log('deviceage----->', deviceage);
-  console.log('latest_info----->', latest_info);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -286,12 +255,6 @@ const ProductDetail = ({route, iconType, icon, text}) => {
       ['A1', 'A2', 'A3'].includes(item.grade_number),
   );
 
-  console.log(
-    'iosProductsSimilarProducts--------->',
-    iosProductsSimilarProducts,
-  );
-  console.log('iosProductsYouMightLike--------->', iosProductsYouMightLike);
-
   // Suppose you already have `product` data from API
   const productSpecs = [
     ['IMEI Number', barcodeDetails?.imei_number],
@@ -304,32 +267,43 @@ const ProductDetail = ({route, iconType, icon, text}) => {
     // ['Sound Enhancements', product?.sound_enhancements],
   ];
 
+  const handleShare = async (item) => {
+    try {
+      const shareOptions = {
+        title: 'Check this product!',
+        message: `${item?.brand_name} - ${item?.model_name}\nAmazing price on MobiTrade!`,
+        url: item?.product_image_url, // ✅ direct image URL
+      };
+
+      await Share.open(shareOptions);
+    } catch (error) {
+      console.log('Share cancelled or failed:', error);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        <Header
-          title="Product List"
-          navigation={navigation}
-          showBack={true}
-        />
+        <Header title="Product List" navigation={navigation} showBack={true} />
 
         {/* Main Image Carousel */}
         <View style={styles.carouselWrapper}>
           <Swiper
             ref={swiperRef}
             autoplay
+            loop
             showsPagination
             dotColor="#ccc"
             activeDotColor="#000"
-            loop
+            onIndexChanged={index => setActiveIndex(index)}
             style={styles.swiper}>
             {featureImage.map((imgObj, index) => (
               <Image
                 key={index}
                 source={
-                  imgObj
-                    ? {uri: imgObj.url}
-                    : require('../../../../assets/images/empty.jpeg') // ✅ fallback image
+                  imgObj?.url
+                    ? {uri: imgObj?.url}
+                    : require('../../../../assets/images/empty.jpeg')
                 }
                 style={styles.mainImage}
                 resizeMode="cover"
@@ -339,23 +313,21 @@ const ProductDetail = ({route, iconType, icon, text}) => {
 
           {/* Floating Right-side Icons */}
           <View style={styles.iconColumn}>
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity onPress={handleShare} style={styles.iconButton}>
               <Ionicons name="share-social-outline" size={18} color="#000" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
+            {/* <TouchableOpacity style={styles.iconButton}>
               <Ionicons name="heart-outline" size={18} color="#000" />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
             <TouchableOpacity
               style={styles.iconButton}
               onPress={() => swiperRef.current.scrollBy(1)}>
-              {' '}
               {/* ➡️ next */}
               <Ionicons name="chevron-forward-outline" size={18} color="#000" />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.iconButton}
               onPress={() => swiperRef.current.scrollBy(-1)}>
-              {' '}
               {/* ⬅️ prev */}
               <Ionicons name="chevron-back" size={18} color="#000" />
             </TouchableOpacity>
@@ -363,23 +335,33 @@ const ProductDetail = ({route, iconType, icon, text}) => {
         </View>
 
         {/* Thumbnails Strip */}
+
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.thumbnailStrip}
           contentContainerStyle={{paddingHorizontal: 10}}>
           {featureImage.map((imgObj, index) => (
-            // console.log("imgObj------------>", `${BASE_URL}${imgObj?.image}`)
-            <Image
+            <TouchableOpacity
               key={index}
-              source={
-                imgObj
-                  ? {uri: imgObj.url}
-                  : require('../../../../assets/images/empty.jpeg') // ✅ fallback image
-              }
-              style={styles.thumbnail}
-              resizeMode="cover"
-            />
+              onPress={() => {
+                if (swiperRef.current) {
+                  swiperRef.current.scrollBy(index - activeIndex); // jump to clicked image
+                }
+              }}>
+              <Image
+                source={
+                  imgObj?.url
+                    ? {uri: imgObj.url}
+                    : require('../../../../assets/images/empty.jpeg')
+                }
+                style={[
+                  styles.thumbnail,
+                  index === activeIndex && styles.activeThumb,
+                ]}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
           ))}
         </ScrollView>
 
@@ -501,26 +483,6 @@ const ProductDetail = ({route, iconType, icon, text}) => {
             <View style={{backgroundColor: '#EAE6E5', padding: 12}}>
               <Text>Key Features</Text>
             </View>
-            {/* {[
-              ['Model Number', 'SM-A546EZKGINS'],
-              ['Model Name', 'Galaxy A54 5G'],
-              ['Color', 'Graphite'],
-              ['SIM Type', 'Dual Sim'],
-              ['Hybrid Sim Slot', 'No'],
-              ['Touchscreen', 'Yes'],
-              ['Quick Charging', 'Yes'],
-              ['Sound Enhancements', 'Dolby Atmos'],
-            ].map(([label, value], index) => (
-              <View
-                key={label}
-                style={[
-                  styles.specRow,
-                  {backgroundColor: index % 2 === 0 ? '#FFFBFA' : '#66666680'},
-                ]}>
-                <Text style={styles.specLabel}>{label}</Text>
-                <Text style={styles.specValue}>{value}</Text>
-              </View>
-            ))} */}
             {productSpecs.map(([label, value], index) => (
               <View
                 key={label}
@@ -587,34 +549,40 @@ const ProductDetail = ({route, iconType, icon, text}) => {
                   {modelSpecification?.graphics || 'N/A'}
                 </Text>
               </View>
-              {/* <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Display Type</Text>
-                <Text style={styles.specValue}>
-                  Super AMOLED, 120Hz, Corning Gorilla Glass 5
-                </Text>
-              </View> */}
 
               <Text style={styles.headlines}>Memory & Storage</Text>
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Internal Storage</Text>
-                <Text style={styles.specValue}>
-                  {barcodeDetails?.barcode_storage || 'N/A'}
-                </Text>
-              </View>
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>RAM</Text>
-                <Text style={styles.specValue}>
-                  {barcodeDetails?.barcode_ram || 'N/A'}
-                </Text>
-              </View>
-              {/* <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Expandable Storage</Text>
-                <Text style={styles.specValue}>1 TB</Text>
-              </View> */}
-              {/* <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Supported Memory Card </Text>
-                <Text style={styles.specValue}>microSD, Hybrid Slot</Text>
-              </View> */}
+              {barcodeDetails?.barcode_brand?.category === 'Mobile' ? (
+                <>
+                  <View style={styles.specRow}>
+                    <Text style={styles.specLabel}>Internal Storage</Text>
+                    <Text style={styles.specValue}>
+                      {barcodeDetails?.barcode_storage || 'N/A'}
+                    </Text>
+                  </View>
+                  <View style={styles.specRow}>
+                    <Text style={styles.specLabel}>RAM</Text>
+                    <Text style={styles.specValue}>
+                      {barcodeDetails?.barcode_ram || 'N/A'}
+                    </Text>
+                  </View>
+                </>
+              ) : (
+                <>
+                  <View style={styles.specRow}>
+                    <Text style={styles.specLabel}>Internal Storage</Text>
+                    <Text style={styles.specValue}>
+                      {barcodeDetails?.barcode_storage?.rom_name || 'N/A'}
+                    </Text>
+                  </View>
+                  <View style={styles.specRow}>
+                    <Text style={styles.specLabel}>RAM</Text>
+                    <Text style={styles.specValue}>
+                      {barcodeDetails?.barcode_storage?.rom_code || 'N/A'}
+                    </Text>
+                  </View>
+                </>
+              )}
+
               <Text style={styles.headlines}>Camera Features</Text>
               <View style={styles.specRow}>
                 <Text style={styles.specLabel}>Primary Camera</Text>

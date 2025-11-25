@@ -9,22 +9,21 @@ import {
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {fetchBrandList} from '../../../redux/slices/productSlice';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const ShopByBrand = ({osName}) => {
   const dispatch = useDispatch();
-  const navigation = useNavigation(); // ✅ get navigation safely
+  const navigation = useNavigation();
 
   const {brandList, nextPageUrl, loading} = useSelector(state => state.product);
   const [filteredBrands, setFilteredBrands] = useState([]);
 
-  // Reset filteredBrands when osName changes
   useEffect(() => {
     setFilteredBrands([]);
-    dispatch(fetchBrandList()); // Fetch first page
+    dispatch(fetchBrandList());
   }, [osName, dispatch]);
 
-  // Filter brands whenever brandList or osName changes
   useEffect(() => {
     if (!brandList) return;
 
@@ -38,14 +37,11 @@ const ShopByBrand = ({osName}) => {
     setFilteredBrands(filtered);
   }, [brandList, osName]);
 
-  // Load more brands for pagination
   const loadMoreBrands = () => {
     if (nextPageUrl && !loading) {
       dispatch(fetchBrandList(nextPageUrl));
     }
   };
-
-  console.log('filteredBrands---------------------->', filteredBrands);
 
   const renderBrandItem = ({item}) => (
     <TouchableOpacity
@@ -58,19 +54,21 @@ const ShopByBrand = ({osName}) => {
         borderRadius: 12,
         marginBottom: 16,
         overflow: 'hidden',
+        elevation: 2,
       }}>
       <View style={{alignItems: 'center', padding: 10}}>
         {item.brand_image_url ? (
           <Image
             source={{uri: item.brand_image_url}}
             style={{width: '100%', height: 150, borderRadius: 8}}
+            resizeMode="contain"
           />
         ) : (
           <View
             style={{
               width: '100%',
               height: 150,
-              backgroundColor: '#ddd',
+              backgroundColor: '#eee',
               justifyContent: 'center',
               alignItems: 'center',
               borderRadius: 8,
@@ -78,7 +76,7 @@ const ShopByBrand = ({osName}) => {
             <Text>No Image</Text>
           </View>
         )}
-        <Text style={{marginTop: 8, fontSize: 16, fontWeight: '500'}}>
+        <Text style={{marginTop: 8, fontSize: 16, fontWeight: '600'}}>
           {item.brand_name}
         </Text>
       </View>
@@ -97,6 +95,38 @@ const ShopByBrand = ({osName}) => {
       renderItem={renderBrandItem}
       onEndReached={loadMoreBrands}
       onEndReachedThreshold={0.3}
+      ListEmptyComponent={
+        !loading && (
+          <View
+            style={{
+              flex: 1,
+              height: 320,
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingHorizontal: 20,
+            }}>
+            <Ionicons name="pricetag-outline" size={60} color="#999" />
+            <Text
+              style={{
+                marginTop: 14,
+                fontSize: 20,
+                fontWeight: '700',
+                color: '#333',
+              }}>
+              No Brands Available
+            </Text>
+            <Text
+              style={{
+                marginTop: 6,
+                fontSize: 14,
+                color: '#777',
+                textAlign: 'center',
+              }}>
+              Try changing OS selection or check back later.
+            </Text>
+          </View>
+        )
+      }
       ListFooterComponent={
         loading && (
           <View style={{padding: 16}}>
@@ -109,3 +139,4 @@ const ShopByBrand = ({osName}) => {
 };
 
 export default ShopByBrand;
+

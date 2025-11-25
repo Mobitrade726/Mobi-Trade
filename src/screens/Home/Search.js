@@ -53,19 +53,6 @@ const Search = ({navigation}) => {
   const [selectedColors, setSelectedColors] = useState([]);
   const [selectedGrade, setSelectedGrade] = useState(null);
 
-  console.log(
-    'applyselectedfilters------------------Search-------------------->',
-    applyselectedfilters,
-  );
-  console.log(
-    'filteredProduct------------------Search-------------------->',
-    filteredProduct,
-  );
-  console.log(
-    'filterdata------------------Search-------------------->',
-    filterdata,
-  );
-
   useEffect(() => {
     dispatch(fetchProductList());
     dispatch(fetchFilterData());

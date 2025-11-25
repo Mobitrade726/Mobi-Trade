@@ -9,8 +9,6 @@ const Splash = () => {
 
   setTimeout(async () => {
     const token = await AsyncStorage.getItem('TOKEN');
-    console.log('token---------->', token);
-
     if (token) {
       // Token exists → user is logged in
       navigation.navigate('BottomNavigator');

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {
   View,
   Text,
@@ -10,8 +10,31 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Header from '../../../../constants/Header';
+import {fetchWalletBalance,fetchLatestWalletHistory} from '../../../../redux/slices/walletSlice';
+import {useDispatch, useSelector} from 'react-redux';
+import {useFocusEffect} from '@react-navigation/native';
 
 export default function Wallet({navigation}) {
+  const dispatch = useDispatch();
+  const {balance, latesthistory, loading, error} = useSelector(state => state.wallet);
+
+  // ✅ fetch when screen mounts
+  useEffect(() => {
+    dispatch(fetchWalletBalance());
+    dispatch(fetchLatestWalletHistory());
+  }, [dispatch]);
+
+  // ✅ Auto refresh on screen focus
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(fetchWalletBalance());
+      dispatch(fetchLatestWalletHistory());
+    }, [dispatch]),
+  );
+
+  console.log('balance-------------------->', balance);
+  console.log('latesthistory-------------------->', latesthistory);
+
   const transactions = [
     {
       id: '1',
@@ -62,7 +85,7 @@ export default function Wallet({navigation}) {
         {/* Balance Card */}
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>Your Balance</Text>
-          <Text style={styles.balanceAmount}>₹2,500</Text>
+          <Text style={styles.balanceAmount}>₹{balance}</Text>
           <View style={styles.buttonRow}>
             <TouchableOpacity
               onPress={() => navigation.navigate('WalletAddMoney')}

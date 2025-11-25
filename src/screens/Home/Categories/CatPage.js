@@ -121,9 +121,6 @@ const CatPage = ({osName}) => {
   const filteredProducts = (productData || []).filter(
     item => item.operating_systems && item.operating_systems === osName,
   );
-
-  console.log('osName+++++++++++++++++++++++++++', osName);
-
   const budgetOptions = [
     {
       id: 1,
@@ -574,7 +571,47 @@ const CatPage = ({osName}) => {
               </View>
             )}
           </>
-        ) : null}
+        ) : (
+          <View
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginTop: 60,
+              paddingHorizontal: 20,
+            }}>
+            <Image
+              source={require('../../../../assets/images/emptyproduct.png')}
+              style={{
+                width: 140,
+                height: 140,
+                resizeMode: 'contain',
+                opacity: 0.9,
+              }}
+            />
+
+            <Text
+              style={{
+                fontSize: 22,
+                fontWeight: '700',
+                color: '#000',
+                marginTop: 20,
+              }}>
+              No Products Available
+            </Text>
+
+            <Text
+              style={{
+                fontSize: 15,
+                color: '#666',
+                textAlign: 'center',
+                marginTop: 8,
+                lineHeight: 22,
+              }}>
+              We couldn’t find matching products right now. Try exploring other
+              categories or adjust filters.
+            </Text>
+          </View>
+        )}
 
         {/* Sort Modal */}
         <Modal visible={showSortModal} transparent animationType="slide">

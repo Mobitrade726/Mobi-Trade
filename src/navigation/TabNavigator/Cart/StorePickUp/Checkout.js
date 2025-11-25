@@ -20,6 +20,7 @@ import {
   checkoutDetailsAPI,
 } from '../../../../redux/slices/cartSlice';
 import {fetchBuyerAddress} from '../../../../redux/slices/buyerAddressSlice';
+import {fetchWalletBalance} from '../../../../redux/slices/walletSlice';
 import {useDispatch, useSelector} from 'react-redux';
 import axios from 'axios';
 import {API_BASE_URL} from '../../../../utils/utils';
@@ -38,6 +39,14 @@ const CheckoutScreen = () => {
   const {addresses, loading: addressLoading} = useSelector(
     state => state.buyerAddress,
   );
+  const {balance} = useSelector(state => state.wallet);
+
+  console.log('items++++++++++++++++++++++++++++++++++++++', cartItems);
+
+  // ✅ fetch when screen mounts
+  useEffect(() => {
+    dispatch(fetchWalletBalance());
+  }, [dispatch]);
 
   const billingAddress = addresses?.length
     ? `${addresses[0].billing_Address}, ${addresses[0].billing_City}, ${addresses[0].billing_State} - ${addresses[0].billing_Zip}`
@@ -47,26 +56,12 @@ const CheckoutScreen = () => {
     ? `${addresses[0].shipping_Address}, ${addresses[0].shipping_City}, ${addresses[0].shipping_State} - ${addresses[0].shipping_Zip}`
     : '';
 
-    const deliveryAddressId = addresses?.[0]?.user_address_id;
-
+  const deliveryAddressId = addresses?.[0]?.user_address_id;
 
   const [deliveryMode, setDeliveryMode] = useState('home');
   const [selectedStore, setSelectedStore] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState('pickup');
   const [selectedMethod, setSelectedMethod] = useState('upi');
-
-  console.log(
-    'checkoutData------------------------------------------>',
-    checkoutData,
-  );
-  console.log(
-    'addresses------------------------------------------>',
-    addresses,
-  );
-  console.log(
-    'deliveryAddressId------------------------------------------>',
-    deliveryAddressId,
-  );
 
   // ✅ Mapping between method name → transaction_type value
   const transactionTypeMap = {
@@ -143,6 +138,7 @@ const CheckoutScreen = () => {
   const getDeliveryModeValue = mode => (mode === 'home' ? '0' : '1');
 
   const handlePlaceOrder = async () => {
+    const userId = await AsyncStorage.getItem('USERID');
     const paymentOption = getPaymentOptionValue(paymentMethod);
     const deliveryModeValue = getDeliveryModeValue(deliveryMode);
 
@@ -161,9 +157,8 @@ const CheckoutScreen = () => {
         checkout_id: checkoutData?.checkout_id,
         barcode_ids: barcode_ids,
       };
-
-      console.log('Payload ===>', payload);
-
+      console.log('barcode_ids------------------------------>', barcode_ids);
+      console.log('payload------------------------------>', payload);
       // ✅ Step 1: Create Order in backend
       const createOrderRes = await axios.post(
         `${API_BASE_URL}/orders/create`,
@@ -174,11 +169,6 @@ const CheckoutScreen = () => {
             Authorization: `Bearer ${token}`,
           },
         },
-      );
-
-      console.log(
-        'createOrderRes++++++++++++++++++++++++++++++++++++++++',
-        createOrderRes,
       );
 
       const razorpayOrderId = createOrderRes?.data?.data?.razorpay_order_id;
@@ -192,14 +182,11 @@ const CheckoutScreen = () => {
           type: 'success',
           text2: 'Order placed successfully with COD!',
         });
-        navigation.navigate('BottomNavigator');
+        navigation.navigate('ProcessToPay', {
+          order_id: orderId,
+        });
         return;
       }
-
-      console.log(
-        'paymentMethod+++++++++++++++++++++++++++++++++++++++++',
-        paymentMethod,
-      );
 
       // -------------------- CASE 2 --------------------
       // ✅ Online Payment via Razorpay (UPI, Card, Netbanking)
@@ -221,12 +208,8 @@ const CheckoutScreen = () => {
           method: transactionTypeMap,
         };
 
-        console.log('options------------------------------------>', options);
-
         RazorpayCheckout.open(options)
           .then(async data => {
-            console.log('Razorpay Response ===>', data);
-
             const paymentStatus =
               data?.razorpay_payment_id && data?.razorpay_signature
                 ? 'success'
@@ -241,6 +224,12 @@ const CheckoutScreen = () => {
                   razorpay_signature: data?.razorpay_signature || null,
                   order_id: orderId,
                   status: paymentStatus,
+                  user_id: userId,
+                  checkout_id: checkoutData?.checkout_id,
+                  delivery_type: deliveryModeValue,
+                  barcode_ids: barcode_ids,
+                  payment_mode: paymentOption,
+                  delivery_address_id: deliveryAddressId,
                 },
                 {
                   headers: {
@@ -251,15 +240,11 @@ const CheckoutScreen = () => {
               );
 
               if (verifyResponse?.data?.status === true) {
+                navigation.navigate('ProcessToPay');
                 Toast.show({
                   type: 'success',
                   text2: verifyResponse?.data?.message || 'Payment Successful!',
                 });
-                console.log(
-                  'success______________online__________________>',
-                  verifyResponse?.data?.message,
-                );
-                navigation.navigate('BottomNavigator');
               } else {
                 Toast.show({
                   type: 'error',
@@ -273,7 +258,6 @@ const CheckoutScreen = () => {
             }
           })
           .catch(error => {
-            console.log('Razorpay Cancelled/Error ===>', error);
             Toast.show({
               type: 'error',
               text2: 'Payment cancelled or failed.',
@@ -286,108 +270,81 @@ const CheckoutScreen = () => {
       // -------------------- CASE 3 --------------------
       // ✅ Wallet Payment (handled through /wallet/verify)
       if (paymentMethod === 'wallet') {
-        if (!totalAmount || parseFloat(totalAmount) <= 0) {
-          Alert.alert('Invalid Amount', 'Please enter a valid amount.');
-          return;
-        }
+        console.log('Wallet Balance:', balance);
+        console.log('Order Amount:', totalAmount);
 
-        try {
-          const tokenwallet = await AsyncStorage.getItem('TOKEN');
-          const userId = await AsyncStorage.getItem('USERID');
-
-          const payloadwallet = {
-            buyer_id: userId,
-            amount: totalAmount,
-            transaction_type: transactionTypeMap[selectedMethod], // ✅ numeric value
-          };
-
-          // ✅ Create Razorpay order
-          const response = await axios.post(
-            `${API_BASE_URL}/wallet/create-order`,
-            payloadwallet,
-            {
-              headers: {
-                Accept: 'application/json',
-                Authorization: `Bearer ${tokenwallet}`,
+        // 👉 Wallet balance is enough?
+        if (balance >= totalAmount) {
+          Alert.alert(
+            'Confirm Wallet Payment',
+            `₹${totalAmount} will be deducted from your wallet.\nDo you want to proceed?`,
+            [
+              {
+                text: 'No',
+                style: 'cancel',
               },
-            },
+              {
+                text: 'Yes',
+                onPress: async () => {
+                  try {
+                    const response = await axios.post(
+                      `${API_BASE_URL}/orders/create`,
+                      payload,
+                      {
+                        headers: {
+                          Accept: 'application/json',
+                          Authorization: `Bearer ${token}`,
+                        },
+                      },
+                    );
+                    if (response?.data?.success) {
+                      Toast.show({
+                        type: 'success',
+                        text1: response?.data?.message,
+                      });
+                      navigation.navigate('ProcessToPay', {
+                        order_id: orderId,
+                      });
+                    } else {
+                      Toast.show({
+                        type: 'success',
+                        text1: response?.data?.message,
+                      });
+                      navigation.navigate('ProcessToPay', {
+                        order_id: orderId,
+                      });
+                    }
+                  } catch (error) {
+                    console.log(
+                      'Payment Error:',
+                      error.response?.data || error.message,
+                    );
+                    Alert.alert(
+                      'Error',
+                      'Something went wrong! Please try again.',
+                    );
+                  }
+                },
+              },
+            ],
+            {cancelable: false},
           );
 
-          const order = response.data;
-
-          const paymentMethods = {
-            upi: selectedMethod === 'upi',
-            card: selectedMethod === 'card',
-            netbanking: selectedMethod === 'netbanking',
-            wallet: false,
-            emi: false,
-            paylater: false,
-          };
-
-          const options = {
-            description: 'Add Money to Wallet',
-            currency: 'INR',
-            key: order?.razorpay_key,
-            amount: order.amount,
-            name: 'MobiTrade Wallet',
-            order_id: order.order_id,
-            theme: {color: '#14AE5C'},
-            method: paymentMethods,
-          };
-
-          console.log('options------------------>', options);
-
-          // ✅ NEFT / IMPS / RTGS handled manually (offline)
-          if (['neft', 'imps', 'rtgs'].includes(selectedMethod)) {
-            Alert.alert(
-              `${selectedMethod.toUpperCase()} Selected`,
-              'Please complete this transfer using your bank app or contact support.',
-            );
-            return;
-          }
-          // ✅ Launch Razorpay checkout
-          RazorpayCheckout.open(options)
-            .then(async data => {
-              const verifyResponse = await axios.post(
-                `${API_BASE_URL}/wallet/verify`,
-                {
-                  razorpay_payment_id: data.razorpay_payment_id,
-                  razorpay_order_id: data.razorpay_order_id,
-                  razorpay_signature: data.razorpay_signature,
-                  amount: totalAmount,
-                  transaction_type: transactionTypeMap[selectedMethod],
-                },
-                {
-                  headers: {
-                    Accept: 'application/json',
-                    Authorization: `Bearer ${token}`,
-                  },
-                },
-              );
-              Toast.show({
-                type: 'success',
-                text2: verifyResponse?.data?.message || 'Payment Successful!',
-              });
-              navigation.navigate('BottomNavigator');
-              console.log(
-                'res--------------------------------->',
-                verifyResponse?.data,
-              );
-            })
-            .catch(error => {
-              console.log('error--------------------------------->', error);
-              Alert.alert(
-                'Payment Failed',
-                error.description || 'Transaction cancelled.',
-              );
-            });
-        } catch (error) {
-          console.log('Payment Error:', error.response?.data || error.message);
-          Alert.alert('Error', 'Something went wrong! Please try again.');
+          return; // STOP here → no Razorpay
         }
+
+        // ❌ Wallet balance not enough
+        Toast.show({
+          type: 'error',
+          text1: 'Insufficient Wallet Balance',
+          text2: `Your wallet balance is ₹${balance}. Please add money.`,
+        });
+
+        navigation.navigate('AddMoneyScreen');
+        return; // STOP here → do not open Razorpay
       }
     } catch (error) {
-      console.log('handlePlaceOrder error ===>', error?.response?.data);
+      console.log('error-------------------------------------->', error);
       Alert.alert('Error', 'Something went wrong while placing the order.');
     }
   };
@@ -569,7 +526,7 @@ const CheckoutScreen = () => {
               color="#000"
             />
             <Text style={styles.optionText}>Pay Online</Text>
-            <Text style={styles.discount}>Get 5% OFF</Text>
+            {/* <Text style={styles.discount}>Get 5% OFF</Text> */}
           </TouchableOpacity>
 
           <TouchableOpacity

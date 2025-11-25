@@ -48,11 +48,6 @@ const UpgradeBusinessAccount = ({navigation}) => {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  console.log(
-    'profileEdit-------------->',
-    profileEdit?.vendordocuments?.ask_gst,
-  );
-
   useEffect(() => {
     if (profileEdit && Object.keys(profileEdit).length > 0) {
       setContactPerson(profileEdit.customer_name || '');
@@ -108,7 +103,6 @@ const UpgradeBusinessAccount = ({navigation}) => {
       }
     } catch (error) {
       setLoading(false);
-      console.log('GST Error:', error);
       Toast.show({
         type: 'error',
         text2: 'Something went wrong while verifying GST',

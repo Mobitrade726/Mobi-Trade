@@ -122,6 +122,8 @@ import {styles} from './styles';
 import {API_BASE_URL} from '../../../../utils/utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../../../../constants/Header';
+import {useFocusEffect} from '@react-navigation/native';
+import {useCallback} from 'react';
 
 const Addresses = ({navigation}) => {
   const [addresses, setAddresses] = useState([]);
@@ -184,12 +186,13 @@ const Addresses = ({navigation}) => {
     }
   };
 
-  useEffect(() => {
-    fetchAddresses();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchAddresses();
+    }, []),
+  );
 
   const renderAddress = ({item}) => (
-    // console.log("item-------------------->", item)
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <View style={{justifyContent: 'center'}}>

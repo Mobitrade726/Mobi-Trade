@@ -20,10 +20,6 @@ export const fetchReturnReasons = createAsyncThunk(
         return rejectWithValue(response.data.msg);
       }
     } catch (error) {
-      console.log(
-        'fetchOrdersAPI Error:',
-        error?.response?.data || error.message,
-      );
       return rejectWithValue(error?.response?.data || error.message);
     }
   },
@@ -67,9 +63,6 @@ export const createReturnTicket = createAsyncThunk(
           name: data.sales_return_video_upload.fileName || 'video.mp4',
         });
       }
-
-      console.log('FormData to be sent:', formData);
-
       const response = await axios.post(
         `${API_BASE_URL}/create-sales-return-ticket`,
         formData,
@@ -78,8 +71,6 @@ export const createReturnTicket = createAsyncThunk(
         },
       );
 
-      console.log('Return ticket response:', response.data);
-
       if (response.data.status === true) {
         return response.data;
       } else {
@@ -87,10 +78,6 @@ export const createReturnTicket = createAsyncThunk(
         return rejectWithValue(response.data.msg);
       }
     } catch (error) {
-      console.log(
-        'Create Return Ticket Error:',
-        error?.response?.data || error.message,
-      );
       return rejectWithValue(error?.response?.data || error.message);
     }
   },

@@ -36,8 +36,6 @@ const Recentlyadd = ({osName}) => {
     state => state.product,
   );
 
-  console.log('filterdata----------->', filterdata);
-
   // state
   // const [lateststock, setProductData] = useState();
   const [applyselectedfilters, ApplyselectedFilters] = useState();
@@ -129,7 +127,6 @@ const Recentlyadd = ({osName}) => {
   const filteredProducts = (lateststock || []).filter(
     item => item.operating_systems && item.operating_systems === osName,
   );
-  console.log('filteredProducts--------->', filteredProducts);
   const budgetOptions = [
     {
       id: 1,
@@ -407,7 +404,6 @@ const Recentlyadd = ({osName}) => {
     const isInWishlist = wishlistItems.some(
       w => w.barcode_id == item.barcode_id,
     );
-    console.log('wishlistItems--------->', isInWishlist);
     const handleWishlistToggle = () => {
       if (isInWishlist) {
         dispatch(removeFromWishlistAPI(item));

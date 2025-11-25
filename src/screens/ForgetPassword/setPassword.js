@@ -52,8 +52,6 @@ const setPassword = ({navigation}) => {
     }
 
     if (Object.keys(newErrors).length === 0) {
-      console.log('New password:', newPassword);
-      console.log('Confirm password:', confirmPassword);
       navigation.navigate('LoginScreen');
     } else {
       setErrors(newErrors);

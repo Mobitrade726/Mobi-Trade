@@ -30,7 +30,6 @@ import {
   fetchProductList,
 } from '../../redux/slices/productSlice';
 
-
 const Home = ({navigation}) => {
   const dispatch = useDispatch();
   const {
@@ -44,7 +43,7 @@ const Home = ({navigation}) => {
   } = useSelector(state => state.home);
   const {recentlyview} = useSelector(state => state.product);
 
-  console.log("recentlyview--------->", recentlyview);
+  console.log('recentlyview--------->', recentlyview);
 
   useEffect(() => {
     dispatch(fetchOsList());
@@ -264,7 +263,7 @@ const Home = ({navigation}) => {
           </Section>
 
           {/* Recently Viewed */}
-          <Section
+          {/* <Section
             title="Recently Viewed"
             onPress={() => navigation.navigate('RecentlyView')}>
             <FlatList
@@ -274,7 +273,52 @@ const Home = ({navigation}) => {
               keyExtractor={item => item.id}
               showsHorizontalScrollIndicator={false}
             />
+          </Section> */}
+          <Section
+            title="Recently Viewed"
+            onPress={() => navigation.navigate('RecentlyView')}>
+            {recentlyview?.length > 0 ? (
+              <FlatList
+                horizontal
+                data={recentlyview}
+                renderItem={({item}) => <RecentlyView item={item} />}
+                keyExtractor={item => item.id?.toString()}
+                showsHorizontalScrollIndicator={false}
+              />
+            ) : (
+              <View
+                style={{
+                  height: 140,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  backgroundColor: '#f8f8f8',
+                  borderRadius: 12,
+                  paddingHorizontal: 20,
+                  marginTop: 6,
+                }}>
+                <Ionicons name="eye-off-outline" size={45} color="#999" />
+                <Text
+                  style={{
+                    marginTop: 10,
+                    fontSize: 16,
+                    fontWeight: '600',
+                    color: '#555',
+                  }}>
+                  No Recently Viewed Products
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 13,
+                    color: '#888',
+                    marginTop: 4,
+                    textAlign: 'center',
+                  }}>
+                  Start exploring items — they will appear here!
+                </Text>
+              </View>
+            )}
           </Section>
+
           <ImageBackground
             style={{
               height: 200,

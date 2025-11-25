@@ -38,7 +38,12 @@ const orderItems = [
   },
 ];
 
-const ProcessToPay = ({navigation}) => {
+const ProcessToPay = ({navigation, route}) => {
+    const { order_id, order_id_Number } = route.params;
+
+    console.log('order_id--------------------->',order_id)
+    console.log('order_id_Number--------------------->',order_id_Number)
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={{paddingBottom: 20}}>
@@ -49,17 +54,17 @@ const ProcessToPay = ({navigation}) => {
         />
 
         {/* Top Green Confirmation Block */}
-        <View style={styles.confirmContainer}>
+        {/* <View style={styles.confirmContainer}>
           <Text style={styles.confirmTitle}>Order</Text>
           <Text style={styles.confirmTitle}>Confirmed!</Text>
           <TouchableOpacity style={styles.viewDetailsButton}>
             <Text style={styles.viewDetailsText}>View Details</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         <View style={styles.whiteSection}>
           {/* Order ID */}
-          <Text style={styles.orderId}>Order ID: #123456789</Text>
+          <Text style={styles.orderId}>Order ID: #{order_id}</Text>
           <View style={styles.separator} />
 
           {/* Clock Icon */}

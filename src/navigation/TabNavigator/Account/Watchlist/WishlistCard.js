@@ -4,7 +4,6 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
 const WishlistCard = ({data, onRemove}) => {
-  console.log("data---------->", data);
   return (
     <View style={styles.card}>
       <View style={styles.row}>

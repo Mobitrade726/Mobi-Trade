@@ -19,6 +19,8 @@ const KycStatusScreen = ({navigation}) => {
   const dateString = data?.vendordocuments?.created_at;
   const formattedDate = dateString ? dateString.split('T')[0] : 'N/A';
 
+  console.log('data+++++++++++++++++++++++++++++++++++++++++++++++++++', data);
+
   const [kycData, setKycData] = useState({
     status: 'pending', // 'approved' | 'pending' | 'rejected'
     firmName: data?.firm_name,
@@ -96,11 +98,7 @@ const KycStatusScreen = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <Header
-          title="KYC Status"
-          navigation={navigation}
-          showBack={true}
-        />
+      <Header title="KYC Status" navigation={navigation} showBack={true} />
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Banner */}
         <View style={[styles.banner, {backgroundColor: getBannerColor()}]}>
@@ -120,11 +118,22 @@ const KycStatusScreen = ({navigation}) => {
           <Text style={styles.value}>{kycData.firmName || 'N/A'}</Text>
 
           <Text style={styles.label}>Account Type</Text>
-          {kycData.accountType === 'Unregistered' ? (
+          {/* {kycData.accountType === 'Unregistered' ? (
             <Text style={styles.value}>Indivisual</Text>
           ) : (
             <Text style={styles.value}>Dealer</Text>
-          )}
+          )} */}
+          <Text style={styles.value}>
+            {data?.vendor_category === 'vendor_customer' &&
+            data?.vendor_type === 'Unregistered'
+              ? 'Individual'
+              : data?.vendor_category === 'vendor_dealer' &&
+                (data?.vendor_type === 'Registered' ||
+                  data?.vendor_type === 'Unregistered')
+              ? 'Dealer'
+              : 'N/A'}
+          </Text>
+
           <Text style={styles.label}>Aadhaar Card</Text>
           <Text style={styles.value}>{kycData.aadhaarCard || 'N/A'}</Text>
 

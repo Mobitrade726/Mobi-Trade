@@ -52,7 +52,6 @@ const UpgradeAccountAddress = ({navigation}) => {
     if (!isValid) return;
 
     const vendorCode = profileEdit?.profileEdit?.vendor_code;
-    console.log('vendorCode--------->', vendorCode);
     const url = vendorCode
       ? API_BASE_URL + `buyerUpdate/${vendorCode}`
       : API_BASE_URL + 'buyer/register';
@@ -123,8 +122,6 @@ const UpgradeAccountAddress = ({navigation}) => {
       });
       return;
     }
-
-    console.log('payload---------->', payload);
 
     if (axiosMethod === 'post') {
       setLoading(true); // 👈 Start loading
