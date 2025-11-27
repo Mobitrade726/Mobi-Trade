@@ -20,9 +20,10 @@ import {fetchWalletBalance} from '../../../../redux/slices/walletSlice';
 import {useDispatch, useSelector} from 'react-redux';
 import {useFocusEffect} from '@react-navigation/native';
 
-const AddMoneyScreen = ({navigation}) => {
+const WalletAddMoney = ({navigation}) => {
   const [amount, setAmount] = useState('');
   const [selectedMethod, setSelectedMethod] = useState('upi');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const dispatch = useDispatch();
   const {balance, loading, error} = useSelector(state => state.wallet);
@@ -42,10 +43,14 @@ const AddMoneyScreen = ({navigation}) => {
   };
 
   const handleAddMoney = async () => {
+    if (isProcessing) return; // ❌ Prevent double click
+
     if (!amount || parseFloat(amount) <= 0) {
       Alert.alert('Invalid Amount', 'Please enter a valid amount.');
       return;
     }
+
+    setIsProcessing(true); // 🔒 Lock button
 
     try {
       const token = await AsyncStorage.getItem('TOKEN');
@@ -102,6 +107,7 @@ const AddMoneyScreen = ({navigation}) => {
       // ✅ Launch Razorpay checkout
       RazorpayCheckout.open(options)
         .then(async data => {
+          // SUCCESS
           const verifyResponse = await axios.post(
             `${API_BASE_URL}/wallet/verify`,
             {
@@ -118,16 +124,18 @@ const AddMoneyScreen = ({navigation}) => {
               },
             },
           );
-          Alert.alert('Success', verifyResponse?.data?.message);
 
+          Alert.alert('Success', verifyResponse.data.message);
           setAmount('');
-          fetchWalletBalance();
+          dispatch(fetchWalletBalance());
+          setIsProcessing(false); // 🔓 Unlock
         })
-        .catch(error => {
+        .catch(err => {
           Alert.alert(
             'Payment Failed',
-            error.description || 'Transaction cancelled.',
+            err.description || 'Transaction cancelled.',
           );
+          setIsProcessing(false); // 🔓 Unlock even if Razorpay closed
         });
     } catch (error) {
       Alert.alert('Error', 'Something went wrong! Please try again.');
@@ -182,7 +190,11 @@ const AddMoneyScreen = ({navigation}) => {
           ))}
         </View>
 
-        <TouchableOpacity style={styles.payButton} onPress={handleAddMoney}>
+        <TouchableOpacity
+          style={styles.payButton}
+          onPress={handleAddMoney}
+          disabled={isProcessing} // ❌ disable double press
+        >
           <Text style={styles.payButtonText}>Proceed to Pay</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -191,7 +203,7 @@ const AddMoneyScreen = ({navigation}) => {
   );
 };
 
-export default AddMoneyScreen;
+export default WalletAddMoney;
 
 const styles = StyleSheet.create({
   container: {flex: 1, backgroundColor: '#FBFEFC'},

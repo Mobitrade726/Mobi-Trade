@@ -21,42 +21,97 @@ const KycStatusScreen = ({navigation}) => {
 
   console.log('data+++++++++++++++++++++++++++++++++++++++++++++++++++', data);
 
+  // Assuming `data` is your object
+  const isIndividual =
+    data?.vendor_category === 'vendor_customer' &&
+    data?.vendor_type === 'Unregistered';
+
+  const isDealer =
+    data?.vendor_category === 'vendor_dealer' &&
+    (data?.vendor_type === 'Registered' ||
+      data?.vendor_type === 'Unregistered');
+
+  // Then you can get a display value if needed
+  const displayType = isIndividual ? 'Individual' : isDealer ? 'Dealer' : 'N/A';
+
+  console.log('displayType----------------------->', displayType);
+
+  // 👉 displayType = 'Individual' or 'Dealer'
+  // 👉 data.vendordocuments = backend response
+
+  let documents = [];
+
+  // ---- Common Documents (Individual + Dealer) ---- //
+  const commonDocs = [
+    {
+      label: 'Aadhaar Card',
+      key: 'aadhaar_no',
+    },
+    {
+      label: 'PAN Card',
+      key: 'customer_pan',
+    },
+    {
+      label: 'Driving Licence',
+      key: 'dl_no',
+    },
+    {
+      label: 'Voter ID',
+      key: 'voter_id',
+    },
+    {
+      label: 'Passport',
+      key: 'passport_no',
+    },
+  ];
+
+  // ---- Step 1: Add common documents ---- //
+  documents = commonDocs.map(doc => ({
+    name: doc.label,
+    status: data?.vendordocuments?.[doc.key] ? 'Approved' : 'Pending',
+  }));
+
+  // ---- Step 2: Add GST only for Dealer ---- //
+  if (displayType === 'Dealer') {
+    documents.push({
+      name: 'GST Certificate',
+      status: data?.vendordocuments?.gst_certificate ? 'Approved' : 'Pending',
+    });
+  }
+
+  // ---- Step 3: KYC Complete Checker (GST को छोड़कर) ---- //
+  const isKycComplete = documents
+    .filter(doc => doc.name !== 'GST Certificate') // GST को ignore
+    .every(doc => doc.status === 'Approved');
+
+  console.log('DOCUMENT LIST:', documents);
+  console.log('KYC COMPLETE:', isKycComplete);
+
   const [kycData, setKycData] = useState({
-    status: 'pending', // 'approved' | 'pending' | 'rejected'
+    status:
+      data?.vendordocuments?.proof_of_identity === null
+        ? 'Pending'
+        : 'Approved',
     firmName: data?.firm_name,
     accountType: data?.vendor_category,
-    aadhaarCard: data?.vendordocuments?.aadhaar_no,
+    documentnumber: data?.vendordocuments,
+    proof_of_identity: data?.vendordocuments?.proof_of_identity,
     gstNo: data?.vendordocuments?.gst_number || 'N/A',
     submissionDate: formattedDate,
-    documents: [
-      {
-        name: 'Aadhaar Card',
-        status: data?.vendordocuments?.aadhaar_no ? 'Approved' : 'Pending',
-      },
-      {
-        name: 'GST Certificate',
-        status: data?.vendordocuments?.gst_certificate ? 'Approved' : 'Pending',
-      },
-    ],
+    documents: documents,
   });
+
+  console.log('documentnumber------------------->', kycData?.documentnumber);
 
   useEffect(() => {
     dispatch(fetchProfile());
   }, [dispatch]);
 
-  useEffect(() => {
-    if (data?.vendordocuments?.aadhaar_no) {
-      setKycData(prev => ({...prev, status: 'approved'}));
-    } else {
-      setKycData(prev => ({...prev, status: 'pending'}));
-    }
-  }, [data]);
-
   const getBannerColor = () => {
     switch (kycData.status) {
-      case 'approved':
+      case 'Approved':
         return '#4CAF50';
-      case 'pending':
+      case 'Pending':
         return '#F44336';
       default:
         return '#999';
@@ -64,18 +119,19 @@ const KycStatusScreen = ({navigation}) => {
   };
 
   const getBannerText = () => {
+    console.log('kycData.status-------------------->', kycData.status);
     switch (kycData.status) {
-      case 'approved':
+      case 'Approved':
         return {
           title: 'KYC Approved',
           sub: 'You can now enjoy all the benefits of a Updated account.',
         };
-      case 'pending':
+      case 'Pending':
         return {
           title: 'KYC Pending',
           sub: 'You have some unverified documents that need to be uploaded.',
         };
-      case 'rejected':
+      case 'Rejected':
         return {
           title: 'KYC Rejected',
           sub: 'Your KYC verification failed. Please update your documents.',
@@ -106,23 +162,20 @@ const KycStatusScreen = ({navigation}) => {
             <Text style={styles.bannerTitle}>{getBannerText().title}</Text>
             <Text style={styles.bannerSub}>{getBannerText().sub}</Text>
           </View>
-          <TouchableOpacity style={styles.statusPill}>
+          <View style={styles.statusPill}>
             <Text style={styles.statusPillText}>
               {kycData.status.charAt(0).toUpperCase() + kycData.status.slice(1)}
             </Text>
-          </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.infoSection}>
-          <Text style={styles.label}>Firm Name</Text>
+          <Text style={styles.label}>
+            {displayType === 'Individual' ? 'Customer Name' : 'Firm Name'}
+          </Text>
           <Text style={styles.value}>{kycData.firmName || 'N/A'}</Text>
 
           <Text style={styles.label}>Account Type</Text>
-          {/* {kycData.accountType === 'Unregistered' ? (
-            <Text style={styles.value}>Indivisual</Text>
-          ) : (
-            <Text style={styles.value}>Dealer</Text>
-          )} */}
           <Text style={styles.value}>
             {data?.vendor_category === 'vendor_customer' &&
             data?.vendor_type === 'Unregistered'
@@ -134,33 +187,85 @@ const KycStatusScreen = ({navigation}) => {
               : 'N/A'}
           </Text>
 
-          <Text style={styles.label}>Aadhaar Card</Text>
-          <Text style={styles.value}>{kycData.aadhaarCard || 'N/A'}</Text>
+          <>
+            <Text style={styles.label}>
+              {kycData?.proof_of_identity || 'N/A'}
+            </Text>
+            {kycData?.documentnumber?.aadhaarCard ? (
+              <Text style={styles.value}>
+                {kycData.documentnumber.aadhaarCard}
+              </Text>
+            ) : null}
 
-          <Text style={styles.label}>GST Number</Text>
-          <Text style={styles.value}>{kycData.gstNo || 'N/A'}</Text>
+            {kycData?.documentnumber?.customer_pan ? (
+              <Text style={styles.value}>
+                {kycData.documentnumber.customer_pan}
+              </Text>
+            ) : null}
 
-          <Text style={styles.label}>Submitted On</Text>
-          <Text style={styles.value}>{kycData.submissionDate || 'N/A'}</Text>
+            {kycData?.documentnumber?.dl_no ? (
+              <Text style={styles.value}>{kycData.documentnumber.dl_no}</Text>
+            ) : null}
+
+            {kycData?.documentnumber?.voter_id_no ? (
+              <Text style={styles.value}>
+                {kycData.documentnumber.voter_id_no}
+              </Text>
+            ) : null}
+
+            {kycData?.documentnumber?.passport_no ? (
+              <Text style={styles.value}>
+                {kycData.documentnumber.passport_no}
+              </Text>
+            ) : null}
+
+            {kycData.ask_gst === 'No' ? (
+              <>
+                <Text style={styles.label}>GST Number</Text>
+                <Text style={styles.value}>{kycData.gstNo || 'N/A'}</Text>
+              </>
+            ) : null}
+
+            <Text style={styles.label}>Submitted On</Text>
+            <Text style={styles.value}>{kycData.submissionDate || 'N/A'}</Text>
+          </>
         </View>
 
         {/* Documents Section */}
-        <Text style={styles.docsTitle}>Uploaded Documents</Text>
+        <Text style={styles.docsTitle}>Upload Documents</Text>
         {kycData.documents.map((doc, index) => {
           const icon = getIconProps(doc.status);
+          const isPending = doc.status === 'Pending';
+
           return (
-            <View key={index} style={styles.docCard}>
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.docCard,
+                isPending && {borderWidth: 1, borderColor: 'red'},
+              ]}
+              activeOpacity={0.7}
+              disabled={!isPending} // 👉 Approved = disabled, Pending = clickable
+              onPress={() => {
+                if (isPending) {
+                  navigation.navigate('KycCompleteStatus', {
+                    documentType: doc.name,
+                  });
+                }
+              }}>
               <View style={styles.docIconWrapper}>
                 <Feather name="file" size={24} color={icon.color} />
               </View>
+
               <View style={styles.docContent}>
                 <Text style={styles.docTitle}>{doc.name}</Text>
                 <Text style={styles.docStatus}>
                   {doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}
                 </Text>
               </View>
+
               <Ionicons name={icon.name} size={22} color={icon.color} />
-            </View>
+            </TouchableOpacity>
           );
         })}
       </ScrollView>

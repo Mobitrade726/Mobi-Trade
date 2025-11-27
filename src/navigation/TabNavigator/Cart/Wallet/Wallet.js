@@ -10,13 +10,18 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Header from '../../../../constants/Header';
-import {fetchWalletBalance,fetchLatestWalletHistory} from '../../../../redux/slices/walletSlice';
+import {
+  fetchWalletBalance,
+  fetchLatestWalletHistory,
+} from '../../../../redux/slices/walletSlice';
 import {useDispatch, useSelector} from 'react-redux';
 import {useFocusEffect} from '@react-navigation/native';
 
 export default function Wallet({navigation}) {
   const dispatch = useDispatch();
-  const {balance, latesthistory, loading, error} = useSelector(state => state.wallet);
+  const {balance, latesthistory, loading, error} = useSelector(
+    state => state.wallet,
+  );
 
   // ✅ fetch when screen mounts
   useEffect(() => {
@@ -35,47 +40,158 @@ export default function Wallet({navigation}) {
   console.log('balance-------------------->', balance);
   console.log('latesthistory-------------------->', latesthistory);
 
-  const transactions = [
-    {
-      id: '1',
-      type: 'credit',
-      amount: 799,
-      label: 'Cashback Received',
-      date: '13 May, 10:43 AM',
-      icon: 'gift-outline',
-    },
-    {
-      id: '2',
-      type: 'debit',
-      amount: 34799,
-      label: 'Payment done',
-      date: '12 May, 09:15 AM',
-      icon: 'cart-outline',
-    },
-  ];
+  // const renderTransaction = ({item}) => (
+  //   <View style={styles.transactionRow}>
+  //     <MaterialCommunityIcons
+  //       name={item.icon}
+  //       size={24}
+  //       color={item.type === 'credit' ? 'orange' : 'green'}
+  //       style={styles.transactionIcon}
+  //     />
+  //     <View style={{flex: 1}}>
+  //       <Text
+  //         style={[
+  //           styles.amount,
+  //           {color: item.type === 'credit' ? 'green' : 'red'},
+  //         ]}>
+  //         {item.type === 'credit' ? '+ ' : '- '}₹ {item.amount.toLocaleString()}
+  //       </Text>
+  //       <Text style={styles.label}>{item.status_text}</Text>
+  //       <Text style={styles.date}>{item.payment_date}</Text>
+  //     </View>
+  //     <Ionicons name="checkmark-circle-outline" size={22} color="green" />
+  //   </View>
+  // );
 
-  const renderTransaction = ({item}) => (
-    <View style={styles.transactionRow}>
-      <MaterialCommunityIcons
-        name={item.icon}
-        size={24}
-        color={item.type === 'credit' ? 'orange' : 'green'}
-        style={styles.transactionIcon}
-      />
-      <View style={{flex: 1}}>
-        <Text
-          style={[
-            styles.amount,
-            {color: item.type === 'credit' ? 'green' : 'red'},
-          ]}>
-          {item.type === 'credit' ? '+ ' : '- '}₹ {item.amount.toLocaleString()}
-        </Text>
-        <Text style={styles.label}>{item.label}</Text>
-        <Text style={styles.date}>{item.date}</Text>
+  // const renderTransaction = ({item}) => {
+  //   let displayAmount = '';
+
+  //   if (item.status_text === 'Money Added') {
+  //     displayAmount = `+ ₹ ${item.amount.toLocaleString()}`; // Only price
+  //   } else if (item.status_text === 'Verification Pending') {
+  //     displayAmount = `₹ ${item.amount.toLocaleString()}`; // +price
+  //   } else if (item.status_text === 'Rejected') {
+  //     displayAmount = `₹ ${item.amount.toLocaleString()}`; // Only price
+  //   } else {
+  //     // fallback for other statuses
+  //     displayAmount =
+  //       item.type === 'credit'
+  //         ? `+ ₹ ${item.amount.toLocaleString()}`
+  //         : `- ₹ ${item.amount.toLocaleString()}`;
+  //   }
+
+  //   return (
+  //     <View style={styles.transactionRow}>
+  //       <MaterialCommunityIcons
+  //         name={item.icon}
+  //         size={24}
+  //         color={item.type === 'credit' ? 'orange' : 'green'}
+  //         style={styles.transactionIcon}
+  //       />
+  //       <View style={{flex: 1}}>
+  //         <Text style={styles.amount}>{displayAmount}</Text>
+  //         <Text style={styles.label}>{item.status_text}</Text>
+  //         <Text style={styles.date}>{item.payment_date}</Text>
+  //       </View>
+  //       <Ionicons name="checkmark-circle-outline" size={22} color="green" />
+  //     </View>
+  //   );
+  // };
+
+  // const renderTransaction = ({item}) => {
+  //   let displayAmount = '';
+  //   let iconColor = 'gray'; // default icon color
+
+  //   // Determine amount based on status_text
+  //   if (item.status_text === 'Money Added') {
+  //     displayAmount = `+ ₹ ${item.amount.toLocaleString()}`;
+  //     iconColor = 'green';
+  //   } else if (item.status_text === 'Verification Pending') {
+  //     displayAmount = `₹ ${item.amount.toLocaleString()}`;
+  //     iconColor = 'orange';
+  //   } else if (item.status_text === 'Rejected') {
+  //     displayAmount = `₹ ${item.amount.toLocaleString()}`;
+  //     iconColor = 'red';
+  //   } else {
+  //     // fallback for other statuses
+  //     displayAmount =
+  //       item.type === 'credit'
+  //         ? `+ ₹ ${item.amount.toLocaleString()}`
+  //         : `- ₹ ${item.amount.toLocaleString()}`;
+  //     iconColor = item.type === 'credit' ? 'green' : 'red';
+  //   }
+
+  //   return (
+  //     <View style={styles.transactionRow}>
+  //       <MaterialCommunityIcons
+  //         name={item.icon}
+  //         size={24}
+  //         color={iconColor}
+  //         style={styles.transactionIcon}
+  //       />
+  //       <View style={{flex: 1}}>
+  //         <Text style={[styles.amount, {color: iconColor}]}>
+  //           {displayAmount}
+  //         </Text>
+  //         <Text style={styles.label}>{item.status_text}</Text>
+  //         <Text style={styles.date}>{item.payment_date}</Text>
+  //       </View>
+  //       <Ionicons name="checkmark-circle-outline" size={22} color="green" />
+  //     </View>
+  //   );
+  // };
+
+  const renderTransaction = ({item}) => {
+    let displayAmount = '';
+    let iconColor = 'gray'; // main icon color
+    let checkmarkColor = 'green'; // default checkmark color
+
+    // Determine amount and colors based on status_text
+    if (item.status_text === 'Money Added') {
+      displayAmount = `+ ₹ ${item.amount.toLocaleString()}`;
+      iconColor = 'green';
+      checkmarkColor = 'green';
+    } else if (item.status_text === 'Verification Pending') {
+      displayAmount = `₹ ${item.amount.toLocaleString()}`;
+      iconColor = 'orange';
+      checkmarkColor = 'orange';
+    } else if (item.status_text === 'Rejected') {
+      displayAmount = `₹ ${item.amount.toLocaleString()}`;
+      iconColor = 'red';
+      checkmarkColor = 'red';
+    } else {
+      // fallback for other statuses
+      displayAmount =
+        item.type === 'credit'
+          ? `+ ₹ ${item.amount.toLocaleString()}`
+          : `- ₹ ${item.amount.toLocaleString()}`;
+      iconColor = item.type === 'credit' ? 'green' : 'red';
+      checkmarkColor = item.type === 'credit' ? 'green' : 'red';
+    }
+
+    return (
+      <View style={styles.transactionRow}>
+        <MaterialCommunityIcons
+          name={item.icon}
+          size={24}
+          color={iconColor}
+          style={styles.transactionIcon}
+        />
+        <View style={{flex: 1}}>
+          <Text style={[styles.amount, {color: iconColor}]}>
+            {displayAmount}
+          </Text>
+          <Text style={styles.label}>{item.status_text}</Text>
+          <Text style={styles.date}>{item.payment_date}</Text>
+        </View>
+        <Ionicons
+          name="checkmark-circle-outline"
+          size={22}
+          color={checkmarkColor}
+        />
       </View>
-      <Ionicons name="checkmark-circle-outline" size={22} color="green" />
-    </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -110,7 +226,7 @@ export default function Wallet({navigation}) {
         {/* Recent Transactions */}
         <Text style={styles.recentTitle}>Recent Transactions</Text>
         <FlatList
-          data={transactions}
+          data={latesthistory}
           renderItem={renderTransaction}
           keyExtractor={item => item.id}
         />

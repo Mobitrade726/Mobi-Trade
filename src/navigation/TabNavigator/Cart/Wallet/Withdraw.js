@@ -26,18 +26,16 @@ export default function WithdrawScreen({navigation}) {
   const [accountno, setAccountno] = useState('');
   const [ifsccode, setIfsccode] = useState('');
   const [remark, setRemark] = useState('');
-  const [transactionType, setTransactionType] = useState(null);
+  const [transactionType, setTransactionType] = useState('0');
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [refundHistory, setRefundHistory] = useState([]);
+  const [upi, setUPI] = useState(''); // separate UPI state
 
   const transactionOptions = [
     {label: 'UPI', value: '0'},
     {label: 'NEFT', value: '1'},
     {label: 'IMPS', value: '2'},
-    {label: 'RTGS', value: '3'},
-    {label: 'CARD', value: '4'},
-    {label: 'Net Banking', value: '5'},
   ];
 
   // 🧾 Fetch Refund History API
@@ -146,40 +144,49 @@ export default function WithdrawScreen({navigation}) {
   };
 
   const renderTransaction = ({item}) => {
-    // fallback values
-    // Determine transaction type
-    const isCredit =
-      item.transaction_type === '1' || item.status_text === 'Credit';
-    const isDebit =
-      item.transaction_type === '0' || item.status_text === 'Debit';
-
-    // Determine payment status (0 = Pending, 1 = Completed, 2 = Failed/Rejected)
-    const isCompleted = item.payment_status === '1';
-    const isPending = item.payment_status === '0';
-    const isFailed = item.payment_status === '2';
-
-    // Dynamic icon color
-    const iconColor = isFailed
-      ? '#EF4444'
-      : isPending
-      ? '#FBBF24'
-      : isCredit
-      ? '#10B981'
-      : '#111';
-
-    // Dynamic icon
     let icon = 'cash-multiple';
-    if (isCredit) icon = 'cash-plus';
-    else if (isDebit) icon = 'cash-minus';
-    else if (isPending) icon = 'timer-sand';
-    else if (isFailed) icon = 'close-octagon-outline';
+    let iconColor = '#000';
+    let checkmarkIcon = 'checkmark-circle-outline';
+    let checkmarkColor = '#10B981'; // default green
+    let displayAmount = Number(item.amount || 0).toLocaleString();
 
-    // Label (fallback)
-    const label = isCredit
-      ? 'Amount Credited'
-      : isDebit
-      ? 'Amount Debited'
-      : 'Wallet Transaction';
+    switch (item.payment_status_text) {
+      case 'Withdraw Verified':
+        icon = 'cash-plus';
+        iconColor = '#10B981';
+        checkmarkIcon = 'checkmark-circle-outline';
+        checkmarkColor = '#10B981';
+        displayAmount = `+ ₹ ${displayAmount}`;
+        break;
+      case 'Withdraw Pending':
+        icon = 'timer-sand';
+        iconColor = '#FBBF24';
+        checkmarkIcon = 'time-outline';
+        checkmarkColor = '#FBBF24';
+        displayAmount = `₹ ${displayAmount}`;
+        break;
+      case 'Withdraw Rejected':
+        icon = 'close-octagon-outline';
+        iconColor = '#EF4444';
+        checkmarkIcon = 'close-circle-outline';
+        checkmarkColor = '#EF4444';
+        displayAmount = `₹ ${displayAmount}`;
+        break;
+      default:
+        // fallback for credit/debit or unknown status
+        icon = item.transaction_type === '1' ? 'cash-plus' : 'cash-minus';
+        iconColor = item.transaction_type === '1' ? '#10B981' : '#EF4444';
+        checkmarkIcon =
+          item.transaction_type === '1'
+            ? 'checkmark-circle-outline'
+            : 'close-circle-outline';
+        checkmarkColor = iconColor;
+        displayAmount =
+          item.transaction_type === '1'
+            ? `+ ₹ ${displayAmount}`
+            : `- ₹ ${displayAmount}`;
+        break;
+    }
 
     return (
       <View style={styles.transactionRow}>
@@ -189,73 +196,25 @@ export default function WithdrawScreen({navigation}) {
           color={iconColor}
           style={styles.transactionIcon}
         />
-
         <View style={{flex: 1}}>
-          <Text
-            style={[
-              styles.amount,
-              {color: isCredit ? '#10B981' : isFailed ? '#EF4444' : '#000'},
-            ]}>
-            {isCredit ? '+ ' : '- '}₹{' '}
-            {Number(item.amount || 0).toLocaleString()}
+          <Text style={[styles.amount, {color: iconColor}]}>
+            {displayAmount}
           </Text>
-
-          <Text style={styles.label}>{label}</Text>
-          <Text style={styles.date}>
-            {item.payment_date}{' '}
-            {item.payment_time ? `, ${item.payment_time}` : '--'}
-          </Text>
-          <Text style={styles.date}>{item.payment_status || '--'}</Text>
-          {isCompleted ? (
-            <Text style={styles.date}>Complete</Text>
-          ) : isPending ? (
-            <Text style={styles.date}>Pending</Text>
-          ) : (
-            <Text style={styles.date}>Cancel</Text>
-          )}
+          <Text style={styles.label}>{item.payment_status_text || '--'}</Text>
+          <Text style={styles.date}>{item.payment_date}</Text>
+          <Text style={styles.date}>{item.payment_remarks}</Text>
         </View>
-
-        {isCompleted ? (
-          <Ionicons name="checkmark-circle-outline" size={22} color="#10B981" />
-        ) : isPending ? (
-          <Ionicons name="time-outline" size={22} color="#FBBF24" />
-        ) : (
-          <Ionicons name="close-circle-outline" size={22} color="#EF4444" />
-        )}
+        <Ionicons name={checkmarkIcon} size={22} color={checkmarkColor} />
       </View>
     );
   };
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
         <Header title="Withdraw" navigation={navigation} showBack={true} />
-
         {/* Withdrawal Form */}
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Account Details</Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="Account Holder Name"
-            value={acholdername}
-            onChangeText={setAcholdername}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Account Number"
-            keyboardType="number-pad"
-            value={accountno}
-            onChangeText={setAccountno}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="IFSC Code"
-            autoCapitalize="characters"
-            value={ifsccode}
-            onChangeText={setIfsccode}
-          />
-
           <Dropdown
             style={styles.dropdown}
             placeholderStyle={styles.placeholderStyle}
@@ -267,6 +226,40 @@ export default function WithdrawScreen({navigation}) {
             value={transactionType}
             onChange={item => setTransactionType(item.value)}
           />
+
+          {transactionType === '0' && (
+            <TextInput
+              style={styles.input}
+              placeholder="Enter UPI ID"
+              value={upi} // you can use a separate state like upiId if needed
+              onChangeText={setUPI} // or setUpiId
+            />
+          )}
+
+          {transactionType !== '0' && (
+            <>
+              <TextInput
+                style={styles.input}
+                placeholder="Account Holder Name"
+                value={acholdername}
+                onChangeText={setAcholdername}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Account Number"
+                keyboardType="number-pad"
+                value={accountno}
+                onChangeText={setAccountno}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="IFSC Code"
+                autoCapitalize="characters"
+                value={ifsccode}
+                onChangeText={setIfsccode}
+              />
+            </>
+          )}
 
           <TextInput
             style={styles.input}
@@ -382,7 +375,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     elevation: 3,
-    marginBottom:10,
+    marginBottom: 10,
   },
   historyRow: {
     flexDirection: 'row',

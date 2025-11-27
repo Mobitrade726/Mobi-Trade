@@ -25,7 +25,7 @@ const LoginScreen = ({navigation}) => {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-
+  const [showPassword, setShowPassword] = useState(false);
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
 
@@ -118,19 +118,19 @@ const LoginScreen = ({navigation}) => {
           // );
 
           const response = await axios.get(
-              'https://nominatim.openstreetmap.org/reverse',
-              {
-                params: {
-                  format: 'json',
-                  lat: loc.latitude,
-                  lon: loc.longitude,
-                  zoom: 10,
-                  addressdetails: 1,
-                  email: 'support@yourapp.com', // ✅ recommended by Nominatim
-                },
-                timeout: 12000,
+            'https://nominatim.openstreetmap.org/reverse',
+            {
+              params: {
+                format: 'json',
+                lat: loc.latitude,
+                lon: loc.longitude,
+                zoom: 10,
+                addressdetails: 1,
+                email: 'support@yourapp.com', // ✅ recommended by Nominatim
               },
-            );
+              timeout: 12000,
+            },
+          );
 
           const addressData = response.data.address;
           addr = {
@@ -220,7 +220,7 @@ const LoginScreen = ({navigation}) => {
           )}
 
           {/* Password */}
-          <TextInput
+          {/* <TextInput
             style={[styles.input, errors.password && {borderColor: 'red'}]}
             placeholder="Password"
             placeholderTextColor={isDarkMode ? '#aaa' : '#666'}
@@ -228,6 +228,37 @@ const LoginScreen = ({navigation}) => {
             value={password}
             onChangeText={setPassword}
           />
+          {errors.password && (
+            <Text style={styles.errorText}>{errors.password}</Text>
+          )} */}
+
+          <View style={{position: 'relative'}}>
+            <TextInput
+              style={[styles.input, errors.password && {borderColor: 'red'}]}
+              placeholder="Password"
+              placeholderTextColor={isDarkMode ? '#aaa' : '#666'}
+              secureTextEntry={!showPassword} // 👈 Hide/Show logic
+              value={password}
+              onChangeText={setPassword}
+            />
+
+            {/* 👁️ Password Toggle Button */}
+            <TouchableOpacity
+              style={{
+                position: 'absolute',
+                right: 15,
+                top: 18,
+              }}
+              onPress={() => setShowPassword(!showPassword)}>
+              <Ionicons
+                name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                size={22}
+                color="#666"
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Error Message */}
           {errors.password && (
             <Text style={styles.errorText}>{errors.password}</Text>
           )}

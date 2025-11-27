@@ -28,7 +28,7 @@ const HeroCarousel = ({data = [], navigation}) => {
       colors={['#FFFBFA', '#666666', '#1C9C48', '#EAE6E5']}
       locations={[1, 1, 0.3, 1]}>
       <Swiper
-        showsPagination
+        showsPagination={false}
         dotStyle={styles.dot}
         activeDotStyle={styles.activeDot}
         autoplay
@@ -37,17 +37,6 @@ const HeroCarousel = ({data = [], navigation}) => {
         {carouselData.map((item, index) => (
           <View
             key={index}
-            // onPress={() => {
-            //   if (item.id === 2) {
-            //     navigation.navigate('carousel1'); // Replace with your screen name
-            //   }
-            //    else if (item.id === 3) {
-            //     navigation.navigate('carousel2');
-            //   } else if (item.id === 4) {
-            //     navigation.navigate('carousel3');
-            //   }
-            // }
-            // }
             >
             <ImageBackground
               source={{uri: item.banner_image}}

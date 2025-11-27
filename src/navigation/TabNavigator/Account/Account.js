@@ -24,17 +24,11 @@ const ProfileScreen = ({navigation}) => {
   const dispatch = useDispatch();
   const {data, error} = useSelector(state => state.profile);
   const [appVersion, setAppVersion] = React.useState('');
-  const [kycData, setKycData] = useState({
-    status: 'pending', // 'approved' | 'pending' | 'rejected'
-    firmName: data?.firm_name,
-    accountType: data?.vendor_type,
-    aadhaarCard: data?.vendordocuments?.aadhaar_no || 'N/A',
-    gstNo: data?.vendordocuments?.gst_number || 'N/A',
-    submissionDate: '2024-01-15',
-    documents: [
-      {name: 'Aadhaar Card', status: 'Updated'},
-      {name: 'GST Certificate', status: 'pending'},
-    ],
+  const [kycData] = useState({
+    status:
+      data?.vendordocuments?.proof_of_identity === null
+        ? 'Pending'
+        : 'Approved',
   });
 
   useEffect(() => {
@@ -45,14 +39,6 @@ const ProfileScreen = ({navigation}) => {
     getVersion();
     dispatch(fetchProfile());
   }, [dispatch]);
-
-  useEffect(() => {
-    if (data?.vendordocuments?.aadhaar_no) {
-      setKycData(prev => ({...prev, status: 'Approved'}));
-    } else {
-      setKycData(prev => ({...prev, status: 'Pending'}));
-    }
-  }, [data]);
 
   useEffect(() => {
     if (error) {
@@ -139,16 +125,26 @@ const ProfileScreen = ({navigation}) => {
                 <Text style={styles.optionSubtext}>{item.subtext}</Text>
               )}
             </View>
-            {data?.vendordocuments?.aadhaar_no ? (
+            {item.label === 'KYC Status' ? (
               <Text
-                style={{marginRight: 10, color: 'green', fontWeight: 'bold'}}>
+                style={{
+                  marginRight: 10,
+                  color: 'green',
+                  fontWeight: 'bold',
+                }}>
                 {item.kycStatus}
               </Text>
             ) : (
-              <Text style={{marginRight: 10, color: 'red', fontWeight: 'bold'}}>
+              <Text
+                style={{
+                  marginRight: 10,
+                  color: 'red',
+                  fontWeight: 'bold',
+                }}>
                 {item.kycStatus}
               </Text>
             )}
+
             <Icon name="chevron-forward" size={wp('5%')} color="#999" />
           </TouchableOpacity>
         ))}

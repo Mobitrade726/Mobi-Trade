@@ -189,23 +189,25 @@ const Cart = () => {
         </View>
       </ScrollView>
       {/* Footer Buttons */}
-      <View style={{marginHorizontal: 10}}>
-        <TouchableOpacity
-          disabled={isKYCIncomplete}
-          onPress={handleCartCheckout}
-          style={[styles.footerBtn, {backgroundColor: '#666666'}]}>
-          <Text style={styles.footerBtnText}>Proceed to Checkout</Text>
-        </TouchableOpacity>
+      {cartItems.length !== 0 ? (
+        <View style={{marginHorizontal: 10}}>
+          <TouchableOpacity
+            disabled={isKYCIncomplete}
+            onPress={handleCartCheckout}
+            style={[styles.footerBtn, {backgroundColor: '#666666'}]}>
+            <Text style={styles.footerBtnText}>Proceed to Checkout</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Home')}
-          style={[
-            styles.footerBtn,
-            {backgroundColor: '#333333', marginTop: 10},
-          ]}>
-          <Text style={styles.footerBtnText}>Continue Shopping</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Home')}
+            style={[
+              styles.footerBtn,
+              {backgroundColor: '#333333', marginTop: 10},
+            ]}>
+            <Text style={styles.footerBtnText}>Continue Shopping</Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 };

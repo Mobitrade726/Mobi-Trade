@@ -47,8 +47,11 @@ export const fetchLatestWalletHistory = createAsyncThunk(
           Authorization: `Bearer ${token}`,
         },
       });
-
-      return response.data; // return API response
+      console.log(
+        'response_latest_history----------------------------->',
+        response?.data?.transactions,
+      );
+      return response?.data?.transactions;
     } catch (error) {
       return rejectWithValue(
         error.response?.data || 'Error fetching wallet history',
@@ -114,7 +117,7 @@ const walletSlice = createSlice({
       })
       .addCase(fetchLatestWalletHistory.fulfilled, (state, action) => {
         state.loading = false;
-        state.history = action.payload || []; // store history in state
+        state.latesthistory = action.payload || []; // store history in state
       })
       .addCase(fetchLatestWalletHistory.rejected, (state, action) => {
         state.loading = false;

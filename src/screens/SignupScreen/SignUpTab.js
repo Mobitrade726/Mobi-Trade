@@ -36,8 +36,8 @@ const SignUpTab = ({navigation}) => {
           <Text style={styles.title}>Register as {accountType}</Text>
         ) : catEdit ? (
           <Text style={styles.title}>
-            Register as{' '}
-            {catEdit === 'vendor_customer' ? 'individual' : 'business'}
+            Edit Profile
+            {/* {catEdit === 'vendor_customer' ? 'individual' : 'business'} */}
           </Text>
         ) : null}
         <View style={{width: 24}} /> {/* Spacer for alignment */}
@@ -86,10 +86,22 @@ const SignUpTab = ({navigation}) => {
         <Tab.Screen
           name="Signup"
           component={Signup}
-          initialParams={{accountType: derivedAccountType, profileEdit: profileData}} // ✅ Use computed one
+          initialParams={{
+            accountType: derivedAccountType,
+            profileEdit: profileData,
+          }} // ✅ Use computed one
         />
 
-        <Tab.Screen name="Signup_Address" component={Signup_Address} />
+        <Tab.Screen
+          name="Signup_Address"
+          component={Signup_Address}
+          listeners={{
+            tabPress: e => {
+              // BLOCK tab switch to Address tab
+              e.preventDefault();
+            },
+          }}
+        />
       </Tab.Navigator>
     </SafeAreaView>
   );

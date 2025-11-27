@@ -171,7 +171,7 @@ const Signup_Address = ({navigation}) => {
               type: 'success',
               text2: res?.data?.message,
             });
-            navigation.navigate('LoginScreen');
+            navigation.navigate('BottomNavigator');
           } else {
             Toast.show({
               type: 'error',

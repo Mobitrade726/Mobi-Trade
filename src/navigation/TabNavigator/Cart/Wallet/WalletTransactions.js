@@ -50,41 +50,116 @@ export default function WalletTransactions({navigation, route}) {
     fetchTransactions();
   }, []);
 
+  // const renderTransaction = ({item}) => {
+  //   // fallback values
+  //   // Determine transaction type
+  //   const isCredit =
+  //     item.transaction_type === '1' || item.status_text === 'Credit';
+  //   const isDebit =
+  //     item.transaction_type === '0' || item.status_text === 'Debit';
+
+  //   // Determine payment status (0 = Pending, 1 = Completed, 2 = Failed/Rejected)
+  //   const isCompleted = item.payment_status === '1'; // veryfied
+  //   const isPending = item.payment_status === '0'; // pending
+  //   const isFailed = item.payment_status === '2'; //rejected
+
+  //   // Dynamic icon color
+  //   const iconColor = isFailed
+  //     ? '#EF4444'
+  //     : isPending
+  //     ? '#FBBF24'
+  //     : isCredit
+  //     ? '#10B981'
+  //     : '#111';
+
+  //   // Dynamic icon
+  //   let icon = 'cash-multiple';
+  //   if (isCredit) icon = 'cash-plus';
+  //   else if (isDebit) icon = 'cash-minus';
+  //   else if (isPending) icon = 'timer-sand';
+  //   else if (isFailed) icon = 'close-octagon-outline';
+
+  //   return (
+  //     <View style={styles.transactionRow}>
+  //       <MaterialCommunityIcons
+  //         name={icon}
+  //         size={24}
+  //         color={iconColor}
+  //         style={styles.transactionIcon}
+  //       />
+
+  //       <View style={{flex: 1}}>
+  //         <Text
+  //           style={[
+  //             styles.amount,
+  //             {color: isCredit ? '#10B981' : isFailed ? '#EF4444' : '#000'},
+  //           ]}>
+  //           {isCredit ? '+ ' : '- '}₹{' '}
+  //           {Number(item.amount || 0).toLocaleString()}
+  //         </Text>
+
+  //         <Text style={styles.label}>{item.status_text || '--'}</Text>
+  //         <Text style={styles.date}>
+  //           {item.payment_date}{' '}
+  //           {item.payment_time ? `, ${item.payment_time}` : ''}
+  //         </Text>
+  //       </View>
+
+  //       {isCompleted ? (
+  //         <Ionicons name="checkmark-circle-outline" size={22} color="#10B981" />
+  //       ) : isPending ? (
+  //         <Ionicons name="time-outline" size={22} color="#FBBF24" />
+  //       ) : (
+  //         <Ionicons name="close-circle-outline" size={22} color="#EF4444" />
+  //       )}
+  //     </View>
+  //   );
+  // };
+
   const renderTransaction = ({item}) => {
-    // fallback values
-    // Determine transaction type
-    const isCredit =
-      item.transaction_type === '1' || item.status_text === 'Credit';
-    const isDebit =
-      item.transaction_type === '0' || item.status_text === 'Debit';
-
-    // Determine payment status (0 = Pending, 1 = Completed, 2 = Failed/Rejected)
-    const isCompleted = item.payment_status === '1';
-    const isPending = item.payment_status === '0';
-    const isFailed = item.payment_status === '2';
-
-    // Dynamic icon color
-    const iconColor = isFailed
-      ? '#EF4444'
-      : isPending
-      ? '#FBBF24'
-      : isCredit
-      ? '#10B981'
-      : '#111';
-
-    // Dynamic icon
     let icon = 'cash-multiple';
-    if (isCredit) icon = 'cash-plus';
-    else if (isDebit) icon = 'cash-minus';
-    else if (isPending) icon = 'timer-sand';
-    else if (isFailed) icon = 'close-octagon-outline';
+    let iconColor = '#000';
+    let checkmarkIcon = 'checkmark-circle-outline';
+    let checkmarkColor = '#10B981'; // default green
+    let displayAmount = Number(item.amount || 0).toLocaleString();
 
-    // Label (fallback)
-    const label = isCredit
-      ? 'Amount Credited'
-      : isDebit
-      ? 'Amount Debited'
-      : 'Wallet Transaction';
+    switch (item.status_text) {
+      case 'Money Added':
+        icon = 'cash-plus';
+        iconColor = '#10B981';
+        checkmarkIcon = 'checkmark-circle-outline';
+        checkmarkColor = '#10B981';
+        displayAmount = `+ ₹ ${displayAmount}`;
+        break;
+      case 'Verification Pending':
+        icon = 'timer-sand';
+        iconColor = '#FBBF24';
+        checkmarkIcon = 'time-outline';
+        checkmarkColor = '#FBBF24';
+        displayAmount = `₹ ${displayAmount}`;
+        break;
+      case 'Rejected':
+        icon = 'close-octagon-outline';
+        iconColor = '#EF4444';
+        checkmarkIcon = 'close-circle-outline';
+        checkmarkColor = '#EF4444';
+        displayAmount = `₹ ${displayAmount}`;
+        break;
+      default:
+        // fallback for credit/debit or unknown status
+        icon = item.transaction_type === '1' ? 'cash-plus' : 'cash-minus';
+        iconColor = item.transaction_type === '1' ? '#10B981' : '#EF4444';
+        checkmarkIcon =
+          item.transaction_type === '1'
+            ? 'checkmark-circle-outline'
+            : 'close-circle-outline';
+        checkmarkColor = iconColor;
+        displayAmount =
+          item.transaction_type === '1'
+            ? `+ ₹ ${displayAmount}`
+            : `- ₹ ${displayAmount}`;
+        break;
+    }
 
     return (
       <View style={styles.transactionRow}>
@@ -94,32 +169,17 @@ export default function WalletTransactions({navigation, route}) {
           color={iconColor}
           style={styles.transactionIcon}
         />
-
         <View style={{flex: 1}}>
-          <Text
-            style={[
-              styles.amount,
-              {color: isCredit ? '#10B981' : isFailed ? '#EF4444' : '#000'},
-            ]}>
-            {isCredit ? '+ ' : '- '}₹{' '}
-            {Number(item.amount || 0).toLocaleString()}
+          <Text style={[styles.amount, {color: iconColor}]}>
+            {displayAmount}
           </Text>
-
-          <Text style={styles.label}>{label}</Text>
+          <Text style={styles.label}>{item.status_text || '--'}</Text>
           <Text style={styles.date}>
             {item.payment_date}{' '}
             {item.payment_time ? `, ${item.payment_time}` : ''}
           </Text>
-          <Text style={styles.date}>{item.status_text || '--'}</Text>
         </View>
-
-        {isCompleted ? (
-          <Ionicons name="checkmark-circle-outline" size={22} color="#10B981" />
-        ) : isPending ? (
-          <Ionicons name="time-outline" size={22} color="#FBBF24" />
-        ) : (
-          <Ionicons name="close-circle-outline" size={22} color="#EF4444" />
-        )}
+        <Ionicons name={checkmarkIcon} size={22} color={checkmarkColor} />
       </View>
     );
   };

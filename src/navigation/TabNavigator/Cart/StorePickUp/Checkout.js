@@ -18,6 +18,7 @@ import {
   checkoutAPI,
   fetchCartAPI,
   checkoutDetailsAPI,
+  clearCart,
 } from '../../../../redux/slices/cartSlice';
 import {fetchBuyerAddress} from '../../../../redux/slices/buyerAddressSlice';
 import {fetchWalletBalance} from '../../../../redux/slices/walletSlice';
@@ -77,7 +78,8 @@ const CheckoutScreen = () => {
   useEffect(() => {
     dispatch(checkoutAPI());
     dispatch(fetchCartAPI());
-    dispatch(fetchBuyerAddress()); // pass buyer ID dynamically later
+    dispatch(fetchBuyerAddress());
+    dispatch(fetchWalletBalance());
   }, [dispatch]);
 
   useEffect(() => {
@@ -182,6 +184,8 @@ const CheckoutScreen = () => {
           type: 'success',
           text2: 'Order placed successfully with COD!',
         });
+        // 🧹 Clear Cart
+        dispatch(clearCart());
         navigation.navigate('ProcessToPay', {
           order_id: orderId,
         });
@@ -240,11 +244,13 @@ const CheckoutScreen = () => {
               );
 
               if (verifyResponse?.data?.status === true) {
-                navigation.navigate('ProcessToPay');
+                console.log('order-------------online--------------->',verifyResponse?.data?.data?.order?.orderId_number);
+                // navigation.navigate('ProcessToPay',  {order_id: verifyResponse?.data?.orderId, orderId_number : verifyResponse?.data?.orderId});
                 Toast.show({
                   type: 'success',
-                  text2: verifyResponse?.data?.message || 'Payment Successful!',
+                  text2: verifyResponse?.data?.message,
                 });
+                dispatch(clearCart());
               } else {
                 Toast.show({
                   type: 'error',
@@ -254,7 +260,12 @@ const CheckoutScreen = () => {
                 });
               }
             } catch (error) {
-              console.log('verify-payment error ===>', error?.response?.data);
+              console.log('error?.response?.data------------------------->',error?.response?.data);
+              Toast.show({
+                  type: 'error',
+                  text2:
+                    error?.response?.data?.message,
+                });
             }
           })
           .catch(error => {
@@ -269,79 +280,117 @@ const CheckoutScreen = () => {
 
       // -------------------- CASE 3 --------------------
       // ✅ Wallet Payment (handled through /wallet/verify)
-      if (paymentMethod === 'wallet') {
-        console.log('Wallet Balance:', balance);
-        console.log('Order Amount:', totalAmount);
+      // if (paymentMethod === 'wallet') {
+      //   console.log('Wallet Balance:', balance);
+      //   console.log('Order Amount:', totalAmount);
 
-        // 👉 Wallet balance is enough?
+      //   // 👉 Wallet balance is enough?
+      //   if (balance >= totalAmount) {
+      //     Alert.alert(
+      //       'Confirm Wallet Payment',
+      //       `₹${totalAmount} will be deducted from your wallet.\nDo you want to proceed?`,
+      //       [
+      //         {
+      //           text: 'No',
+      //           style: 'cancel',
+      //         },
+      //         {
+      //           text: 'Yes',
+      //           onPress: async () => {
+      //             try {
+      //               const response = await axios.post(
+      //                 `${API_BASE_URL}/orders/create`,
+      //                 payload,
+      //                 {
+      //                   headers: {
+      //                     Accept: 'application/json',
+      //                     Authorization: `Bearer ${token}`,
+      //                   },
+      //                 },
+      //               );
+      //               console.log('res++++++++++++++++++++++')
+      //               if (response?.data?.success) {
+      //                 Toast.show({
+      //                   type: 'success',
+      //                   text1: response?.data?.message,
+      //                 });
+      //                 navigation.navigate('ProcessToPay', {
+      //                   order_id: orderId,
+      //                 });
+      //               } else {
+      //                 Toast.show({
+      //                   type: 'success',
+      //                   text1: response?.data?.message,
+      //                 });
+      //                 navigation.navigate('ProcessToPay', {
+      //                   order_id: orderId,
+      //                 });
+      //               }
+      //             } catch (error) {
+      //               console.log(
+      //                 'Payment Error:',
+      //                 error.response?.data || error.message,
+      //               );
+      //               Alert.alert(
+      //                 'Error',
+      //                 'Something went wrong! Please try again.',
+      //               );
+      //             }
+      //           },
+      //         },
+      //       ],
+      //       {cancelable: false},
+      //     );
+
+      //     return; // STOP here → no Razorpay
+      //   }
+
+      //   // ❌ Wallet balance not enough
+      //   Toast.show({
+      //     type: 'error',
+      //     text1: 'Insufficient Wallet Balance',
+      //     text2: `Your wallet balance is ₹${balance}. Please add money.`,
+      //   });
+
+      //   navigation.navigate('WalletAddMoney');
+      //   return; // STOP here → do not open Razorpay
+      // }
+      if (paymentMethod === 'wallet') {
         if (balance >= totalAmount) {
           Alert.alert(
             'Confirm Wallet Payment',
             `₹${totalAmount} will be deducted from your wallet.\nDo you want to proceed?`,
             [
-              {
-                text: 'No',
-                style: 'cancel',
-              },
+              {text: 'No', style: 'cancel'},
+
               {
                 text: 'Yes',
                 onPress: async () => {
-                  try {
-                    const response = await axios.post(
-                      `${API_BASE_URL}/orders/create`,
-                      payload,
-                      {
-                        headers: {
-                          Accept: 'application/json',
-                          Authorization: `Bearer ${token}`,
-                        },
-                      },
-                    );
-                    if (response?.data?.success) {
-                      Toast.show({
-                        type: 'success',
-                        text1: response?.data?.message,
-                      });
-                      navigation.navigate('ProcessToPay', {
-                        order_id: orderId,
-                      });
-                    } else {
-                      Toast.show({
-                        type: 'success',
-                        text1: response?.data?.message,
-                      });
-                      navigation.navigate('ProcessToPay', {
-                        order_id: orderId,
-                      });
-                    }
-                  } catch (error) {
-                    console.log(
-                      'Payment Error:',
-                      error.response?.data || error.message,
-                    );
-                    Alert.alert(
-                      'Error',
-                      'Something went wrong! Please try again.',
-                    );
-                  }
+                  Toast.show({
+                    type: 'success',
+                    text1: createOrderRes?.data?.message,
+                  });
+                  dispatch(clearCart());
+                  // navigation.navigate('ProcessToPay', {
+                  //   order_id: orderId,
+                  // });
                 },
               },
             ],
-            {cancelable: false},
           );
 
-          return; // STOP here → no Razorpay
+          return; // stop further code
         }
 
-        // ❌ Wallet balance not enough
+        // ❌ Not enough wallet balance
         Toast.show({
           type: 'error',
           text1: 'Insufficient Wallet Balance',
           text2: `Your wallet balance is ₹${balance}. Please add money.`,
         });
 
-        navigation.navigate('AddMoneyScreen');
-        return; // STOP here → do not open Razorpay
+        navigation.navigate('WalletAddMoney');
+        return;
       }
     } catch (error) {
       console.log('error-------------------------------------->', error);

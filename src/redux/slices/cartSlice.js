@@ -197,7 +197,7 @@ export const checkoutAPI = createAsyncThunk(
 );
 export const checkoutDetailsAPI = createAsyncThunk(
   'checkout/checkoutDetailsAPI',
-  async (checkout_id, { rejectWithValue }) => {
+  async (checkout_id, {rejectWithValue}) => {
     try {
       const token = await AsyncStorage.getItem('TOKEN');
 
@@ -211,19 +211,16 @@ export const checkoutDetailsAPI = createAsyncThunk(
           },
         },
       );
-      if (response.data) {
-        Toast.show({ type: 'success', text1: response.data.message });
-        return response.data;
-      } else {
-        Toast.show({ type: 'error', text1: response.data.message });
-        return rejectWithValue(response.data.message);
-      }
+      console.log(
+        'checkout details++++++++++++++++++++++++++++++++',
+        response.data,
+      );
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
   },
 );
-
 
 const cartSlice = createSlice({
   name: 'cart',
